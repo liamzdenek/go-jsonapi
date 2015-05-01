@@ -134,8 +134,7 @@ func DenatureObject(data interface{}) map[string]interface{} {
         }
         if len(tag) > 1 && len(tag[1]) > 0 {
             if(tag[1] == "omitempty") {
-                if(reflect.DeepEqual(reflect.Zero(v.Field(i).Type()), v.Field(i).Interface())) {
-                    fmt.Printf("Omitting empty field %v\n",tag[0]);
+                if(IsZeroOfUnderlyingType(v.Field(i).Interface())) {
                     continue;
                 }
             }
@@ -144,4 +143,8 @@ func DenatureObject(data interface{}) map[string]interface{} {
     }
 
     return values;
+}
+
+func IsZeroOfUnderlyingType(x interface{}) bool {
+    return x == reflect.Zero(reflect.TypeOf(x)).Interface()
 }
