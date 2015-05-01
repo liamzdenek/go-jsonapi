@@ -29,7 +29,7 @@ func NewSessionResource() *SessionResource {
 }
 
 func(sr *SessionResource) FindOne(id string, r *http.Request) (jsonapi.HasId, error) {
-    return &Session{Id:"123"}, nil;
+    return &Session{Id:"123",Created:time.Now()}, nil;
 }
 
 func main() {

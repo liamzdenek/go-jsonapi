@@ -13,6 +13,7 @@ type API struct{
     Resources map[string]*MountedResource;
     Linkages map[string]map[string]*MountedLinkage
     Router *pat.Router
+    BaseURIPath string
 }
 
 type MountedResource struct{
@@ -30,6 +31,7 @@ func NewAPI() *API {
         Router: pat.New(),
         Resources: make(map[string]*MountedResource),
         Linkages: make(map[string]map[string]*MountedLinkage),
+        BaseURIPath: "/",
     };
     api.InitRouter();
     return api;
@@ -96,29 +98,42 @@ func(a *API) FindOne(w http.ResponseWriter, r *http.Request) {
     data, err := resource.R.FindOne(id_str, r);
     Check(err);
 
-    Reply(a.PrepareResponse(data, resource_str))
+    Reply(a.PrepareResponse(data, resource_str,r))
 }
 
-func(a *API) PrepareResponse(data HasId, resource_str string) *TopLevel {
+func(a *API) PrepareResponse(data HasId, resource_str string, r *http.Request) *TopLevel {
     res := &TopLevel{};
     fmt.Printf("Adding linkages %#v\n", data);
-    res.Data = a.AddLinkages(data, resource_str);
+    res.Data = append(res.Data, a.AddLinkages(data, resource_str, r));
     return res;
 }
 
-func(a *API) AddLinkages(data HasId, resource_str string) interface{} {
-    // this probably causes performance problems
+func(a *API) AddLinkages(data HasId, resource_str string, r *http.Request) interface{} {
     res := DenatureObject(data);
 
     delete(res, "Id");
     delete(res, "ID");
     delete(res, "iD");
     res["id"] = data.GetId();
-
-
+    res["type"] = resource_str;
+    res["links"] = a.GenerateLinkages(data, resource_str, r);
     fmt.Printf("Res: %#v\n", res);
 
     return res;
+}
+
+func(a *API) GenerateLinkages(data HasId, resource_str string, r *http.Request) interface{} {
+    res := map[string]interface{}{};
+    res["self"] = a.GetBaseURL(r)+resource_str+"/"+data.GetId();
+    return res;
+}
+
+func(a *API) GetBaseURL(r *http.Request) string {
+    fmt.Printf("URL: %#v\n", r.URL);
+    if r.URL.Scheme == "" {
+        r.URL.Scheme = "http";
+    }
+    return r.URL.Scheme+"://"+r.Host+a.BaseURIPath;
 }
 
 func DenatureObject(data interface{}) map[string]interface{} {
