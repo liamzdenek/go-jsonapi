@@ -4,10 +4,12 @@ import (
     "./jsonapi"
     "net/http"
     "fmt"
+    "time"
 );
 
 type Session struct{
     Id string
+    Created time.Time `json:"created,omitempty"`
 }
 
 func(s *Session) GetId() string {

@@ -5,6 +5,8 @@ import (
     "net/http"
     "encoding/json"
     "fmt"
+    "reflect"
+    "strings"
 );
 
 type API struct{
@@ -59,6 +61,7 @@ func(a *API) CatchResponses(w http.ResponseWriter, r *http.Request) {
             res := &TopLevel{};
             res.Errors = []error{r};
             a.Send(res, w);
+            panic(r);
         case *ResponseReply:
             a.Send(r.Reply, w);
         default:
@@ -96,8 +99,49 @@ func(a *API) FindOne(w http.ResponseWriter, r *http.Request) {
     Reply(a.PrepareResponse(data, resource_str))
 }
 
-func(a *API) PrepareResponse(data interface{}, resource_str string) *TopLevel {
+func(a *API) PrepareResponse(data HasId, resource_str string) *TopLevel {
     res := &TopLevel{};
-    res.Data = data;
+    fmt.Printf("Adding linkages %#v\n", data);
+    res.Data = a.AddLinkages(data, resource_str);
     return res;
+}
+
+func(a *API) AddLinkages(data HasId, resource_str string) interface{} {
+    // this probably causes performance problems
+    res := DenatureObject(data);
+
+    delete(res, "Id");
+    delete(res, "ID");
+    delete(res, "iD");
+    res["id"] = data.GetId();
+
+
+    fmt.Printf("Res: %#v\n", res);
+
+    return res;
+}
+
+func DenatureObject(data interface{}) map[string]interface{} {
+    v := reflect.Indirect(reflect.ValueOf(data));
+    t := v.Type();
+
+    values := make(map[string]interface{}, t.NumField());
+
+    for i := 0; i < t.NumField(); i++ {
+        tag := strings.Split(t.Field(i).Tag.Get("json"), ",");
+        if len(tag[0]) == 0 { 
+            tag[0] = t.Field(i).Name
+        }
+        if len(tag) > 1 && len(tag[1]) > 0 {
+            if(tag[1] == "omitempty") {
+                if(reflect.DeepEqual(reflect.Zero(v.Field(i).Type()), v.Field(i).Interface())) {
+                    fmt.Printf("Omitting empty field %v\n",tag[0]);
+                    continue;
+                }
+            }
+        }
+        values[tag[0]] = v.Field(i).Interface();
+    }
+
+    return values;
 }
