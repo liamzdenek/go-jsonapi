@@ -22,8 +22,35 @@ type MountedResource struct{
 }
 
 type MountedLinkage struct{
+    SrcR string
     DstR string
-    Behavior Behavior
+    LinkageBehavior LinkageBehavior
+}
+
+func(mr *MountedLinkage) Resolve(a *API, src HasId, r *http.Request) (res Linkage, included []interface{}) {
+    resource := a.Resources[mr.DstR];
+    resource.P.Check(mr.SrcR+".linkto."+mr.DstR+".FindMany", "", r);
+    switch lb := mr.LinkageBehavior.(type) {
+        case IdLinkageBehavior:
+            ids := lb.Link(src);
+            for _, id := range ids {
+                res.Linkage = append(res.Linkage, LinkageIdentifier{
+                    Type: mr.DstR,
+                    Id: id,
+                });
+            }
+            linkdata, err := resource.R.FindMany(ids, r);
+            Check(err);
+            for _, link := range linkdata {
+                fixedlink,_ := a.AddLinkages(link, mr.DstR, r, false);
+                included = append(included, fixedlink);
+            }
+        case HasIdLinkageBehavior:
+            panic("TODO");
+        default:
+            panic("Attempted to resolve a linkage behavior that is neither an Id or HasId LinkageBehavior.. This should never happen");
+    }
+    return;
 }
 
 func NewAPI() *API {
@@ -41,13 +68,23 @@ func(a *API) MountResource(name string, r Resource, p Permissions) {
     a.Resources[name] = &MountedResource{R: r, P: p};
 }
 
-func(a *API) MountLinkage(name, srcR, dstR string, behavior Behavior) {
+func(a *API) MountLinkage(name, srcR, dstR string, behavior LinkageBehavior) {
+    if(a.Resources[srcR] == nil) {
+        panic("Source resource "+srcR+" for linkage does not exist");
+    }
+    if(a.Resources[dstR] == nil) {
+        panic("Destination resource "+dstR+" for linkage does not exist");
+    }
     if(a.Linkages[srcR] == nil) {
         a.Linkages[srcR] = make(map[string]*MountedLinkage);
     }
+    if(!VerifyLinkageBehavior(behavior)) {
+        panic("Linkage provided cannot be used as an Id or HasId LinkageBehavior");
+    }
     a.Linkages[srcR][name] = &MountedLinkage{
+        SrcR: srcR,
         DstR: dstR,
-        Behavior: behavior,
+        LinkageBehavior: behavior,
     };
 }
 
@@ -93,7 +130,7 @@ func(a *API) FindOne(w http.ResponseWriter, r *http.Request) {
         panic(&ErrorResourceDoesNotExist{Resource:resource_str});
     }
 
-    resource.P.Check(resource_str+".FindAll", id_str, w, r);
+    resource.P.Check(resource_str+".FindAll", id_str, r);
 
     data, err := resource.R.FindOne(id_str, r);
     Check(err);
@@ -101,31 +138,61 @@ func(a *API) FindOne(w http.ResponseWriter, r *http.Request) {
     Reply(a.PrepareResponse(data, resource_str,r))
 }
 
-func(a *API) PrepareResponse(data HasId, resource_str string, r *http.Request) *TopLevel {
-    res := &TopLevel{};
+func(a *API) PrepareResponse(data HasId, resource_str string, r *http.Request) interface{} {
+    res := map[string]interface{}{}
     fmt.Printf("Adding linkages %#v\n", data);
-    res.Data = append(res.Data, a.AddLinkages(data, resource_str, r));
+    if r, included := a.AddLinkages(data,resource_str,r,true); r != nil {
+        res["data"] = r;
+        if included != nil {
+            res["included"] = included;
+        }
+    } else {
+        res["data"] = nil;
+    }
     return res;
 }
 
-func(a *API) AddLinkages(data HasId, resource_str string, r *http.Request) interface{} {
+func(a *API) AddLinkages(data HasId, resource_str string, r *http.Request, recursive bool) (interface{}, interface{}) {
+    if(data == nil) {
+        return nil, nil;
+    }
     res := DenatureObject(data);
+    var included interface{};
+    var links interface{};
 
     delete(res, "Id");
     delete(res, "ID");
     delete(res, "iD");
     res["id"] = data.GetId();
     res["type"] = resource_str;
-    res["links"] = a.GenerateLinkages(data, resource_str, r);
+    if(recursive) {
+        links, included = a.GenerateLinkages(data, resource_str, r, true);
+        res["links"] = links;
+    }
     fmt.Printf("Res: %#v\n", res);
 
-    return res;
+    return res, included;
 }
 
-func(a *API) GenerateLinkages(data HasId, resource_str string, r *http.Request) interface{} {
+func(a *API) GenerateLinkages(data HasId, resource_str string, r *http.Request, getIncluded bool) (interface{}, interface{}) {
     res := map[string]interface{}{};
+    included := []interface{}{};
+    if linkages := a.Linkages[resource_str]; len(linkages) > 0 {
+        for linkname, linkage := range linkages {
+            linkdata, incl := linkage.Resolve(a, data, r)
+            linkdata.Self = a.GetBaseURL(r)+resource_str+"/"+data.GetId()+"/links/"+linkname;
+            linkdata.Related = a.GetBaseURL(r)+resource_str+"/"+data.GetId()+"/"+linkname;
+            res[linkname] = linkdata
+            for _, hasid := range incl {
+                included = append(included, hasid);
+            }
+        }
+    }
     res["self"] = a.GetBaseURL(r)+resource_str+"/"+data.GetId();
-    return res;
+    if len(included) == 0 {
+        return res, nil;
+    }
+    return res, included;
 }
 
 func(a *API) GetBaseURL(r *http.Request) string {

@@ -5,5 +5,5 @@ import (
 )
 
 type Permissions interface {
-    Check(permission, id string, w http.ResponseWriter, r *http.Request)
+    Check(permission, id string, r *http.Request)
 }
