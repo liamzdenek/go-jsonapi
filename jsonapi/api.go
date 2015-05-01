@@ -46,7 +46,15 @@ func(mr *MountedLinkage) Resolve(a *API, src HasId, r *http.Request) (res Linkag
                 included = append(included, fixedlink);
             }
         case HasIdLinkageBehavior:
-            panic("TODO");
+            links := lb.Link(src);
+            for _, link := range links {
+                res.Linkage = append(res.Linkage, LinkageIdentifier{
+                    Type: mr.DstR,
+                    Id: link.GetId(),
+                });
+                fixedlink,_ := a.AddLinkages(link, mr.DstR, r, false);
+                included = append(included, fixedlink);
+            }
         default:
             panic("Attempted to resolve a linkage behavior that is neither an Id or HasId LinkageBehavior.. This should never happen");
     }
