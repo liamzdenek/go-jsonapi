@@ -2,31 +2,42 @@ package main;
 
 import(. "./jsonapi";"encoding/json";"fmt");
 
-type Test struct {
+type Session struct {
     ArbitraryField string `json:"qwerty"`
 }
 
-func (t *Test) Id() string { return "123"; }
+func (s *Session) Id() string { return "123"; }
 
-func (t *Test) Link() *OutputLinkageSet { return nil; };
 
-func (t *Test) Type() string { return "test"; };
-
-func main() {
-    output := Output{
-        Data: &OutputData{
-            Data: []*OutputDatum{
-                &OutputDatum{
-                    Datum: &Test{
-                        ArbitraryField: "azerty",
-                    },
+func (s *Session) Type() string { return "session"; }
+func (s *Session) Link() *OutputLinkageSet { return &OutputLinkageSet{
+    Linkages: []*OutputLinkage{
+        &OutputLinkage{
+            LinkName: "logged_in_as",
+            Links: []OutputLink{
+                {
+                    Type:"user",
+                    Id: "123",
                 },
             },
         },
+    },
+}};
+
+func main() {
+    t :=  &Session{
+        ArbitraryField: "azerty",
     };
-    bytes, err := json.Marshal(output);
-    if err != nil {
-        panic(err);
-    }
-    fmt.Printf("B: %s\n",bytes);
+    output := Output{}
+    output.Data = NewOutputDataResources(false, []*OutputDatum{
+        &OutputDatum{
+            Datum: t,
+        },
+    });
+    bytes, _ := json.Marshal(output);
+    fmt.Printf("A: %s\n",bytes);
+
+    output.Data = NewOutputDataRelationship(false, t.Link());
+    bytes, _ = json.Marshal(output);
+    fmt.Printf("A: %s\n",bytes);
 }

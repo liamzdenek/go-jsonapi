@@ -4,6 +4,7 @@ import ("encoding/json";);
 
 type OutputData struct { // data
     Data []*OutputDatum
+    LinkageSet *OutputLinkageSet
     Target OutputDataType
 }
 
@@ -12,8 +13,25 @@ type OutputDataType int;
 const (
     SingleResource OutputDataType = iota
     ManyResources
-    ResourceLinkage
+    OneToOneRelationship
+    OneToManyRelationship
 );
+
+func NewOutputDataResources(isSingle bool, data []*OutputDatum) *OutputData {
+    t := ManyResources;
+    if(isSingle) {
+        t = SingleResource;
+    }
+    return &OutputData{Data: data, Target: t};
+}
+
+func NewOutputDataRelationship(isSingle bool, links *OutputLinkageSet) *OutputData {
+    t := OneToManyRelationship;
+    if(isSingle) {
+        t = OneToOneRelationship;
+    }
+    return &OutputData{LinkageSet:links, Target: t};
+}
 
 func (o OutputData) MarshalJSON() ([]byte, error) {
     //Primary data MUST be either:
@@ -26,8 +44,8 @@ func (o OutputData) MarshalJSON() ([]byte, error) {
         }
         return json.Marshal(o.Data[0]);
     }
-    if(o.Target == ResourceLinkage) {
-        panic("TODO");
+    if(o.Target == OneToOneRelationship || o.Target == OneToManyRelationship) {
+        return json.Marshal(o.LinkageSet);
         //return json.Marshal(
     }
     // ManyResources
