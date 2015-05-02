@@ -125,10 +125,52 @@ func(a *API) Send(obj interface{}, w http.ResponseWriter) {
 
 func(a *API) InitRouter() {
     //a.Router.Get("/:resource")
-    a.Router.Get("/{resource}/{id}", a.FindOne)
+    a.Router.Get("/{resource}/{id}/links/{linkname}", a.GetLinks);
+    a.Router.Get("/{resource}/{id}/{linkname}", a.GetUnwrappedLinks);
+    a.Router.Get("/{resource}/{id}", a.GetOne)
 }
 
-func(a *API) FindOne(w http.ResponseWriter, r *http.Request) {
+func(a *API) GetUnwrappedLinks(w http.ResponseWriter, r *http.Request) {
+    data, resource_str := a.internalFindOne(w,r);
+    linkname := r.URL.Query().Get(":linkname");
+    id_str := r.URL.Query().Get(":id");
+    _, included := a.ResolveSingleLink(resource_str,linkname,data,r);
+    Reply(&TopLevel{
+        Data: included,
+        Links: map[string]interface{}{
+            "self": a.GetBaseURL(r)+resource_str+"/"+id_str+"/"+linkname,
+        },
+        /*
+        Links: map[string]interface{}{
+            "self": linkage.Self,
+            "related": a.GetBaseURL(r)+resource_str+"/"+id_str,
+        },
+        Data: linkage.Linkage,
+        Included: included,*/
+    });
+}
+
+func(a *API) GetLinks(w http.ResponseWriter, r *http.Request) {
+    data, resource_str := a.internalFindOne(w,r);
+    linkname := r.URL.Query().Get(":linkname");
+    id_str := r.URL.Query().Get(":id");
+    linkage, included := a.ResolveSingleLink(resource_str,linkname,data,r);
+    Reply(&TopLevel{
+        Links: map[string]interface{}{
+            "self": linkage.Self,
+            "related": a.GetBaseURL(r)+resource_str+"/"+id_str,
+        },
+        Data: linkage.Linkage,
+        Included: included,
+    });
+}
+
+func(a *API) GetOne(w http.ResponseWriter, r *http.Request) {
+    data, resource_str := a.internalFindOne(w,r);
+    Reply(a.PrepareResponse(data, resource_str,r))
+}
+
+func(a *API) internalFindOne(w http.ResponseWriter, r *http.Request) (HasId, string) {
     resource_str := r.URL.Query().Get(":resource");
     id_str := r.URL.Query().Get(":id");
     
@@ -142,8 +184,7 @@ func(a *API) FindOne(w http.ResponseWriter, r *http.Request) {
 
     data, err := resource.R.FindOne(id_str, r);
     Check(err);
-
-    Reply(a.PrepareResponse(data, resource_str,r))
+    return data, resource_str;
 }
 
 func(a *API) PrepareResponse(data HasId, resource_str string, r *http.Request) interface{} {
@@ -174,7 +215,7 @@ func(a *API) AddLinkages(data HasId, resource_str string, r *http.Request, recur
     res["id"] = data.GetId();
     res["type"] = resource_str;
     if(recursive) {
-        links, included = a.GenerateLinkages(data, resource_str, r, true);
+        links, included = a.GenerateLinkages(data, resource_str, r);
         res["links"] = links;
     }
     fmt.Printf("Res: %#v\n", res);
@@ -182,25 +223,31 @@ func(a *API) AddLinkages(data HasId, resource_str string, r *http.Request, recur
     return res, included;
 }
 
-func(a *API) GenerateLinkages(data HasId, resource_str string, r *http.Request, getIncluded bool) (interface{}, interface{}) {
+func(a *API) GenerateLinkages(data HasId, resource_str string, r *http.Request) (interface{}, interface{}) {
     res := map[string]interface{}{};
     included := []interface{}{};
+    //res["self"] = a.GetBaseURL(r)+resource_str+"/"+data.GetId();
     if linkages := a.Linkages[resource_str]; len(linkages) > 0 {
-        for linkname, linkage := range linkages {
-            linkdata, incl := linkage.Resolve(a, data, r)
-            linkdata.Self = a.GetBaseURL(r)+resource_str+"/"+data.GetId()+"/links/"+linkname;
-            linkdata.Related = a.GetBaseURL(r)+resource_str+"/"+data.GetId()+"/"+linkname;
+        for linkname,_ := range linkages {
+            linkdata, incl := a.ResolveSingleLink(resource_str,linkname,data,r);
             res[linkname] = linkdata
             for _, hasid := range incl {
                 included = append(included, hasid);
             }
         }
     }
-    res["self"] = a.GetBaseURL(r)+resource_str+"/"+data.GetId();
     if len(included) == 0 {
         return res, nil;
     }
     return res, included;
+}
+
+func(a *API) ResolveSingleLink(resource_str,linkname string, data HasId, r *http.Request) (*Linkage, []interface{}) {
+    linkage := a.Linkages[resource_str][linkname];
+    linkdata, incl := linkage.Resolve(a, data, r)
+    linkdata.Self = a.GetBaseURL(r)+resource_str+"/"+data.GetId()+"/links/"+linkname;
+    //linkdata.Related = a.GetBaseURL(r)+linkage.DstR+"/";
+    return &linkdata, incl;
 }
 
 func(a *API) GetBaseURL(r *http.Request) string {

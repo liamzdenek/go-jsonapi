@@ -1,8 +1,8 @@
 package jsonapi;
 
 type Linkage struct {
-    Self string `json:"self"`
-    Related string `json:"related"`
+    Self string `json:"self,omitempty"`
+    Related string `json:"related,omitempty"`
     Linkage []LinkageIdentifier `json:"linkage"`
 }
 
