@@ -24,7 +24,7 @@ func(rr *RequestResolver) HandlerFindOne(a *API, w http.ResponseWriter, r *http.
 func(rr *RequestResolver) FindOne(a *API, r *http.Request) (Ider, string) {
     resource_str := r.URL.Query().Get(":resource");
     id_str := r.URL.Query().Get(":id");
-    
+
     resource := a.RM.GetResource(resource_str);
 
     if(resource == nil) {

@@ -68,7 +68,7 @@ func main() {
 
     //api.MountLinkage("pets", "user", "dogs", jsonapi.SQLLinkageBehavior);
 
-    //api.MountLinkage("logged_in_as", "session", "user", jsonapi.NewOneToOneLinkageBehavior("UserId"));
+    api.MountRelationship("logged_in_as", "session", "user", jsonapi.NewOneToOneLinkageBehavior("UserId"), jsonapi.NewAuthenticatorNone());
 
     // curl localhost:3030/api/user/0/pets
 
