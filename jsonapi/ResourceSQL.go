@@ -2,7 +2,6 @@ package jsonapi;
 
 import (
     "database/sql";
-    "net/http";
     "github.com/russross/meddler";
     "reflect"
     "strings"
@@ -30,13 +29,13 @@ func NewResourceSQL(db *sql.DB, table string, t Ider) *ResourceSQL {
     }
 }
 
-func(sr *ResourceSQL) FindOne(id string, r *http.Request) (Ider, error) {
+func(sr *ResourceSQL) FindOne(id string) (Ider, error) {
     v := reflect.New(sr.Type).Interface();
     err := meddler.QueryRow(sr.DB, v, "SELECT * FROM "+sr.Table+" WHERE id=?", id);
     return v.(Ider), err;
 }
 
-func(sr *ResourceSQL) FindMany(ids []string, r *http.Request) ([]Ider, error) {
+func(sr *ResourceSQL) FindMany(ids []string) ([]Ider, error) {
     args := []interface{}{};
     for _, id := range ids {
         args = append(args, id);

@@ -13,7 +13,7 @@ func NewResourceManager() *ResourceManager {
 }
 
 func(rm *ResourceManager) MountResource(name string, r Resource, a Authenticator) {
-    rm.Resources[name] = &ResourceManagerResource{R: r, A: a};
+    rm.Resources[name] = &ResourceManagerResource{R: r, A: a, RM: rm, Name: name};
 }
 
 func(rm *ResourceManager) MountRelationship(name, srcR, dstR string, behavior RelationshipBehavior, auth Authenticator) {
@@ -34,9 +34,21 @@ func(rm *ResourceManager) MountRelationship(name, srcR, dstR string, behavior Re
         DstR: dstR,
         B: behavior,
         A: auth,
+        RM: rm,
     };
 }
 
 func(rm *ResourceManager) GetResource(resource_str string) *ResourceManagerResource {
     return rm.Resources[resource_str]
+}
+
+func(rm *ResourceManager) GetRelationshipsByResource(srcR string) map[string]*ResourceManagerRelationship {
+    return rm.Relationship[srcR];
+}
+
+func(rm *ResourceManager) GetRelationship(srcR, linkName string) *ResourceManagerRelationship {
+    if(rm.Relationship[srcR] == nil) {
+        return nil;
+    }
+    return rm.Relationship[srcR][linkName]
 }

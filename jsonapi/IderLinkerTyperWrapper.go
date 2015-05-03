@@ -3,12 +3,14 @@ package jsonapi;
 type IderLinkerTyperWrapper struct {
     Ider Ider
     Type_ string
+    Linker Linker
 }
 
-func NewIderLinkerTyperWrapper(i Ider, t string) *IderLinkerTyperWrapper {
+func NewIderLinkerTyperWrapper(i Ider, t string, l Linker) *IderLinkerTyperWrapper {
     return &IderLinkerTyperWrapper{
         Ider: i,
         Type_: t,
+        Linker: l,
     }
 }
 
@@ -17,8 +19,7 @@ func(w *IderLinkerTyperWrapper) Id() string {
 }
 
 func(w *IderLinkerTyperWrapper) Link() *OutputLinkageSet {
-    //panic("TODO");
-    return nil;
+    return w.Linker.Link();
 }
 
 func(w *IderLinkerTyperWrapper) Type() string {

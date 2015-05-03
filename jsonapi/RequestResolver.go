@@ -9,19 +9,20 @@ func NewRequestResolver() *RequestResolver {
 }
 
 func(rr *RequestResolver) HandlerFindOne(a *API, w http.ResponseWriter, r *http.Request) {
-    res, resource_str := rr.FindOne(a,r);
-    wrapped := NewIderLinkerTyperWrapper(res, resource_str)
-    fmt.Printf("Resource: %s\n", resource_str);
-    Reply(&Output{
-        Data: NewOutputDataResources(false, []*OutputDatum{
-            &OutputDatum{
-                Datum: wrapped,
-            },
-        }),
+    output := &Output{};
+    res, rmr := rr.FindOne(a,r);
+    roi := NewRelationshipOutputInjector(a, rmr, res, output);
+    wrapped := NewIderLinkerTyperWrapper(res, rmr.Name, roi);
+    fmt.Printf("Resource: %s\n", rmr.Name);
+    output.Data = NewOutputDataResources(false, []*OutputDatum{
+        &OutputDatum{
+            Datum: wrapped,
+        },
     });
+    Reply(output);
 }
 
-func(rr *RequestResolver) FindOne(a *API, r *http.Request) (Ider, string) {
+func(rr *RequestResolver) FindOne(a *API, r *http.Request) (Ider, *ResourceManagerResource) {
     resource_str := r.URL.Query().Get(":resource");
     id_str := r.URL.Query().Get(":id");
 
@@ -33,7 +34,7 @@ func(rr *RequestResolver) FindOne(a *API, r *http.Request) (Ider, string) {
 
     resource.A.Authenticate(resource_str+".FindAll", id_str, r);
 
-    data, err := resource.R.FindOne(id_str, r);
+    data, err := resource.R.FindOne(id_str);
     Check(err);
-    return data, resource_str;
+    return data, resource;
 }

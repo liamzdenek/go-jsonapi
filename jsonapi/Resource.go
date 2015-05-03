@@ -1,8 +1,6 @@
 package jsonapi;
 
-import( "net/http"; );
-
 type Resource interface {
-    FindOne(id string, r *http.Request) (Ider, error)
-    FindMany(ids []string, r *http.Request) ([]Ider, error)
+    FindOne(id string) (Ider, error)
+    FindMany(ids []string) ([]Ider, error)
 }

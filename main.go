@@ -30,11 +30,11 @@ func NewSessionResource() *SessionResource {
     return &SessionResource{}
 }
 
-func(sr *SessionResource) FindMany(ids []string, r *http.Request) ([]jsonapi.Ider, error) {
+func(sr *SessionResource) FindMany(ids []string) ([]jsonapi.Ider, error) {
     return nil, nil;
 }
 
-func(sr *SessionResource) FindOne(id string, r *http.Request) (jsonapi.Ider, error) {
+func(sr *SessionResource) FindOne(id string) (jsonapi.Ider, error) {
     return &Session{ID:"123",Created:time.Now(),UserId:1}, nil;
 }
 
