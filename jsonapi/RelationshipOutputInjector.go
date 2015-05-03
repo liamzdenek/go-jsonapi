@@ -37,7 +37,7 @@ func(loi RelationshipOutputInjector) Link() *OutputLinkageSet {
     if relationships := rmr.RM.GetRelationshipsByResource(rmr.Name); len(relationships) > 0 {
         for linkname,rel := range relationships {
             shouldInclude := loi.ShouldInclude(linkname);
-            link, included := rel.Resolve(loi.Ider, shouldInclude);
+            link, included := rel.Resolve(loi.Ider, loi.Output.Request, shouldInclude);
             link.LinkName = linkname;
             res.Linkages = append(res.Linkages, link);
             if(shouldInclude) {

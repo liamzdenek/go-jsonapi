@@ -33,7 +33,7 @@ func(rr *RequestResolver) FindOne(a *API, r *http.Request) (Ider, *ResourceManag
         panic(&ErrorResourceDoesNotExist{ResourceName:resource_str});
     }
 
-    resource.A.Authenticate(resource_str+".FindAll", id_str, r);
+    resource.A.Authenticate("resource.FindOne."+resource_str, id_str, r);
 
     data, err := resource.R.FindOne(id_str);
     Check(err);

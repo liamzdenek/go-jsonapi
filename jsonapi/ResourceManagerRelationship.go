@@ -1,9 +1,12 @@
 package jsonapi;
 
+import ("net/http";);
+
 type ResourceManagerRelationship struct {
     RM *ResourceManager
     SrcR string
     DstR string
+    Name string
     B RelationshipBehavior
     A Authenticator
 }
@@ -44,9 +47,8 @@ func(rmr *ResourceManagerRelationship) ResolveIder(lb IderRelationshipBehavior, 
     return res, included;
 }
 
-func(rmr *ResourceManagerRelationship) Resolve(src Ider, generateIncluded bool) (*OutputLinkage, []IderTyper) {
-    // TODO: perm check
-    //rmr.A.Authenticate(mr.SrcR+".linkto."+mr.DstR+".FindMany", "", r);
+func(rmr *ResourceManagerRelationship) Resolve(src Ider, r *http.Request, generateIncluded bool) (*OutputLinkage, []IderTyper) {
+    rmr.A.Authenticate("relationship.FindAll."+rmr.SrcR+"."+rmr.Name+"."+rmr.DstR, src.Id(), r);
     // if we want included and it satisfies IderRelationshipBehavior, we 
     // should always prefer that over IdRelationshipBehavior
     if(generateIncluded) {
