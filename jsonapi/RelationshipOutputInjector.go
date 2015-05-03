@@ -7,15 +7,26 @@ type RelationshipOutputInjector struct {
     Ider Ider
     ResourceManagerResource *ResourceManagerResource
     A *API
+    Include []string
 }
 
-func NewRelationshipOutputInjector(a *API, rmr *ResourceManagerResource, ider Ider, output *Output) *RelationshipOutputInjector {
+func NewRelationshipOutputInjector(a *API, rmr *ResourceManagerResource, ider Ider, output *Output, include []string) *RelationshipOutputInjector {
     return &RelationshipOutputInjector{
         A: a,
         ResourceManagerResource: rmr,
         Ider: ider,
         Output: output,
+        Include: include,
     };
+}
+
+func(loi *RelationshipOutputInjector) ShouldInclude(s string) bool {
+    for _, include := range loi.Include {
+        if(include == s) {
+            return true;
+        }
+    }
+    return false;
 }
 
 func(loi RelationshipOutputInjector) Link() *OutputLinkageSet {
@@ -25,10 +36,13 @@ func(loi RelationshipOutputInjector) Link() *OutputLinkageSet {
     };
     if relationships := rmr.RM.GetRelationshipsByResource(rmr.Name); len(relationships) > 0 {
         for linkname,rel := range relationships {
-            link, included := rel.Resolve(loi.Ider, true);
+            shouldInclude := loi.ShouldInclude(linkname);
+            link, included := rel.Resolve(loi.Ider, shouldInclude);
             link.LinkName = linkname;
             res.Linkages = append(res.Linkages, link);
-            loi.Output.Included.Push(included...);
+            if(shouldInclude) {
+                loi.Output.Included.Push(included...);
+            }
         }
     }
     return res;

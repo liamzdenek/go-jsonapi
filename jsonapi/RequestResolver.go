@@ -1,6 +1,6 @@
 package jsonapi;
 
-import ("net/http";"fmt");
+import ("net/http";"fmt";"strings");
 
 type RequestResolver struct{}
 
@@ -11,7 +11,9 @@ func NewRequestResolver() *RequestResolver {
 func(rr *RequestResolver) HandlerFindOne(a *API, w http.ResponseWriter, r *http.Request) {
     output := NewOutput(r);
     res, rmr := rr.FindOne(a,r);
-    roi := NewRelationshipOutputInjector(a, rmr, res, output);
+    include := strings.Split(r.URL.Query().Get("include"),",");
+    fmt.Printf("Got include: %v\n", include);
+    roi := NewRelationshipOutputInjector(a, rmr, res, output, include);
     wrapped := NewIderLinkerTyperWrapper(res, rmr.Name, roi);
     fmt.Printf("Resource: %s\n", rmr.Name);
     output.Data = NewOutputDataResources(false, []*OutputDatum{

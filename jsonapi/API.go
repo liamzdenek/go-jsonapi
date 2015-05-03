@@ -53,7 +53,6 @@ func(a *API) CatchResponses(w http.ResponseWriter, r *http.Request) {
     if raw := recover(); raw != nil {
         switch r := raw.(type) {
         case *Output:
-            fmt.Printf("OUTPUT: %#+v\n", r);
             a.Send(r, w);
         case error:
             res := &Output{};
