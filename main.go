@@ -37,17 +37,17 @@ func(sr *SessionResource) FindMany(ids []string, r *http.Request) ([]jsonapi.Ide
 func(sr *SessionResource) FindOne(id string, r *http.Request) (jsonapi.Ider, error) {
     return &Session{ID:"123",Created:time.Now(),UserId:1}, nil;
 }
-/*
+
 type User struct{
-    Id int `meddler:"id,pk"`
+    ID int `meddler:"id,pk"`
     Name string `meddler:"name" json:"name"`
 }
 
-func(u *User) GetId() string {
+func(u *User) Id() string {
     return fmt.Sprintf("%d",u.Id);
 }
 
-func(u *User) SetId(id string) error {
+/*func(u *User) SetId(id string) error {
     nid, err := strconv.Atoi(id);
     u.Id = nid;
     return err;
@@ -55,15 +55,15 @@ func(u *User) SetId(id string) error {
 */
 
 func main() {
-    _, err := sql.Open("mysql", "root@/tasky");
+    db, err := sql.Open("mysql", "root@/tasky");
     if err != nil {
         panic(err);
     }
 
     api := jsonapi.NewAPI();
 
-    //api.MountResource("user", jsonapi.NewSQLResource(db, "users", &User{}), jsonapi.NewNoRestrictions());
-    //api.MountResource("dogs", jsonapi.NewSQLResource(db,"dogs"), jsonapi.NoPermissions());
+    api.MountResource("user", jsonapi.NewResourceSQL(db, "users", &User{}), jsonapi.NewAuthenticatorNone());
+    //api.MountResource("dogs", jsonapi.NewResourceSQL(db,"dogs"), jsonapi.NoPermissions());
     api.MountResource("session", NewSessionResource(), jsonapi.NewAuthenticatorNone());
 
     //api.MountLinkage("pets", "user", "dogs", jsonapi.SQLLinkageBehavior);
