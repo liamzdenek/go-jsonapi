@@ -14,9 +14,18 @@ func NewAPI() *API {
         Router: pat.New(),
         RM: NewResourceManager(),
         RR: NewRequestResolver(),
+        BaseURIPath: "/",
     };
     api.InitRouter();
     return api;
+}
+
+func(a *API) GetBaseURL(r *http.Request) string {
+    fmt.Printf("URL: %#v\n", r.URL);
+    if r.URL.Scheme == "" {
+        r.URL.Scheme = "http";
+    }
+    return r.URL.Scheme+"://"+r.Host+a.BaseURIPath;
 }
 
 // forwarding func to a.RM
@@ -44,6 +53,7 @@ func(a *API) CatchResponses(w http.ResponseWriter, r *http.Request) {
     if raw := recover(); raw != nil {
         switch r := raw.(type) {
         case *Output:
+            fmt.Printf("OUTPUT: %#+v\n", r);
             a.Send(r, w);
         case error:
             res := &Output{};

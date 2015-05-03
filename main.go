@@ -44,7 +44,7 @@ type User struct{
 }
 
 func(u *User) Id() string {
-    return fmt.Sprintf("%d",u.Id);
+    return fmt.Sprintf("%d",u.ID);
 }
 
 /*func(u *User) SetId(id string) error {

@@ -9,7 +9,7 @@ func NewRequestResolver() *RequestResolver {
 }
 
 func(rr *RequestResolver) HandlerFindOne(a *API, w http.ResponseWriter, r *http.Request) {
-    output := &Output{};
+    output := NewOutput(r);
     res, rmr := rr.FindOne(a,r);
     roi := NewRelationshipOutputInjector(a, rmr, res, output);
     wrapped := NewIderLinkerTyperWrapper(res, rmr.Name, roi);

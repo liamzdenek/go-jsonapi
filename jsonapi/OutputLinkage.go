@@ -1,6 +1,6 @@
 package jsonapi;
 
-import ("fmt";"encoding/json";);
+import ("encoding/json";);
 
 type OutputLink struct { // data[i].links["linkname"].linkage[j]
     Type string `json:"type"`
@@ -14,6 +14,7 @@ type OutputLinkage struct { // data[i].links["linkname"] etc
 
 type OutputLinkageSet struct { // data[i].links
     Linkages []*OutputLinkage
+    RelatedBase string
     //Parent *OutputDatum
 }
 
@@ -26,9 +27,10 @@ func(o *OutputLinkageSet) MarshalJSON() ([]byte,error) {
             Related string `json:"related"`
         }{
             Links:linkage.Links,
+            Self:o.RelatedBase+"/links/"+linkage.LinkName,
+            Related: o.RelatedBase+"/"+linkage.LinkName,
         };
     }
-    fmt.Printf("OutputLinkageSet.MarshalJSON: TODO: implement self field\n");
-    out["self"] = "TODO";
+    out["self"] = o.RelatedBase+"/links";
     return json.Marshal(out);
 }
