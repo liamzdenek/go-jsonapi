@@ -36,3 +36,7 @@ func(rm *ResourceManager) MountRelationship(name, srcR, dstR string, behavior Re
         A: auth,
     };
 }
+
+func(rm *ResourceManager) GetResource(resource_str string) *ResourceManagerResource {
+    return rm.Resources[resource_str]
+}
