@@ -12,7 +12,6 @@ func(rr *RequestResolver) HandlerFindOne(a *API, w http.ResponseWriter, r *http.
     output := NewOutput(r);
     res, rmr := rr.FindOne(a,r);
     include := strings.Split(r.URL.Query().Get("include"),",");
-    fmt.Printf("Got include: %v\n", include);
     roi := NewRelationshipOutputInjector(a, rmr, res, output, include);
     wrapped := NewIderLinkerTyperWrapper(res, rmr.Name, roi);
     fmt.Printf("Resource: %s\n", rmr.Name);

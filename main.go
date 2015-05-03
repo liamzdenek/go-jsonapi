@@ -63,15 +63,11 @@ func main() {
     api := jsonapi.NewAPI();
 
     api.MountResource("user", jsonapi.NewResourceSQL(db, "users", &User{}), jsonapi.NewAuthenticatorNone());
-    //api.MountResource("dogs", jsonapi.NewResourceSQL(db,"dogs"), jsonapi.NoPermissions());
     api.MountResource("session", NewSessionResource(), jsonapi.NewAuthenticatorNone());
-
-    //api.MountLinkage("pets", "user", "dogs", jsonapi.SQLLinkageBehavior);
 
     api.MountRelationship("logged_in_as", "session", "user", jsonapi.NewOneToOneLinkageBehavior("UserId"), jsonapi.NewAuthenticatorNone());
 
     // curl localhost:3030/api/user/0/pets
-
     fmt.Printf("Listening\n");
     err = http.ListenAndServe(":3030", api);
     if err != nil {
