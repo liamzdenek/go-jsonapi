@@ -10,8 +10,15 @@ func NewRequestResolver() *RequestResolver {
 
 func(rr *RequestResolver) HandlerFindOne(a *API, w http.ResponseWriter, r *http.Request) {
     res, resource_str := rr.FindOne(a,r);
+    wrapped := NewIderLinkerTyperWrapper(res, resource_str)
     fmt.Printf("Resource: %s\n", resource_str);
-    Reply(res);
+    Reply(&Output{
+        Data: NewOutputDataResources(false, []*OutputDatum{
+            &OutputDatum{
+                Datum: wrapped,
+            },
+        }),
+    });
 }
 
 func(rr *RequestResolver) FindOne(a *API, r *http.Request) (Ider, string) {

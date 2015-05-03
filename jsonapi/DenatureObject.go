@@ -2,7 +2,18 @@ package jsonapi;
 
 import ("reflect";"strings";);
 
+type Denaturer interface {
+    Denature() interface{}
+}
+
 func DenatureObject(data interface{}) map[string]interface{} {
+    for {
+        if d, found := data.(Denaturer); found {
+            data = d.Denature();
+        } else {
+            break;
+        }
+    }
     v := reflect.Indirect(reflect.ValueOf(data));
     t := v.Type();
 

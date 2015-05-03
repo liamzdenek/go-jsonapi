@@ -59,6 +59,9 @@ type OutputDatum struct { // data[i]
 
 func (o OutputDatum) MarshalJSON() ([]byte, error) {
     res := DenatureObject(o.Datum);
+    delete(res, "ID");
+    delete(res, "Id");
+    delete(res, "iD");
     res["id"] = o.Datum.Id();
     res["links"] = o.Datum.Link();
     res["type"] = o.Datum.Type();

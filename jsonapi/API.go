@@ -29,6 +29,11 @@ func (a *API) MountResource(name string, r Resource, auth Authenticator) {
     a.RM.MountResource(name,r,auth);
 }
 
+// defines all the endpoints
+func (a *API) InitRouter() {
+    a.Router.Get("/{resource}/{id}", a.Wrap(a.RR.HandlerFindOne));
+}
+
 // so the API can be mounted as a http handler
 func(a *API) ServeHTTP(w http.ResponseWriter, r *http.Request) {
     defer a.CatchResponses(w,r);
@@ -55,12 +60,6 @@ func(a *API) Send(obj interface{}, w http.ResponseWriter) {
     str, err := json.Marshal(obj);
     Check(err);
     w.Write(str);
-}
-
-
-
-func (a *API) InitRouter() {
-    a.Router.Get("/{resource}/{id}", a.Wrap(a.RR.HandlerFindOne));
 }
 
 func(a *API) Wrap(child func(a *API, w http.ResponseWriter, r *http.Request)) func(w http.ResponseWriter, r *http.Request) {
