@@ -48,6 +48,7 @@ func(rmr *ResourceManagerRelationship) ResolveIder(lb IderRelationshipBehavior, 
 }
 
 func(rmr *ResourceManagerRelationship) Resolve(src Ider, r *http.Request, generateIncluded bool) (*OutputLinkage, []IderTyper) {
+    // TODO: make this authentication request captured here
     rmr.A.Authenticate("relationship.FindAll."+rmr.SrcR+"."+rmr.Name+"."+rmr.DstR, src.Id(), r);
     // if we want included and it satisfies IderRelationshipBehavior, we 
     // should always prefer that over IdRelationshipBehavior

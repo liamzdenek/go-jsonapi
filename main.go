@@ -31,6 +31,11 @@ func NewSessionResource() *SessionResource {
 }
 
 func(sr *SessionResource) FindMany(ids []string) ([]jsonapi.Ider, error) {
+    return []jsonapi.Ider{
+        &Session{ID:"123",Created:time.Now(),UserId:1},
+        &Session{ID:"124",Created:time.Now(),UserId:2},
+        &Session{ID:"125",Created:time.Now(),UserId:3},
+    }, nil;
     return nil, nil;
 }
 

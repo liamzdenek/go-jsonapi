@@ -27,13 +27,11 @@ func (o Output) MarshalJSON() ([]byte, error) {
             Errors: o.Errors,
         });
     }
-    return json.Marshal(struct{
-        Data *OutputData `json:"data,omitempty"`
-        //Links interface{} `json:"links,omitempty"`
-        Included *OutputIncluded `json:"included,omitempty"`
-    }{
-        Data: o.Data,
-        Included: o.Included,
-    });
+    res := map[string]interface{}{};
+    res["data"] = o.Data;
+    if(o.Included != nil) {
+        res["included"] = o.Included;
+    }
+    return json.Marshal(res);
 }
 

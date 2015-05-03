@@ -1,9 +1,9 @@
 package jsonapi;
 
-import ("github.com/gorilla/pat";"net/http";"fmt";"encoding/json");
+import ("github.com/julienschmidt/httprouter";"net/http";"fmt";"encoding/json");
 
 type API struct{
-    Router *pat.Router
+    Router *httprouter.Router
     BaseURIPath string
     RM *ResourceManager
     RR *RequestResolver
@@ -11,7 +11,7 @@ type API struct{
 
 func NewAPI() *API {
     api := &API{
-        Router: pat.New(),
+        Router: httprouter.New(),
         RM: NewResourceManager(),
         RR: NewRequestResolver(),
         BaseURIPath: "/",
@@ -40,7 +40,7 @@ func (a *API) MountResource(name string, r Resource, auth Authenticator) {
 
 // defines all the endpoints
 func (a *API) InitRouter() {
-    a.Router.Get("/{resource}/{id}", a.Wrap(a.RR.HandlerFindOne));
+    a.Router.GET("/:resource/:id", a.Wrap(a.RR.HandlerFindOne));
 }
 
 // so the API can be mounted as a http handler
@@ -71,8 +71,8 @@ func(a *API) Send(obj interface{}, w http.ResponseWriter) {
     w.Write(str);
 }
 
-func(a *API) Wrap(child func(a *API, w http.ResponseWriter, r *http.Request)) func(w http.ResponseWriter, r *http.Request) {
-    return func(w http.ResponseWriter, r *http.Request) {
-        child(a,w,r);
+func(a *API) Wrap(child func(a *API, w http.ResponseWriter, r *http.Request, params httprouter.Params)) httprouter.Handle {
+    return func(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+        child(a,w,r,params);
     }
 }
