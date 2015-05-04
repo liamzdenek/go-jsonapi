@@ -29,7 +29,7 @@ func (o Output) MarshalJSON() ([]byte, error) {
     }
     res := map[string]interface{}{};
     res["data"] = o.Data;
-    if(o.Included != nil) {
+    if(o.Included.ShouldBeVisible()) {
         res["included"] = o.Included;
     }
     return json.Marshal(res);

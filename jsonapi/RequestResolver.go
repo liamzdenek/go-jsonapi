@@ -1,12 +1,19 @@
 package jsonapi;
 
-import ("net/http";"fmt";"strings";"github.com/julienschmidt/httprouter");
+import ("net/http";"strings";"github.com/julienschmidt/httprouter");
 
 type RequestResolver struct{}
 
 func NewRequestResolver() *RequestResolver {
     return &RequestResolver{};
 }
+
+/************************************************
+ *
+ * HandlerFindOne  is the entrypoint for /:resource/:id requests, primarily:
+ * * /user/1
+ * * /user/1,2,3
+ */
 
 func(rr *RequestResolver) HandlerFindOne(a *API, w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
     output := NewOutput(r);
@@ -27,7 +34,6 @@ func(rr *RequestResolver) HandlerFindOne(a *API, w http.ResponseWriter, r *http.
         data = append(data, &OutputDatum{
             Datum: NewIderLinkerTyperWrapper(ider, rmr.Name, roi),
         });
-        fmt.Printf("Resource: %s\n", rmr.Name);
     }
     output.Data = NewOutputDataResources(false, data);
     Reply(output);
@@ -64,4 +70,33 @@ func(rr *RequestResolver) FindMany(a *API, r *http.Request, ps httprouter.Params
     data, err := resource.R.FindMany(ids);
     Check(err);
     return data,resource;
+}
+
+/************************************************
+ *
+ * HandlerFindOneLinks  is the entrypoint for /:resource/:id requests, primarily:
+ * * /user/1/links
+ *
+ * this handler does not support requests for multiple IDs:
+ * * /user/1,2,3/links
+ */
+
+func(rr *RequestResolver) HandlerFindOneLinks(a *API, w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+    output := NewOutput(r);
+    ids := strings.Split(ps.ByName("id"),",");
+    var ider Ider;
+    var rmr *ResourceManagerResource;
+    if len(ids) > 1 {
+        //res, rmr = rr.FindMany(a,r,ps,ids);
+        // TODO: fix this maybe?
+        panic("/:resource/:id/links does not support a list of links");
+    } else {
+        ider, rmr = rr.FindOne(a,r,ps,ids[0]);
+    }
+    include := strings.Split(r.URL.Query().Get("include"),",");
+    roi := NewRelationshipOutputInjector(a, rmr, ider, output, include);
+    wrapper := NewIderLinkerTyperWrapper(ider, rmr.Name, roi);
+
+    output.Data = NewOutputDataRelationship(false, wrapper.Link());
+    Reply(output);
 }

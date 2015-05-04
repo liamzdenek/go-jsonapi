@@ -15,3 +15,8 @@ func(o *OutputIncluded) Push(included ...IderTyper) {
         o.Included = append(o.Included, ider);
     }
 }
+
+func(o *OutputIncluded) ShouldBeVisible() bool {
+    // TODO: the spec requires more complicated visibility logic than this
+    return len(o.Included) > 0
+}
