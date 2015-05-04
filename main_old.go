@@ -37,7 +37,11 @@ func main() {
     bytes, _ := json.Marshal(output);
     fmt.Printf("A: %s\n",bytes);
 
-    output.Data = NewOutputDataRelationship(false, t.Link());
+    output.Data = NewOutputDataRelationship(t.Link());
     bytes, _ = json.Marshal(output);
-    fmt.Printf("A: %s\n",bytes);
+    fmt.Printf("B: %s\n",bytes);
+
+    output.Data = NewOutputDataLinkage(true, t.Link().Linkages[0]);
+    bytes, _ = json.Marshal(output);
+    fmt.Printf("C: %s\n",bytes);
 }

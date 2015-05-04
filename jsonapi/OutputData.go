@@ -5,6 +5,7 @@ import ("encoding/json";);
 type OutputData struct { // data
     Data []*OutputDatum
     LinkageSet *OutputLinkageSet
+    Linkage *OutputLinkage
     Target OutputDataType
 }
 
@@ -13,8 +14,9 @@ type OutputDataType int;
 const (
     SingleResource OutputDataType = iota
     ManyResources
-    OneToOneRelationship
-    OneToManyRelationship
+    Relationship
+    OneToOneLinkage
+    OneToManyLinkage
 );
 
 func NewOutputDataResources(isSingle bool, data []*OutputDatum) *OutputData {
@@ -25,12 +27,17 @@ func NewOutputDataResources(isSingle bool, data []*OutputDatum) *OutputData {
     return &OutputData{Data: data, Target: t};
 }
 
-func NewOutputDataRelationship(isSingle bool, links *OutputLinkageSet) *OutputData {
-    t := OneToManyRelationship;
-    if(isSingle) {
-        t = OneToOneRelationship;
-    }
+func NewOutputDataRelationship(links *OutputLinkageSet) *OutputData {
+    t := Relationship;
     return &OutputData{LinkageSet:links, Target: t};
+}
+
+func NewOutputDataLinkage(isSingle bool, l *OutputLinkage) *OutputData {
+    t := OneToManyLinkage;
+    if(isSingle) {
+        t = OneToOneLinkage;
+    }
+    return &OutputData{Linkage:l, Target: t}
 }
 
 func (o OutputData) MarshalJSON() ([]byte, error) {
@@ -44,9 +51,18 @@ func (o OutputData) MarshalJSON() ([]byte, error) {
         }
         return json.Marshal(o.Data[0]);
     }
-    if(o.Target == OneToOneRelationship || o.Target == OneToManyRelationship) {
+    if(o.Target == Relationship) {
         return json.Marshal(o.LinkageSet);
         //return json.Marshal(
+    }
+    if(o.Target == OneToOneLinkage) {
+        if(len(o.Linkage.Links) == 0) {
+            return json.Marshal(nil);
+        }
+        return json.Marshal(o.Linkage.Links[0]);
+    }
+    if(o.Target == OneToManyLinkage) {
+        return json.Marshal(o.Linkage.Links);
     }
     // ManyResources
     // A logical collection of resources (e.g., the target of a to-many relationship) MUST be represented as an array, even if it only contains one item.
