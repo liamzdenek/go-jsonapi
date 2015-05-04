@@ -41,7 +41,7 @@ func (a *API) MountResource(name string, r Resource, auth Authenticator) {
 // defines all the endpoints
 func (a *API) InitRouter() {
     a.Router.GET("/:resource/:id/links/:linkname", a.Wrap(a.RR.HandlerFindOneSpecificLink));
-    a.Router.GET("/:resource/:id/links", a.Wrap(a.RR.HandlerFindOneLinks));
+    a.Router.GET("/:resource/:id/:linkname", a.Wrap(a.RR.HandlerFindOneSpecificLink)); // if linkname == "links", fwd to a.RR.HandlerFindOneLinks
     a.Router.GET("/:resource/:id", a.Wrap(a.RR.HandlerFindOne));
 }
 

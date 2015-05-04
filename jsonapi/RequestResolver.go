@@ -107,18 +107,20 @@ func(rr *RequestResolver) HandlerFindOneLinks(a *API, w http.ResponseWriter, r *
  * HandlerFindOneSpecificLink  is the entrypoint for /:resource/:id requests, primarily:
  * * /user/1/links/posts
  *
- * this handler does not support requests for multiple IDs (maybe it could?):
+ * this handler does not support requests for multiple IDs:
  * * /user/1,2,3/links/posts
  */
 
 func(rr *RequestResolver) HandlerFindOneSpecificLink(a *API, w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+    if(ps.ByName("linkname") == "links") {
+        rr.HandlerFindOneLinks(a,w,r,ps);
+        return;
+    }
     output := NewOutput(r);
     ids := strings.Split(ps.ByName("id"),",");
     var ider Ider;
     var rmr *ResourceManagerResource;
     if len(ids) > 1 {
-        //res, rmr = rr.FindMany(a,r,ps,ids);
-        // TODO: fix this maybe?
         panic("/:resource/:id/links/:linkname does not support a list of links");
     } else {
         ider, rmr = rr.FindOne(a,r,ps,ids[0]);

@@ -45,6 +45,10 @@ func (o OutputData) MarshalJSON() ([]byte, error) {
     //* a single resource object or null, for requests that target single resources
     //* an array of resource objects or an empty array ([]), for requests that target resource collections
     //* resource linkage, for requests that target a resource's relationship
+    // A logical collection of resources (e.g., the target of a to-many relationship) MUST be represented as an array, even if it only contains one item.
+    if(o.Target == ManyResources) {
+        return json.Marshal(o.Data);
+    }
     if(o.Target == SingleResource) {
         if(len(o.Data) == 0) {
             return json.Marshal(nil);
@@ -53,7 +57,6 @@ func (o OutputData) MarshalJSON() ([]byte, error) {
     }
     if(o.Target == Relationship) {
         return json.Marshal(o.LinkageSet);
-        //return json.Marshal(
     }
     if(o.Target == OneToOneLinkage) {
         if(len(o.Linkage.Links) == 0) {
@@ -64,9 +67,7 @@ func (o OutputData) MarshalJSON() ([]byte, error) {
     if(o.Target == OneToManyLinkage) {
         return json.Marshal(o.Linkage.Links);
     }
-    // ManyResources
-    // A logical collection of resources (e.g., the target of a to-many relationship) MUST be represented as an array, even if it only contains one item.
-    return json.Marshal(o.Data);
+    panic("Unknown data type sent to OutputData");
 }
 
 type OutputDatum struct { // data[i]
