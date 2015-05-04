@@ -40,9 +40,20 @@ func (a *API) MountResource(name string, r Resource, auth Authenticator) {
 
 // defines all the endpoints
 func (a *API) InitRouter() {
-    a.Router.GET("/:resource/:id/links/:linkname", a.Wrap(a.RR.HandlerFindOneSpecificLink));
-    a.Router.GET("/:resource/:id/:linkname", a.Wrap(a.RR.HandlerFindOneSpecificLink)); // if linkname == "links", fwd to a.RR.HandlerFindOneLinks
-    a.Router.GET("/:resource/:id", a.Wrap(a.RR.HandlerFindOne));
+    a.Router.GET("/:resource/:id/:linkname",
+        a.WrapRedirector("linkname", "links",
+            a.WrapPlain(http.NotFound), // if :linkname = "links"
+            a.Wrap(a.RR.HandlerFindLinksByResourceId), // else
+        ),
+    );
+    a.Router.GET("/:resource/:id/:linkname/:secondlinkname",
+        a.WrapRedirector("linkname", "links",
+            a.Wrap(a.RR.HandlerFindLinkByNameAndResourceId),
+            a.WrapPlain(http.NotFound), // else
+        ),
+    );
+    //a.Router.GET("/:resource/:id/:linkname/:secondlinkname", a.Wrap(a.RR.HandlerFindOneSpecificLink));
+    a.Router.GET("/:resource/:id", a.Wrap(a.RR.HandlerFindResourceById));
 }
 
 // so the API can be mounted as a http handler
@@ -71,6 +82,22 @@ func(a *API) Send(obj interface{}, w http.ResponseWriter) {
     str, err := json.Marshal(obj);
     Check(err);
     w.Write(str);
+}
+
+func(a *API) WrapRedirector(param_key, equal_to string, ifTrue httprouter.Handle, ifFalse httprouter.Handle) httprouter.Handle {
+    return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+        if(p.ByName(param_key) == equal_to) {
+            ifTrue(w,r,p);
+        } else {
+            ifFalse(w,r,p);
+        }
+    }
+}
+
+func(a *API) WrapPlain(child http.HandlerFunc) httprouter.Handle {
+    return func(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+        child(w,r);
+    }
 }
 
 func(a *API) Wrap(child func(a *API, w http.ResponseWriter, r *http.Request, params httprouter.Params)) httprouter.Handle {

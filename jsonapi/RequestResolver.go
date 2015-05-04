@@ -10,12 +10,12 @@ func NewRequestResolver() *RequestResolver {
 
 /************************************************
  *
- * HandlerFindOne  is the entrypoint for /:resource/:id requests, primarily:
+ * HandlerFindResourceById is the entrypoint for /:resource/:id requests, primarily:
  * * /user/1
  * * /user/1,2,3
  */
 
-func(rr *RequestResolver) HandlerFindOne(a *API, w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+func(rr *RequestResolver) HandlerFindResourceById(a *API, w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
     output := NewOutput(r);
     ids := strings.Split(ps.ByName("id"),",");
     res := []Ider{};
@@ -73,16 +73,17 @@ func(rr *RequestResolver) FindMany(a *API, r *http.Request, ps httprouter.Params
     return data,resource;
 }
 
+// TODO: properly deprecate this and OutputDataRelationship
 /************************************************
  *
- * HandlerFindOneLinks  is the entrypoint for /:resource/:id requests, primarily:
+ * HandlerFindLinksByResourceId  is the entrypoint for /:resource/:id/links requests, primarily:
  * * /user/1/links
  *
  * this handler does not support requests for multiple IDs (maybe it could?):
  * * /user/1,2,3/links
  */
 
-func(rr *RequestResolver) HandlerFindOneLinks(a *API, w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+func(rr *RequestResolver) HandlerFindLinksByResourceId(a *API, w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
     output := NewOutput(r);
     ids := strings.Split(ps.ByName("id"),",");
     var ider Ider;
@@ -104,18 +105,17 @@ func(rr *RequestResolver) HandlerFindOneLinks(a *API, w http.ResponseWriter, r *
 
 /************************************************
  *
- * HandlerFindOneSpecificLink  is the entrypoint for /:resource/:id requests, primarily:
- * * /user/1/links/posts
+ * HandlerFindLinkByLinkNameAndResourceId is the entrypoint for
+ * /:resource/:id/:linkname requests, primarily:
+ * * /user/1/posts
  *
  * this handler does not support requests for multiple IDs:
- * * /user/1,2,3/links/posts
+ * * /user/1,2,3/posts
+ *
+ * requests with :linkname = "links" will 404
  */
 
-func(rr *RequestResolver) HandlerFindOneSpecificLink(a *API, w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-    if(ps.ByName("linkname") == "links") {
-        rr.HandlerFindOneLinks(a,w,r,ps);
-        return;
-    }
+func(rr *RequestResolver) HandlerFindLinkByNameAndResourceId(a *API, w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
     output := NewOutput(r);
     ids := strings.Split(ps.ByName("id"),",");
     var ider Ider;

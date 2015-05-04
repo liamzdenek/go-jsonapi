@@ -31,6 +31,6 @@ func(o *OutputLinkageSet) MarshalJSON() ([]byte,error) {
             Related: o.RelatedBase+"/"+linkage.LinkName,
         };
     }
-    out["self"] = o.RelatedBase+"/links";
+    //out["self"] = o.RelatedBase+"/links";
     return json.Marshal(out);
 }
