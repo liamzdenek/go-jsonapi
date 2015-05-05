@@ -6,6 +6,12 @@ type OutputIncluded struct {
     Included []IderTyper
 }
 
+func NewOutputIncluded(included []IderTyper) *OutputIncluded {
+    return &OutputIncluded{
+        Included: included,
+    }
+}
+
 func(o OutputIncluded) MarshalJSON() ([]byte, error) {
     return json.Marshal(o.Included);
 }

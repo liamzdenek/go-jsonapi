@@ -19,6 +19,9 @@ type OutputLinkageSet struct { // data[i].links
 }
 
 func(o *OutputLinkageSet) MarshalJSON() ([]byte,error) {
+    /*if len(o.Linkages) == 0 {
+        return json.Marshal(nil);
+    }*/
     out := map[string]interface{}{};
     for _, linkage := range o.Linkages {
         out[linkage.LinkName] = struct{

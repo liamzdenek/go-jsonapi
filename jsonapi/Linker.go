@@ -1,5 +1,5 @@
 package jsonapi;
 
 type Linker interface{
-    Link() *OutputLinkageSet
+    Link(included *[]IderTyper) *OutputLinkageSet
 }

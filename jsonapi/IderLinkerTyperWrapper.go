@@ -18,8 +18,8 @@ func(w *IderLinkerTyperWrapper) Id() string {
     return w.Ider.Id();
 }
 
-func(w *IderLinkerTyperWrapper) Link() *OutputLinkageSet {
-    return w.Linker.Link();
+func(w *IderLinkerTyperWrapper) Link(included *[]IderTyper) *OutputLinkageSet {
+    return w.Linker.Link(included);
 }
 
 func(w *IderLinkerTyperWrapper) Type() string {

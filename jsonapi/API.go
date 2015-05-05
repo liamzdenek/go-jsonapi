@@ -48,7 +48,7 @@ func (a *API) InitRouter() {
     );
     a.Router.GET("/:resource/:id/:linkname/:secondlinkname",
         a.WrapRedirector("linkname", "links",
-            a.Wrap(a.RR.HandlerFindLinkByNameAndResourceId),
+            a.Wrap(a.RR.HandlerFindLinkByNameAndResourceId), // if :linkname = "links"
             a.WrapPlain(http.NotFound), // else
         ),
     );

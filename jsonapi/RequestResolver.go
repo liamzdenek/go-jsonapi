@@ -1,6 +1,6 @@
 package jsonapi;
 
-import ("net/http";"strings";"github.com/julienschmidt/httprouter");
+import ("net/http";"strings";"github.com/julienschmidt/httprouter";"fmt");
 
 type RequestResolver struct{}
 
@@ -20,12 +20,13 @@ func(rr *RequestResolver) HandlerFindResourceById(a *API, w http.ResponseWriter,
     ids := strings.Split(ps.ByName("id"),",");
     res := []Ider{};
     var rmr *ResourceManagerResource;
+    resource_str := ps.ByName("resource");
     isSingle := len(ids) == 1;
     if !isSingle {
-        res, rmr = rr.FindMany(a,r,ps,ids);
+        res, rmr = rr.FindMany(a,r,resource_str,ids);
     } else {
         var tres Ider;
-        tres, rmr = rr.FindOne(a,r,ps,ids[0]);
+        tres, rmr = rr.FindOne(a,r,resource_str,ids[0]);
         res = []Ider{tres}
     }
     data := []*OutputDatum{};
@@ -40,9 +41,7 @@ func(rr *RequestResolver) HandlerFindResourceById(a *API, w http.ResponseWriter,
     Reply(output);
 }
 
-func(rr *RequestResolver) FindOne(a *API, r *http.Request, ps httprouter.Params, id_str string) (Ider, *ResourceManagerResource) {
-    resource_str := ps.ByName("resource");
-
+func(rr *RequestResolver) FindOne(a *API, r *http.Request, resource_str, id_str string) (Ider, *ResourceManagerResource) {
     resource := a.RM.GetResource(resource_str);
 
     if(resource == nil) {
@@ -56,15 +55,14 @@ func(rr *RequestResolver) FindOne(a *API, r *http.Request, ps httprouter.Params,
     return data, resource;
 }
 
-func(rr *RequestResolver) FindMany(a *API, r *http.Request, ps httprouter.Params, ids []string) ([]Ider, *ResourceManagerResource) {
-    resource_str := ps.ByName("resource");
-    id_str := ps.ByName("id");
-
+func(rr *RequestResolver) FindMany(a *API, r *http.Request, resource_str string, ids []string) ([]Ider, *ResourceManagerResource) {
     resource := a.RM.GetResource(resource_str);
 
     if(resource == nil) {
         panic(&ErrorResourceDoesNotExist{ResourceName:resource_str});
     }
+
+    id_str := strings.Join(ids, ",");
 
     resource.A.Authenticate("resource.FindMany."+resource_str, id_str, r);
 
@@ -73,7 +71,6 @@ func(rr *RequestResolver) FindMany(a *API, r *http.Request, ps httprouter.Params
     return data,resource;
 }
 
-// TODO: properly deprecate this and OutputDataRelationship
 /************************************************
  *
  * HandlerFindLinksByResourceId  is the entrypoint for /:resource/:id/links requests, primarily:
@@ -86,6 +83,7 @@ func(rr *RequestResolver) FindMany(a *API, r *http.Request, ps httprouter.Params
 func(rr *RequestResolver) HandlerFindLinksByResourceId(a *API, w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
     output := NewOutput(r);
     ids := strings.Split(ps.ByName("id"),",");
+    resource_str := ps.ByName("resource");
     var ider Ider;
     var rmr *ResourceManagerResource;
     if len(ids) > 1 {
@@ -93,13 +91,43 @@ func(rr *RequestResolver) HandlerFindLinksByResourceId(a *API, w http.ResponseWr
         // TODO: fix this maybe?
         panic("/:resource/:id/links does not support a list of links");
     } else {
-        ider, rmr = rr.FindOne(a,r,ps,ids[0]);
+        ider, rmr = rr.FindOne(a,r,resource_str,ids[0]);
     }
-    include := strings.Split(r.URL.Query().Get("include"),",");
-    roi := NewRelationshipOutputInjector(a, rmr, ider, output, include);
+    //include := strings.Split(r.URL.Query().Get("include"),",");
+    include_links := []string{ps.ByName("linkname")};
+    roi := NewRelationshipOutputInjector(a, rmr, ider, output, include_links);
     wrapper := NewIderLinkerTyperWrapper(ider, rmr.Name, roi);
 
-    output.Data = NewOutputDataRelationship(wrapper.Link());
+    include := &[]IderTyper{};
+    linkset := wrapper.Link(include);
+
+    if(len(linkset.Linkages) == 0) {
+        // TODO: spec compliance
+        panic("This linkage does not exist");
+    }
+
+    linkage := linkset.Linkages[0];
+
+    if(len(linkage.Links) == 0) {
+        // TODO: this
+        panic("this should return with primary data as null");
+    }
+
+    if(len(linkage.Links) == 1) {
+        lider, lrmr := rr.FindOne(a,r,linkage.Links[0].Type,linkage.Links[0].Id);
+
+        // TODO: properly chain final argument here for includes
+        lroi := NewRelationshipOutputInjector(a, lrmr, lider, output, []string{});
+        output.Data = NewOutputDataResources(true, []*OutputDatum{
+            &OutputDatum{
+                Datum: NewIderLinkerTyperWrapper(lider, lrmr.Name, lroi),
+            },
+        });
+    } else {
+
+    }
+
+    fmt.Printf("Linkset: %#v\n", linkset.Linkages[0]);
     Reply(output);
 }
 
@@ -118,25 +146,28 @@ func(rr *RequestResolver) HandlerFindLinksByResourceId(a *API, w http.ResponseWr
 func(rr *RequestResolver) HandlerFindLinkByNameAndResourceId(a *API, w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
     output := NewOutput(r);
     ids := strings.Split(ps.ByName("id"),",");
+    resource_str := ps.ByName("resource");
     var ider Ider;
     var rmr *ResourceManagerResource;
     if len(ids) > 1 {
         panic("/:resource/:id/links/:linkname does not support a list of links");
     } else {
-        ider, rmr = rr.FindOne(a,r,ps,ids[0]);
+        ider, rmr = rr.FindOne(a,r,resource_str,ids[0]);
     }
-    include := strings.Split(r.URL.Query().Get("include"),",");
-    roi := NewRelationshipOutputInjector(a, rmr, ider, output, include);
+    include_links := strings.Split(r.URL.Query().Get("include"),",");
+    roi := NewRelationshipOutputInjector(a, rmr, ider, output, include_links);
     roi.Limit = []string{ps.ByName(":linkname")}
     wrapper := NewIderLinkerTyperWrapper(ider, rmr.Name, roi);
 
-    linkages := wrapper.Link();
+    include := &[]IderTyper{};
+    linkages := wrapper.Link(include);
     var link *OutputLinkage;
     if(linkages.Linkages != nil) {
         link = linkages.Linkages[0];
     }
 
     output.Data = NewOutputDataLinkage(true, link);
+    output.Included = NewOutputIncluded(*include);
     Reply(output);
 }
 

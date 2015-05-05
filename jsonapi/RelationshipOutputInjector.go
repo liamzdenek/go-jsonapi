@@ -35,7 +35,7 @@ func(loi *RelationshipOutputInjector) ShouldInclude(s string) bool {
     return false;
 }
 
-func(loi RelationshipOutputInjector) Link() *OutputLinkageSet {
+func(loi RelationshipOutputInjector) Link(included *[]IderTyper) (*OutputLinkageSet) {
     rmr := loi.ResourceManagerResource;
     res := &OutputLinkageSet{
         RelatedBase: loi.A.GetBaseURL(loi.Output.Request)+rmr.Name+"/"+loi.Ider.Id(),
@@ -43,11 +43,11 @@ func(loi RelationshipOutputInjector) Link() *OutputLinkageSet {
     if relationships := rmr.RM.GetRelationshipsByResource(rmr.Name); len(relationships) > 0 {
         for linkname,rel := range relationships {
             shouldInclude := loi.ShouldInclude(linkname);
-            link, included := rel.Resolve(loi.Ider, loi.Output.Request, shouldInclude);
+            link, new_included := rel.Resolve(loi.Ider, loi.Output.Request, shouldInclude);
             link.LinkName = linkname;
             res.Linkages = append(res.Linkages, link);
             if(shouldInclude) {
-                loi.Output.Included.Push(included...);
+                *included = append(*included, new_included...);
             }
         }
     }
