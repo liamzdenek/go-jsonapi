@@ -63,3 +63,7 @@ func(sr *ResourceSQL) FindMany(ids []string) ([]Ider, error) {
     fmt.Printf("GOT HASIDS: %#v\n",res);
     return res, err
 }
+
+func(sr *ResourceSQL) FindManyByField(field string, value interface{}) ([]Ider, error) {
+    return nil, nil;
+}

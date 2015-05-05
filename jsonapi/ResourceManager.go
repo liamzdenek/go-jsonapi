@@ -27,7 +27,7 @@ func(rm *ResourceManager) MountRelationship(name, srcR, dstR string, behavior Re
         rm.Relationship[srcR] = make(map[string]*ResourceManagerRelationship);
     }
     if(!VerifyRelationshipBehavior(behavior)) {
-        panic("Linkage provided cannot be used as an Id or HasId LinkageBehavior");
+        panic("Linkage provided cannot be used as an Id or Ider LinkageBehavior");
     }
     rm.Relationship[srcR][name] = &ResourceManagerRelationship{
         SrcR: srcR,

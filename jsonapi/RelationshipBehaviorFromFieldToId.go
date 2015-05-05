@@ -5,17 +5,17 @@ import(
     "strconv"
 );
 
-type OneToOneLinkageBehavior struct {
+type RelationshipBehaviorFromFieldToId struct {
     SrcFieldName string
 }
 
-func NewOneToOneLinkageBehavior(srcFieldName string) *OneToOneLinkageBehavior {
-    return &OneToOneLinkageBehavior{
+func NewRelationshipBehaviorFromFieldToId(srcFieldName string) *RelationshipBehaviorFromFieldToId {
+    return &RelationshipBehaviorFromFieldToId{
         SrcFieldName: srcFieldName,
     }
 }
 
-func(l *OneToOneLinkageBehavior) Link(src Ider) (ids []string) {
+func(l *RelationshipBehaviorFromFieldToId) Link(srcR, dstR *ResourceManagerResource,  src Ider) (ids []string) {
     v := reflect.Indirect(reflect.ValueOf(src)).FieldByName(l.SrcFieldName);
     k := v.Kind()
     switch k { // TODO: fill this out
