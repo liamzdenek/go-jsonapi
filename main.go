@@ -43,7 +43,7 @@ func(sr *SessionResource) FindOne(id string) (jsonapi.Ider, error) {
     return &Session{ID:"123",Created:time.Now(),UserId:1}, nil;
 }
 
-func(sr *SessionResource) FindManyByField(field string, value interface{}) ([]jsonapi.Ider, error) {
+func(sr *SessionResource) FindManyByField(field string, value string) ([]jsonapi.Ider, error) {
     panic("Session does not support FindManyByField");
 }
 
@@ -56,11 +56,12 @@ func(u *User) Id() string {
     return fmt.Sprintf("%d",u.ID);
 }
 
-type Posts struct {
+type Post struct {
     ID int `meddler:"id,pk"`
+    UserId int `meddler:"user_id"`
 }
 
-func(p *Posts) Id() string {
+func(p *Post) Id() string {
     return fmt.Sprintf("%d",p.ID);
 }
 
@@ -80,11 +81,11 @@ func main() {
     api := jsonapi.NewAPI();
 
     api.MountResource("user", jsonapi.NewResourceSQL(db, "users", &User{}), jsonapi.NewAuthenticatorNone());
-    api.MountResource("post", jsonapi.NewResourceSQL(db, "posts", &User{}), jsonapi.NewAuthenticatorNone());
+    api.MountResource("post", jsonapi.NewResourceSQL(db, "posts", &Post{}), jsonapi.NewAuthenticatorNone());
     api.MountResource("session", NewSessionResource(), jsonapi.NewAuthenticatorNone());
 
     api.MountRelationship("logged_in_as", "session", "user", jsonapi.NewRelationshipBehaviorFromFieldToId("UserId"), jsonapi.NewAuthenticatorNone());
-    api.MountRelationship("authored", "user", "post", jsonapi.NewRelationshipBehaviorFromFieldToField("Id", "UserId"), jsonapi.NewAuthenticatorNone());
+    api.MountRelationship("authored", "user", "post", jsonapi.NewRelationshipBehaviorFromFieldToField("ID", "UserId"), jsonapi.NewAuthenticatorNone());
 
     // curl localhost:3030/api/user/0/pets
     fmt.Printf("Listening\n");

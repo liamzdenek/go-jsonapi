@@ -6,6 +6,7 @@ import (
     "reflect"
     "strings"
     "fmt"
+    "errors"
 );
 
 type ResourceSQL struct{
@@ -42,8 +43,8 @@ func(sr *ResourceSQL) FindMany(ids []string) ([]Ider, error) {
     }
     vs := reflect.New(reflect.SliceOf(reflect.PtrTo(sr.Type))).Interface()
     q := "SELECT * FROM "+sr.Table+" WHERE id IN(?"+strings.Repeat(",?", len(ids)-1)+")";
-    fmt.Printf("Query: %#v\n", q);
-    fmt.Printf("Args: %#v\n", args);
+    //fmt.Printf("Query: %#v\n", q);
+    //fmt.Printf("Args: %#v\n", args);
     err := meddler.QueryAll(
         sr.DB,
         vs,
@@ -53,17 +54,58 @@ func(sr *ResourceSQL) FindMany(ids []string) ([]Ider, error) {
     if(err != nil) {
         return nil, err;
     }
-    res := []Ider{};
-    fmt.Printf("GOT DATA: %#v\n", vs);
+    return sr.ConvertInterfaceSliceToIderSlice(vs), err
+}
 
-    ary := reflect.Indirect(reflect.ValueOf(vs));
+func(sr *ResourceSQL) FindManyByField(field string, value string) ([]Ider, error) {
+    fmt.Printf("FINDMANYBYFIELD\n");
+    vs := reflect.New(reflect.SliceOf(reflect.PtrTo(sr.Type))).Interface();
+    field, err := sr.GetTableFieldFromStructField(field);
+    fmt.Printf("NEW FIELD: %#v\n", err);
+    if(err != nil) {
+        return nil, err;
+    }
+    // TODO: find a way to parameterize field in this query
+    // right now, field is always a trusted string, but some
+    // later relationship behaviors might change that, and it's
+    // better to be safe than sorry
+    // dropping in ? instead of field does not work :/
+    q := "SELECT * FROM "+sr.Table+" WHERE "+field+"=?";
+    fmt.Printf("Query: %#v\n", q);
+    //fmt.Printf("Args: %#v\n", args);
+    err = meddler.QueryAll(
+        sr.DB,
+        vs,
+        q,
+        value,
+    );
+    fmt.Printf("RES: %#v\n", vs);
+    fmt.Printf("FindManyByField %s %s\n", field, value)
+    return sr.ConvertInterfaceSliceToIderSlice(vs), err;
+}
+
+func (sr *ResourceSQL) ConvertInterfaceSliceToIderSlice(src interface{}) []Ider {
+    res := []Ider{};
+
+    ary := reflect.Indirect(reflect.ValueOf(src));
     for i := 0; i < ary.Len(); i++ {
         res = append(res,ary.Index(i).Interface().(Ider));
     }
-    fmt.Printf("GOT HASIDS: %#v\n",res);
-    return res, err
+    return res;
 }
 
-func(sr *ResourceSQL) FindManyByField(field string, value interface{}) ([]Ider, error) {
-    return nil, nil;
+func (sr *ResourceSQL) GetTableFieldFromStructField(structstr string) (string, error) {
+    field, found := sr.Type.FieldByName(structstr);
+    if(!found) {
+        return "", errors.New("Field "+structstr+" does not exist on "+sr.Type.Name());
+    }
+    realname := field.Name;
+
+    meddler_tags := strings.Split(field.Tag.Get("meddler"),",");
+
+    if(len(meddler_tags) > 0 && meddler_tags[0] != "") {
+        realname = meddler_tags[0];
+    }
+
+    return realname, nil;
 }

@@ -5,11 +5,11 @@ package jsonapi;
 type RelationshipBehavior interface {}
 
 type IdRelationshipBehavior interface{
-    Link(srcR, dstR *ResourceManagerResource, src Ider) (ids []string)
+    LinkId(srcR, dstR *ResourceManagerResource, src Ider) (ids []string)
 }
 
 type IderRelationshipBehavior interface{
-    Link(srcR, dstR *ResourceManagerResource,src Ider) (dst []Ider)
+    LinkIder(srcR, dstR *ResourceManagerResource,src Ider) (dst []Ider)
 }
 
 func VerifyRelationshipBehavior(lb RelationshipBehavior) bool {

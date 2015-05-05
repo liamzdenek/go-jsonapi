@@ -15,7 +15,7 @@ func(rmr *ResourceManagerRelationship) ResolveId(lb IdRelationshipBehavior, src 
     resource := rmr.RM.GetResource(rmr.DstR);
     res := &OutputLinkage{}
     included := []IderTyper{};
-    ids := lb.Link(rmr.RM.GetResource(rmr.SrcR), rmr.RM.GetResource(rmr.DstR), src);
+    ids := lb.LinkId(rmr.RM.GetResource(rmr.SrcR), rmr.RM.GetResource(rmr.DstR), src);
     for _, id := range ids {
         res.Links = append(res.Links, OutputLink{
             Type: rmr.DstR,
@@ -35,7 +35,7 @@ func(rmr *ResourceManagerRelationship) ResolveId(lb IdRelationshipBehavior, src 
 func(rmr *ResourceManagerRelationship) ResolveIder(lb IderRelationshipBehavior, src Ider, generateIncluded bool) (*OutputLinkage, []IderTyper) {
     res := &OutputLinkage{}
     included := []IderTyper{};
-    links := lb.Link(rmr.RM.GetResource(rmr.SrcR), rmr.RM.GetResource(rmr.DstR), src);
+    links := lb.LinkIder(rmr.RM.GetResource(rmr.SrcR), rmr.RM.GetResource(rmr.DstR), src);
     for _, link := range links {
         res.Links = append(res.Links, OutputLink{
             Type: rmr.DstR,
