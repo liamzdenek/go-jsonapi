@@ -33,8 +33,7 @@ func(rr *RequestResolver) HandlerFindResourceById(a *API, w http.ResponseWriter,
     }
     data := []*OutputDatum{};
     for _, ider := range res {
-        include := strings.Split(r.URL.Query().Get("include"),",");
-        roi := NewRelationshipOutputInjector(a, rmr, ider, output, include);
+        roi := NewRelationshipOutputInjector(a, rmr, ider, output, ii);
         data = append(data, &OutputDatum{
             Datum: NewIderLinkerTyperWrapper(ider, rmr.Name, roi),
         });
@@ -83,6 +82,7 @@ func(rr *RequestResolver) FindMany(a *API, r *http.Request, resource_str string,
  */
 
 func(rr *RequestResolver) HandlerFindLinksByResourceId(a *API, w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+    //ii := NewIncludeInstructionsFromRequest(r);
     output := NewOutput(r);
     ids := strings.Split(ps.ByName("id"),",");
     resource_str := ps.ByName("resource");
@@ -95,9 +95,9 @@ func(rr *RequestResolver) HandlerFindLinksByResourceId(a *API, w http.ResponseWr
     } else {
         ider, rmr = rr.FindOne(a,r,resource_str,ids[0]);
     }
-    //include := strings.Split(r.URL.Query().Get("include"),",");
-    include_links := []string{ps.ByName("linkname")};
-    roi := NewRelationshipOutputInjector(a, rmr, ider, output, include_links);
+    tii := NewIncludeInstructionsEmpty();
+    tii.Push([]string{ps.ByName("linkname")});
+    roi := NewRelationshipOutputInjector(a, rmr, ider, output, tii);
     wrapper := NewIderLinkerTyperWrapper(ider, rmr.Name, roi);
 
     include := &[]IderTyper{};
@@ -119,7 +119,7 @@ func(rr *RequestResolver) HandlerFindLinksByResourceId(a *API, w http.ResponseWr
         lider, lrmr := rr.FindOne(a,r,linkage.Links[0].Type,linkage.Links[0].Id);
 
         // TODO: properly chain final argument here for includes
-        lroi := NewRelationshipOutputInjector(a, lrmr, lider, output, []string{});
+        lroi := NewRelationshipOutputInjector(a, lrmr, lider, output, NewIncludeInstructionsEmpty());
         output.Data = NewOutputDataResources(true, []*OutputDatum{
             &OutputDatum{
                 Datum: NewIderLinkerTyperWrapper(lider, lrmr.Name, lroi),
@@ -146,6 +146,7 @@ func(rr *RequestResolver) HandlerFindLinksByResourceId(a *API, w http.ResponseWr
  */
 
 func(rr *RequestResolver) HandlerFindLinkByNameAndResourceId(a *API, w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+    ii := NewIncludeInstructionsFromRequest(r);
     output := NewOutput(r);
     ids := strings.Split(ps.ByName("id"),",");
     resource_str := ps.ByName("resource");
@@ -156,8 +157,7 @@ func(rr *RequestResolver) HandlerFindLinkByNameAndResourceId(a *API, w http.Resp
     } else {
         ider, rmr = rr.FindOne(a,r,resource_str,ids[0]);
     }
-    include_links := strings.Split(r.URL.Query().Get("include"),",");
-    roi := NewRelationshipOutputInjector(a, rmr, ider, output, include_links);
+    roi := NewRelationshipOutputInjector(a, rmr, ider, output, ii);
     roi.Limit = []string{ps.ByName(":linkname")}
     wrapper := NewIderLinkerTyperWrapper(ider, rmr.Name, roi);
 

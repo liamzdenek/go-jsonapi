@@ -7,11 +7,11 @@ type RelationshipOutputInjector struct {
     Ider Ider
     ResourceManagerResource *ResourceManagerResource
     A *API
-    Include []string
+    Include *IncludeInstructions
     Limit []string
 }
 
-func NewRelationshipOutputInjector(a *API, rmr *ResourceManagerResource, ider Ider, output *Output, include []string) *RelationshipOutputInjector {
+func NewRelationshipOutputInjector(a *API, rmr *ResourceManagerResource, ider Ider, output *Output, include *IncludeInstructions) *RelationshipOutputInjector {
     return &RelationshipOutputInjector{
         A: a,
         ResourceManagerResource: rmr,
@@ -22,7 +22,7 @@ func NewRelationshipOutputInjector(a *API, rmr *ResourceManagerResource, ider Id
 }
 
 func(loi *RelationshipOutputInjector) ShouldInclude(s string) bool {
-    for _, include := range loi.Include {
+    for _, include := range loi.Include.Instructions {
         if(include == s) {
             for _, limit := range loi.Limit {
                 if(include == limit) {
