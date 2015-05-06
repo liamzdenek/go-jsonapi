@@ -46,3 +46,11 @@ func(ii *IncludeInstructions) Push(inst_rels []string) {
         }
     }
 }
+
+func(ii *IncludeInstructions) GetChild(childname string) *IncludeInstructions {
+    c := ii.Children[childname];
+    if c == nil {
+        c = NewIncludeInstructionsEmpty();
+    }
+    return c;
+}

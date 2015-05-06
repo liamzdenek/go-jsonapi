@@ -5,7 +5,7 @@ import (
     "github.com/russross/meddler";
     "reflect"
     "strings"
-    "fmt"
+    //"fmt"
     "errors"
 );
 
@@ -58,10 +58,8 @@ func(sr *ResourceSQL) FindMany(ids []string) ([]Ider, error) {
 }
 
 func(sr *ResourceSQL) FindManyByField(field string, value string) ([]Ider, error) {
-    fmt.Printf("FINDMANYBYFIELD\n");
     vs := reflect.New(reflect.SliceOf(reflect.PtrTo(sr.Type))).Interface();
     field, err := sr.GetTableFieldFromStructField(field);
-    fmt.Printf("NEW FIELD: %#v\n", err);
     if(err != nil) {
         return nil, err;
     }
@@ -71,16 +69,14 @@ func(sr *ResourceSQL) FindManyByField(field string, value string) ([]Ider, error
     // better to be safe than sorry
     // dropping in ? instead of field does not work :/
     q := "SELECT * FROM "+sr.Table+" WHERE "+field+"=?";
-    fmt.Printf("Query: %#v\n", q);
-    //fmt.Printf("Args: %#v\n", args);
+    //fmt.Printf("Query: %#v %#v\n", q, value);
     err = meddler.QueryAll(
         sr.DB,
         vs,
         q,
         value,
     );
-    fmt.Printf("RES: %#v\n", vs);
-    fmt.Printf("FindManyByField %s %s\n", field, value)
+    //fmt.Printf("RES: %#v\n", vs);
     return sr.ConvertInterfaceSliceToIderSlice(vs), err;
 }
 

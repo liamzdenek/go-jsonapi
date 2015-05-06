@@ -1,7 +1,5 @@
 package jsonapi;
 
-//import ("net/http");
-
 type RelationshipOutputInjector struct {
     Output *Output
     Ider Ider

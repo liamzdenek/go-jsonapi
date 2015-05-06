@@ -13,9 +13,13 @@ type Output struct { // responsible for the root node
 func NewOutput(r *http.Request) *Output {
     return &Output{
         Data: &OutputData{},
-        Included: &OutputIncluded{},
+        Included: NewOutputIncluded(&[]IderTyper{}),
         Request: r,
     }
+}
+
+func (o *Output) Prepare() {
+    o.Data.Prepare();
 }
 
 func (o Output) MarshalJSON() ([]byte, error) {

@@ -17,7 +17,6 @@ func NewRequestResolver() *RequestResolver {
 
 func(rr *RequestResolver) HandlerFindResourceById(a *API, w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
     ii := NewIncludeInstructionsFromRequest(r);
-    fmt.Printf("II: %#v\n",ii);
     output := NewOutput(r);
     ids := strings.Split(ps.ByName("id"),",");
     res := []Ider{};
@@ -82,7 +81,8 @@ func(rr *RequestResolver) FindMany(a *API, r *http.Request, resource_str string,
  */
 
 func(rr *RequestResolver) HandlerFindLinksByResourceId(a *API, w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-    //ii := NewIncludeInstructionsFromRequest(r);
+    ii := NewIncludeInstructionsFromRequest(r);
+    fmt.Printf("II: %#v\n",ii);
     output := NewOutput(r);
     ids := strings.Split(ps.ByName("id"),",");
     resource_str := ps.ByName("resource");
@@ -114,22 +114,24 @@ func(rr *RequestResolver) HandlerFindLinksByResourceId(a *API, w http.ResponseWr
         // TODO: this
         panic("this should return with primary data as null");
     }
-
     if(len(linkage.Links) == 1) {
         lider, lrmr := rr.FindOne(a,r,linkage.Links[0].Type,linkage.Links[0].Id);
-
+        
         // TODO: properly chain final argument here for includes
-        lroi := NewRelationshipOutputInjector(a, lrmr, lider, output, NewIncludeInstructionsEmpty());
+        lroi := NewRelationshipOutputInjector(a, lrmr, lider, output, ii.GetChild(linkage.LinkName));
         output.Data = NewOutputDataResources(true, []*OutputDatum{
             &OutputDatum{
                 Datum: NewIderLinkerTyperWrapper(lider, lrmr.Name, lroi),
             },
         });
     } else {
-
+        // TODO: it should
+        panic("This request does not support one to many linkages");
     }
 
-    fmt.Printf("Linkset: %#v\n", linkset.Linkages[0]);
+    output.Data.Included = output.Included.Included;
+    fmt.Printf("\nOUTPUT\n\nLinkset: %#v\n", linkset.Linkages[0]);
+    output.Prepare();
     Reply(output);
 }
 
@@ -164,12 +166,12 @@ func(rr *RequestResolver) HandlerFindLinkByNameAndResourceId(a *API, w http.Resp
     include := &[]IderTyper{};
     linkages := wrapper.Link(include);
     var link *OutputLinkage;
-    if(linkages.Linkages != nil) {
+    if(linkages.Linkages != nil && len(linkages.Linkages) > 0) {
         link = linkages.Linkages[0];
     }
 
+    output.Included = NewOutputIncluded(include);
     output.Data = NewOutputDataLinkage(true, link);
-    output.Included = NewOutputIncluded(*include);
     Reply(output);
 }
 

@@ -41,6 +41,16 @@ func NewOutputDataLinkage(isSingle bool, l *OutputLinkage) *OutputData {
     return &OutputData{Linkage:l, Target: t}
 }
 
+func(o *OutputData) Prepare() {
+    for _,datum := range o.Data {
+        if(o.Included == nil) {
+            panic("Cannot send response, OutputData Included is nil ptr");
+        }
+        datum.Included = o.Included;
+        datum.Prepare();
+    }
+}
+
 func (o OutputData) MarshalJSON() ([]byte, error) {
     //Primary data MUST be either:
     //* a single resource object or null, for requests that target single resources
@@ -80,9 +90,10 @@ func (o OutputData) MarshalJSON() ([]byte, error) {
 type OutputDatum struct { // data[i]
     Datum IderLinkerTyper
     Included *[]IderTyper
+    res map[string]interface{}
 }
 
-func (o OutputDatum) MarshalJSON() ([]byte, error) {
+func (o *OutputDatum) Prepare() {
     res := DenatureObject(o.Datum);
     delete(res, "ID");
     delete(res, "Id");
@@ -90,6 +101,10 @@ func (o OutputDatum) MarshalJSON() ([]byte, error) {
     res["id"] = o.Datum.Id();
     res["links"] = o.Datum.Link(o.Included);
     res["type"] = o.Datum.Type();
-    return json.Marshal(res);
+    o.res = res;
+}
+
+func (o OutputDatum) MarshalJSON() ([]byte, error) {
+    return json.Marshal(o.res);
 }
 
