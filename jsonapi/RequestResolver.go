@@ -16,6 +16,8 @@ func NewRequestResolver() *RequestResolver {
  */
 
 func(rr *RequestResolver) HandlerFindResourceById(a *API, w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+    ii := NewIncludeInstructionsFromRequest(r);
+    fmt.Printf("II: %#v\n",ii);
     output := NewOutput(r);
     ids := strings.Split(ps.ByName("id"),",");
     res := []Ider{};
