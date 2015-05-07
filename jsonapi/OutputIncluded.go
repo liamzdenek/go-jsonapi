@@ -15,10 +15,20 @@ func NewOutputIncluded(included *[]Record) *OutputIncluded {
 
 func(o OutputIncluded) MarshalJSON() ([]byte, error) {
     res := []interface{}{};
-    for _, inc := range *o.Included {
+    todo_list := *o.Included
+    var inc Record
+    for {
+        if(len(todo_list) > 1) {
+            inc = todo_list[0]
+        }
         d := &OutputDatum{Datum:inc};
-        d.Prepare(nil);
+        d.Prepare(&todo_list);
         res = append(res,d);
+        if(len(todo_list) > 1) {
+            todo_list = todo_list[1:];
+        } else {
+            break;
+        }
     }
     return json.Marshal(res);
     //return json.Marshal(o.Included);
