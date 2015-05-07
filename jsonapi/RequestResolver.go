@@ -118,7 +118,7 @@ func(rr *RequestResolver) HandlerFindLinksByResourceId(a *API, w http.ResponseWr
         lider, lrmr := rr.FindOne(a,r,linkage.Links[0].Type,linkage.Links[0].Id);
         
         // TODO: properly chain final argument here for includes
-        lroi := NewRelationshipOutputInjector(a, lrmr, lider, output, ii.GetChild(linkage.LinkName));
+        lroi := NewRelationshipOutputInjector(a, lrmr, lider, output, ii);
         output.Data = NewOutputDataResources(true, []*OutputDatum{
             &OutputDatum{
                 Datum: NewIderLinkerTyperWrapper(lider, lrmr.Name, lroi),
