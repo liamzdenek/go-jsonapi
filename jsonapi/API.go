@@ -30,7 +30,7 @@ func(a *API) GetBaseURL(r *http.Request) string {
 
 // forwarding func to a.RM
 func (a *API) MountRelationship(name, srcR, dstR string, behavior RelationshipBehavior, auth Authenticator) {
-    a.RM.MountRelationship(name,srcR,dstR,behavior,auth);
+    a.RM.MountRelationship(name,srcR,dstR,behavior,auth,a);
 }
 
 // forwarding func to a.RM
@@ -52,7 +52,6 @@ func (a *API) InitRouter() {
             a.WrapPlain(http.NotFound), // else
         ),
     );
-    //a.Router.GET("/:resource/:id/:linkname/:secondlinkname", a.Wrap(a.RR.HandlerFindOneSpecificLink));
     a.Router.GET("/:resource/:id", a.Wrap(a.RR.HandlerFindResourceById));
 }
 

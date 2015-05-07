@@ -16,7 +16,7 @@ func(rm *ResourceManager) MountResource(name string, r Resource, a Authenticator
     rm.Resources[name] = &ResourceManagerResource{R: r, A: a, RM: rm, Name: name};
 }
 
-func(rm *ResourceManager) MountRelationship(name, srcR, dstR string, behavior RelationshipBehavior, auth Authenticator) {
+func(rm *ResourceManager) MountRelationship(name, srcR, dstR string, behavior RelationshipBehavior, auth Authenticator, a *API) {
     if(rm.Resources[srcR] == nil) {
         panic("Source resource "+srcR+" for linkage does not exist");
     }
@@ -36,6 +36,7 @@ func(rm *ResourceManager) MountRelationship(name, srcR, dstR string, behavior Re
         A: auth,
         RM: rm,
         Name: name,
+        API: a,
     };
 }
 

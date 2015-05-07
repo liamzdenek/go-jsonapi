@@ -3,10 +3,10 @@ package jsonapi;
 import("encoding/json";"fmt");
 
 type OutputIncluded struct {
-    Included *[]IderTyper
+    Included *[]Record
 }
 
-func NewOutputIncluded(included *[]IderTyper) *OutputIncluded {
+func NewOutputIncluded(included *[]Record) *OutputIncluded {
     fmt.Printf("NewOutputIncluded: %#v\n", included);
     return &OutputIncluded{
         Included: included,
@@ -17,7 +17,7 @@ func(o OutputIncluded) MarshalJSON() ([]byte, error) {
     return json.Marshal(o.Included);
 }
 /*
-func(o *OutputIncluded) Push(included ...IderTyper) {
+func(o *OutputIncluded) Push(included ...Record) {
     for _,ider := range included {
         o.Included = append(o.Included, ider);
     }

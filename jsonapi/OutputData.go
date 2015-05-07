@@ -7,7 +7,7 @@ type OutputData struct { // data
     LinkageSet *OutputLinkageSet
     Linkage *OutputLinkage
     Target OutputDataType
-    Included *[]IderTyper
+    Included *[]Record
 }
 
 type OutputDataType int;
@@ -57,7 +57,7 @@ func (o OutputData) MarshalJSON() ([]byte, error) {
     //* an array of resource objects or an empty array ([]), for requests that target resource collections
     //* resource linkage, for requests that target a resource's relationship
     // A logical collection of resources (e.g., the target of a to-many relationship) MUST be represented as an array, even if it only contains one item.
-    o.Included = &[]IderTyper{};
+    o.Included = &[]Record{};
     if(o.Target == ManyResources || o.Target == SingleResource) {
         for _, v := range o.Data {
             v.Included = o.Included;
@@ -88,8 +88,8 @@ func (o OutputData) MarshalJSON() ([]byte, error) {
 }
 
 type OutputDatum struct { // data[i]
-    Datum IderLinkerTyper
-    Included *[]IderTyper
+    Datum Record
+    Included *[]Record
     res map[string]interface{}
 }
 

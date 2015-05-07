@@ -1,6 +1,7 @@
 package jsonapi;
 
-type IderTyper interface {
+type Record interface {
     Ider
+    Linker
     Typer
 }

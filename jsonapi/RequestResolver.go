@@ -32,9 +32,9 @@ func(rr *RequestResolver) HandlerFindResourceById(a *API, w http.ResponseWriter,
     }
     data := []*OutputDatum{};
     for _, ider := range res {
-        roi := NewRelationshipOutputInjector(a, rmr, ider, output, ii);
+        roi := NewRelationshipOutputInjector(a, rmr, ider, r, ii);
         data = append(data, &OutputDatum{
-            Datum: NewIderLinkerTyperWrapper(ider, rmr.Name, roi),
+            Datum: NewRecordWrapper(ider, rmr.Name, roi),
         });
     }
     fmt.Printf("Data: %#v\n", data);
@@ -98,10 +98,10 @@ func(rr *RequestResolver) HandlerFindLinksByResourceId(a *API, w http.ResponseWr
     }
     tii := NewIncludeInstructionsEmpty();
     tii.Push([]string{ps.ByName("linkname")});
-    roi := NewRelationshipOutputInjector(a, rmr, ider, output, tii);
-    wrapper := NewIderLinkerTyperWrapper(ider, rmr.Name, roi);
+    roi := NewRelationshipOutputInjector(a, rmr, ider, r, tii);
+    wrapper := NewRecordWrapper(ider, rmr.Name, roi);
 
-    include := &[]IderTyper{};
+    include := &[]Record{};
     linkset := wrapper.Link(include);
 
     if(len(linkset.Linkages) == 0) {
@@ -119,10 +119,10 @@ func(rr *RequestResolver) HandlerFindLinksByResourceId(a *API, w http.ResponseWr
         lider, lrmr := rr.FindOne(a,r,linkage.Links[0].Type,linkage.Links[0].Id);
         
         // TODO: properly chain final argument here for includes
-        lroi := NewRelationshipOutputInjector(a, lrmr, lider, output, ii);
+        lroi := NewRelationshipOutputInjector(a, lrmr, lider, r, ii);
         output.Data = NewOutputDataResources(true, []*OutputDatum{
             &OutputDatum{
-                Datum: NewIderLinkerTyperWrapper(lider, lrmr.Name, lroi),
+                Datum: NewRecordWrapper(lider, lrmr.Name, lroi),
             },
         });
     } else {
@@ -157,11 +157,11 @@ func(rr *RequestResolver) HandlerFindLinkByNameAndResourceId(a *API, w http.Resp
     } else {
         ider, rmr = rr.FindOne(a,r,resource_str,ids[0]);
     }
-    roi := NewRelationshipOutputInjector(a, rmr, ider, output, ii);
+    roi := NewRelationshipOutputInjector(a, rmr, ider, r, ii);
     roi.Limit = []string{ps.ByName(":linkname")}
-    wrapper := NewIderLinkerTyperWrapper(ider, rmr.Name, roi);
+    wrapper := NewRecordWrapper(ider, rmr.Name, roi);
 
-    include := &[]IderTyper{};
+    include := &[]Record{};
     linkages := wrapper.Link(include);
     var link *OutputLinkage;
     if(linkages.Linkages != nil && len(linkages.Linkages) > 0) {
@@ -172,4 +172,3 @@ func(rr *RequestResolver) HandlerFindLinkByNameAndResourceId(a *API, w http.Resp
     output.Data = NewOutputDataLinkage(true, link);
     Reply(output);
 }
-

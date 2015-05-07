@@ -13,7 +13,7 @@ type Output struct { // responsible for the root node
 func NewOutput(r *http.Request) *Output {
     return &Output{
         Data: &OutputData{},
-        Included: NewOutputIncluded(&[]IderTyper{}),
+        Included: NewOutputIncluded(&[]Record{}),
         Request: r,
     }
 }
