@@ -3,7 +3,7 @@ package jsonapi;
 import ("net/http";"strings");
 
 type IncludeInstructions struct {
-    Instructions []string
+    Instructions map[string]bool
     Children map[string]*IncludeInstructions
 }
 
@@ -14,6 +14,7 @@ func NewIncludeInstructionsFromRequest(r *http.Request) *IncludeInstructions {
 func NewIncludeInstructionsEmpty() *IncludeInstructions {
     return &IncludeInstructions{
         Children: make(map[string]*IncludeInstructions),
+        Instructions: make(map[string]bool),
     };
 }
 
@@ -29,13 +30,19 @@ func NewIncludeInstructions(rawinst string) *IncludeInstructions {
     return res;
 }
 
+func(ii *IncludeInstructions) Handling(inst string) bool {
+    res := !ii.Instructions[inst];
+    ii.Instructions[inst] = true;
+    return res;
+}
+
 func(ii *IncludeInstructions) Push(inst_rels []string) {
     if(len(inst_rels) == 0) {
         return;
     }
     if(len(inst_rels) == 1) {
         if(len(inst_rels[0]) > 0) {
-            ii.Instructions = append(ii.Instructions, inst_rels[0]);
+            ii.Instructions[inst_rels[0]] = false;
         }
     } else {
         var child string;

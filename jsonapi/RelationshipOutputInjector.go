@@ -20,14 +20,14 @@ func NewRelationshipOutputInjector(a *API, rmr *ResourceManagerResource, ider Id
 }
 
 func(loi *RelationshipOutputInjector) ShouldInclude(s string) bool {
-    for _, include := range loi.Include.Instructions {
+    for include, _ := range loi.Include.Instructions {
         if(include == s) {
             for _, limit := range loi.Limit {
                 if(include == limit) {
                     return false;
                 }
             }
-            return true;
+            return loi.Include.Handling(include);
         }
     }
     return false;
