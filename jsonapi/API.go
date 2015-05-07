@@ -21,7 +21,6 @@ func NewAPI() *API {
 }
 
 func(a *API) GetBaseURL(r *http.Request) string {
-    fmt.Printf("URL: %#v\n", r.URL);
     if r.URL.Scheme == "" {
         r.URL.Scheme = "http";
     }

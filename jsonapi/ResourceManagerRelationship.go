@@ -43,13 +43,12 @@ func(rmr *ResourceManagerRelationship) ResolveIder(r *http.Request, lb IderRelat
     dstRmr := rmr.RM.GetResource(rmr.DstR);
     links := lb.LinkIder(rmr.RM.GetResource(rmr.SrcR), dstRmr, src);
     shouldInclude := include.ShouldInclude(rmr.Name);
-    fmt.Printf("\nLinks: %v\n\n", links);
     for _, link := range links {
         res.Links = append(res.Links, OutputLink{
             Type: rmr.DstR,
             Id: link.Id(),
         });
-        fmt.Printf("\nShouldFetch %v ShouldInclude %v\n\n", shouldFetch, shouldInclude);
+        //fmt.Printf("\nShouldFetch %v ShouldInclude %v\n\n", shouldFetch, shouldInclude);
         if(shouldFetch) {
             roi := NewRelationshipOutputInjector(rmr.API, dstRmr, link, r, include.GetChild(rmr.Name));
             included = append(included, NewRecordWrapper(link,rmr.DstR, roi, shouldInclude));

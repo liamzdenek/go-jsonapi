@@ -113,7 +113,9 @@ func(rr *RequestResolver) HandlerFindLinksByResourceId(a *API, w http.ResponseWr
 
     if(len(linkage.Links) == 0) {
         // TODO: this
-        panic("this should return with primary data as null");
+        output.Data.Data = nil;
+        Reply(output);
+        //panic("this should return with primary data as null");
     }
     if(len(linkage.Links) == 1) {
         lider, lrmr := rr.FindOne(a,r,linkage.Links[0].Type,linkage.Links[0].Id);
