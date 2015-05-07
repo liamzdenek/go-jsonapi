@@ -1,6 +1,6 @@
 package jsonapi;
 
-import("encoding/json";"fmt");
+import("encoding/json";"fmt";);
 
 type OutputIncluded struct {
     Included *[]Record
@@ -14,7 +14,14 @@ func NewOutputIncluded(included *[]Record) *OutputIncluded {
 }
 
 func(o OutputIncluded) MarshalJSON() ([]byte, error) {
-    return json.Marshal(o.Included);
+    res := []interface{}{};
+    for _, inc := range *o.Included {
+        d := &OutputDatum{Datum:inc};
+        d.Prepare(nil);
+        res = append(res,d);
+    }
+    return json.Marshal(res);
+    //return json.Marshal(o.Included);
 }
 /*
 func(o *OutputIncluded) Push(included ...Record) {

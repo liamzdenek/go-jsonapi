@@ -1,6 +1,6 @@
 package jsonapi;
 
-import ("github.com/julienschmidt/httprouter";"net/http";"fmt";"encoding/json");
+import ("github.com/julienschmidt/httprouter";"net/http";"fmt";"encoding/json";);
 
 type API struct{
     Router *httprouter.Router

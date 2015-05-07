@@ -40,15 +40,13 @@ func(loi RelationshipOutputInjector) Link(included *[]Record) (*OutputLinkageSet
     res := &OutputLinkageSet{
         RelatedBase: loi.A.GetBaseURL(loi.Request)+rmr.Name+"/"+loi.Ider.Id(),
     };
-    if relationships := rmr.RM.GetRelationshipsByResource(rmr.Name); len(relationships) > 0 {
-        for linkname,rel := range relationships {
-            shouldInclude := loi.ShouldInclude(linkname);
-            link, new_included := rel.Resolve(loi.Ider, loi.Request, shouldInclude, loi.Include.GetChild(linkname));
-            link.LinkName = linkname;
-            res.Linkages = append(res.Linkages, link);
-            if(shouldInclude) {
-                *included = append(*included, new_included...);
-            }
+    for linkname,rel := range rmr.RM.GetRelationshipsByResource(rmr.Name){
+        shouldInclude := loi.ShouldInclude(linkname);
+        link, new_included := rel.Resolve(loi.Ider, loi.Request, shouldInclude, loi.Include.GetChild(linkname));
+        link.LinkName = linkname;
+        res.Linkages = append(res.Linkages, link);
+        if(shouldInclude) {
+            *included = append(*included, new_included...);
         }
     }
     return res;

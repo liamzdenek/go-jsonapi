@@ -1,6 +1,6 @@
 package jsonapi;
 
-import ("net/http";);
+import ("net/http";"fmt");
 
 type ResourceManagerRelationship struct {
     RM *ResourceManager
@@ -28,6 +28,7 @@ func(rmr *ResourceManagerRelationship) ResolveId(r *http.Request, lb IdRelations
         linkdata, err := resource.R.FindMany(ids);
         Check(err);
         for _, link := range linkdata {
+            fmt.Printf("Passing thru child include: %#v\n\n\n", childInclude);
             roi := NewRelationshipOutputInjector(rmr.API, dstRmr, link, r, childInclude);
             included = append(included, NewRecordWrapper(link,rmr.DstR,roi));
         }

@@ -94,7 +94,9 @@ func (o *OutputDatum) Prepare(included *[]Record) {
     delete(res, "Id");
     delete(res, "iD");
     res["id"] = o.Datum.Id();
-    res["links"] = o.Datum.Link(included);
+    if(included != nil) {
+        res["links"] = o.Datum.Link(included);
+    }
     res["type"] = o.Datum.Type();
     o.res = res;
 }
