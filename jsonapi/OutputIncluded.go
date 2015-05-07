@@ -13,7 +13,7 @@ func NewOutputIncluded(included *[]Record) *OutputIncluded {
 }
 
 func(o OutputIncluded) MarshalJSON() ([]byte, error) {
-    res := []interface{}{};
+    res := []*OutputDatum{};
     todo_list := *o.Included
     var inc Record
     for {
@@ -33,7 +33,18 @@ func(o OutputIncluded) MarshalJSON() ([]byte, error) {
             todo_list = todo_list[1:];
         }
     }
-    return json.Marshal(res);
+    // TODO: the ideal way is to use this as a real-time cache
+    deduplicate := map[string]bool{};
+    realres := []*OutputDatum{};
+    for _,datum := range res {
+        s := datum.Datum.Type()+"_"+datum.Datum.Id();
+        if deduplicate[s] {
+            continue;
+        }
+        deduplicate[s] = true;
+        realres = append(realres, datum);
+    }
+    return json.Marshal(realres);
     //return json.Marshal(o.Included);
 }
 /*
