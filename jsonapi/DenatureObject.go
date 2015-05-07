@@ -21,11 +21,14 @@ func DenatureObject(data interface{}) map[string]interface{} {
 
     for i := 0; i < t.NumField(); i++ {
         tag := strings.Split(t.Field(i).Tag.Get("json"), ",");
-        if len(tag[0]) == 0 { 
+        if len(tag[0]) == 0 {
             tag[0] = t.Field(i).Name
         }
-        if len(tag) > 1 && len(tag[1]) > 0 {
-            if(tag[1] == "omitempty") {
+        if(tag[0] == "-") {
+            continue;
+        }
+        if len(tag) > 1 {
+            if(len(tag[1]) > 0 && tag[1] == "omitempty") {
                 if(IsZeroOfUnderlyingType(v.Field(i).Interface())) {
                     continue;
                 }

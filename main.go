@@ -58,19 +58,23 @@ func(u *User) Id() string {
 
 type Post struct {
     ID int `meddler:"id,pk"`
-    UserId int `meddler:"user_id"`
+    UserId int `meddler:"user_id" json:"-"`
 }
 
 func(p *Post) Id() string {
     return fmt.Sprintf("%d",p.ID);
 }
 
-/*func(u *User) SetId(id string) error {
-    nid, err := strconv.Atoi(id);
-    u.Id = nid;
-    return err;
+type Comment struct {
+    ID int `meddler:"id,pk"`
+    UserId int `meddler:"user_id" json:"-"`
+    PostId int `meddler:"post_id" json:"-"`
+    Text string `meddler:"text"`
 }
-*/
+
+func(c *Comment) Id() string {
+    return fmt.Sprintf("%d",c.ID);
+}
 
 func main() {
     db, err := sql.Open("mysql", "root@/tasky");
@@ -82,10 +86,12 @@ func main() {
 
     api.MountResource("user", jsonapi.NewResourceSQL(db, "users", &User{}), jsonapi.NewAuthenticatorNone());
     api.MountResource("post", jsonapi.NewResourceSQL(db, "posts", &Post{}), jsonapi.NewAuthenticatorNone());
+    api.MountResource("comment", jsonapi.NewResourceSQL(db, "comments", &Comment{}), jsonapi.NewAuthenticatorNone());
     api.MountResource("session", NewSessionResource(), jsonapi.NewAuthenticatorNone());
 
     api.MountRelationship("logged_in_as", "session", "user", jsonapi.NewRelationshipBehaviorFromFieldToId("UserId"), jsonapi.NewAuthenticatorNone());
-    api.MountRelationship("authored", "user", "post", jsonapi.NewRelationshipBehaviorFromFieldToField("ID", "UserId"), jsonapi.NewAuthenticatorNone());
+    api.MountRelationship("posts", "user", "post", jsonapi.NewRelationshipBehaviorFromFieldToField("ID", "UserId"), jsonapi.NewAuthenticatorNone());
+    api.MountRelationship("comments", "post", "comment", jsonapi.NewRelationshipBehaviorFromFieldToField("ID", "PostId"), jsonapi.NewAuthenticatorNone());
 
     // curl localhost:3030/api/user/0/pets
     fmt.Printf("Listening\n");

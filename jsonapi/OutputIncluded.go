@@ -18,16 +18,20 @@ func(o OutputIncluded) MarshalJSON() ([]byte, error) {
     todo_list := *o.Included
     var inc Record
     for {
-        if(len(todo_list) > 1) {
+        if(len(todo_list) >= 1) {
             inc = todo_list[0]
-        }
-        d := &OutputDatum{Datum:inc};
-        d.Prepare(&todo_list);
-        res = append(res,d);
-        if(len(todo_list) > 1) {
-            todo_list = todo_list[1:];
         } else {
             break;
+        }
+        fmt.Printf("DATUM: %#v\n", DenatureObject(inc));
+        d := &OutputDatum{Datum:inc};
+        d.Prepare(&todo_list);
+        if(inc.Include()) {
+            fmt.Printf("DATUM INCLUDED\n");
+            res = append(res,d);
+        }
+        if(len(todo_list) >= 1) {
+            todo_list = todo_list[1:];
         }
     }
     return json.Marshal(res);

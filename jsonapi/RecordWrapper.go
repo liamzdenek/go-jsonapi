@@ -4,13 +4,15 @@ type RecordWrapper struct {
     Ider Ider
     Type_ string
     Linker Linker
+    Show bool
 }
 
-func NewRecordWrapper(i Ider, t string, l Linker) *RecordWrapper {
+func NewRecordWrapper(i Ider, t string, l Linker, show bool) *RecordWrapper {
     return &RecordWrapper{
         Ider: i,
         Type_: t,
         Linker: l,
+        Show: show,
     }
 }
 
@@ -24,6 +26,10 @@ func(w *RecordWrapper) Link(included *[]Record) *OutputLinkageSet {
 
 func(w *RecordWrapper) Type() string {
     return w.Type_;
+}
+
+func(w *RecordWrapper) Include() bool {
+    return w.Show;
 }
 
 func(w RecordWrapper) Denature() interface{} {

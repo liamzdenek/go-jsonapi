@@ -4,4 +4,5 @@ type Record interface {
     Ider
     Linker
     Typer
+    Include() bool
 }

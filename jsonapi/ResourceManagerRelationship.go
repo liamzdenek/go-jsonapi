@@ -12,7 +12,7 @@ type ResourceManagerRelationship struct {
     API *API
 }
 
-func(rmr *ResourceManagerRelationship) ResolveId(r *http.Request, lb IdRelationshipBehavior, src Ider, generateIncluded bool, childInclude *IncludeInstructions) (*OutputLinkage, []Record) {
+func(rmr *ResourceManagerRelationship) ResolveId(r *http.Request, lb IdRelationshipBehavior, src Ider, shouldFetch bool, include *IncludeInstructions) (*OutputLinkage, []Record) {
     resource := rmr.RM.GetResource(rmr.DstR);
     res := &OutputLinkage{}
     included := []Record{};
@@ -24,52 +24,55 @@ func(rmr *ResourceManagerRelationship) ResolveId(r *http.Request, lb IdRelations
             Id: id,
         });
     }
-    if(generateIncluded) {
+    if(shouldFetch) {
         linkdata, err := resource.R.FindMany(ids);
         Check(err);
+        shouldInclude := include.ShouldInclude(rmr.Name);
         for _, link := range linkdata {
-            fmt.Printf("Passing thru child include: %#v\n\n\n", childInclude);
-            roi := NewRelationshipOutputInjector(rmr.API, dstRmr, link, r, childInclude);
-            included = append(included, NewRecordWrapper(link,rmr.DstR,roi));
+            fmt.Printf("Passing thru child include: %#v\n\n\n", include);
+            roi := NewRelationshipOutputInjector(rmr.API, dstRmr, link, r, include.GetChild(rmr.Name));
+            included = append(included, NewRecordWrapper(link,rmr.DstR,roi, shouldInclude));
         }
     }
     return res, included;
 }
 
-func(rmr *ResourceManagerRelationship) ResolveIder(r *http.Request, lb IderRelationshipBehavior, src Ider, generateIncluded bool, childInclude *IncludeInstructions) (*OutputLinkage, []Record) {
+func(rmr *ResourceManagerRelationship) ResolveIder(r *http.Request, lb IderRelationshipBehavior, src Ider, shouldFetch bool, include *IncludeInstructions) (*OutputLinkage, []Record) {
     res := &OutputLinkage{}
     included := []Record{};
     dstRmr := rmr.RM.GetResource(rmr.DstR);
     links := lb.LinkIder(rmr.RM.GetResource(rmr.SrcR), dstRmr, src);
+    shouldInclude := include.ShouldInclude(rmr.Name);
+    fmt.Printf("\nLinks: %v\n\n", links);
     for _, link := range links {
         res.Links = append(res.Links, OutputLink{
             Type: rmr.DstR,
             Id: link.Id(),
         });
-        //fixedlink,_ := a.AddLinkages(link, mr.DstR, r, false);
-        if(generateIncluded) {
-            roi := NewRelationshipOutputInjector(rmr.API, dstRmr, link, r, childInclude);
-            included = append(included, NewRecordWrapper(link,rmr.DstR, roi));
+        fmt.Printf("\nShouldFetch %v ShouldInclude %v\n\n", shouldFetch, shouldInclude);
+        if(shouldFetch) {
+            roi := NewRelationshipOutputInjector(rmr.API, dstRmr, link, r, include.GetChild(rmr.Name));
+            included = append(included, NewRecordWrapper(link,rmr.DstR, roi, shouldInclude));
         }
     }
     return res, included;
 }
 
-func(rmr *ResourceManagerRelationship) Resolve(src Ider, r *http.Request, generateIncluded bool, childInclude *IncludeInstructions) (*OutputLinkage, []Record) {
+func(rmr *ResourceManagerRelationship) Resolve(src Ider, r *http.Request, shouldFetch bool, include *IncludeInstructions) (*OutputLinkage, []Record) {
     // TODO: make this authentication request captured here... a failure at a relationship should merely exclude that relationship
     rmr.A.Authenticate("relationship.FindAll."+rmr.SrcR+"."+rmr.Name+"."+rmr.DstR, src.Id(), r);
     // if we want included and it satisfies IderRelationshipBehavior, we 
     // should always prefer that over IdRelationshipBehavior
-    if(generateIncluded) {
+    if(shouldFetch) {
         if lb, found := rmr.B.(IderRelationshipBehavior); found {
-            return rmr.ResolveIder(r, lb, src, generateIncluded, childInclude);
+            return rmr.ResolveIder(r, lb, src, shouldFetch, include);
         }
     }
     switch lb := rmr.B.(type) {
         case IdRelationshipBehavior:
-            return rmr.ResolveId(r, lb, src, generateIncluded, childInclude);
+            return rmr.ResolveId(r, lb, src, shouldFetch, include);
         case IderRelationshipBehavior:
-            return rmr.ResolveIder(r, lb, src, generateIncluded, childInclude);
+            return rmr.ResolveIder(r, lb, src, shouldFetch, include);
         default:
             panic("Attempted to resolve a linkage behavior that is neither an Id or Ider LinkageBehavior.. This should never happen");
     }

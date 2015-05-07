@@ -1,10 +1,12 @@
 package jsonapi;
 
-import ("net/http";"strings");
+import ("net/http";"strings";"fmt"
+);
 
 type IncludeInstructions struct {
-    Instructions map[string]bool
     Children map[string]*IncludeInstructions
+    Include []string
+    Parent *IncludeInstructions
 }
 
 func NewIncludeInstructionsFromRequest(r *http.Request) *IncludeInstructions {
@@ -14,7 +16,6 @@ func NewIncludeInstructionsFromRequest(r *http.Request) *IncludeInstructions {
 func NewIncludeInstructionsEmpty() *IncludeInstructions {
     return &IncludeInstructions{
         Children: make(map[string]*IncludeInstructions),
-        Instructions: make(map[string]bool),
     };
 }
 
@@ -30,10 +31,24 @@ func NewIncludeInstructions(rawinst string) *IncludeInstructions {
     return res;
 }
 
-func(ii *IncludeInstructions) Handling(inst string) bool {
-    res := !ii.Instructions[inst];
-    ii.Instructions[inst] = true;
-    return res;
+func(ii *IncludeInstructions) ShouldFetch(rel string) bool {
+    if(ii.ShouldInclude(rel)) {
+        return true;
+    }
+    _,ok := ii.Children[rel];
+    //fmt.Printf("\nSHOULD FETCH %s: %s %s %#v\n\n", rel, ok, val, ii.Instructions);
+    // TODO: do better
+    return ok
+}
+
+func(ii *IncludeInstructions) ShouldInclude(inst string) bool {
+    fmt.Printf("Should include: %v %s\n", ii, inst);
+    for _,included := range ii.Include {
+        if(included == inst) {
+            return true;
+        }
+    }
+    return false;
 }
 
 func(ii *IncludeInstructions) Push(inst_rels []string) {
@@ -41,16 +56,16 @@ func(ii *IncludeInstructions) Push(inst_rels []string) {
         return;
     }
     if(len(inst_rels) == 1) {
-        if(len(inst_rels[0]) > 0) {
-            ii.Instructions[inst_rels[0]] = false;
-        }
+        ii.Include = append(ii.Include, inst_rels[0]);
     } else {
         var child string;
         child, inst_rels = inst_rels[0], inst_rels[1:];
         if ii.Children[child] == nil {
-            ii.Children[child] = NewIncludeInstructionsEmpty();
-            ii.Children[child].Push(inst_rels);
+            nii := NewIncludeInstructionsEmpty();
+            nii.Parent = ii;
+            ii.Children[child] = nii;
         }
+        ii.Children[child].Push(inst_rels);
     }
 }
 

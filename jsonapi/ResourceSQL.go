@@ -5,7 +5,7 @@ import (
     "github.com/russross/meddler";
     "reflect"
     "strings"
-    //"fmt"
+    "fmt"
     "errors"
 );
 
@@ -69,14 +69,14 @@ func(sr *ResourceSQL) FindManyByField(field string, value string) ([]Ider, error
     // better to be safe than sorry
     // dropping in ? instead of field does not work :/
     q := "SELECT * FROM "+sr.Table+" WHERE "+field+"=?";
-    //fmt.Printf("Query: %#v %#v\n", q, value);
+    fmt.Printf("Query: %#v %#v\n", q, value);
     err = meddler.QueryAll(
         sr.DB,
         vs,
         q,
         value,
     );
-    //fmt.Printf("RES: %#v\n", vs);
+    fmt.Printf("RES: %#v\n", vs);
     return sr.ConvertInterfaceSliceToIderSlice(vs), err;
 }
 

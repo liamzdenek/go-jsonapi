@@ -34,7 +34,7 @@ func(rr *RequestResolver) HandlerFindResourceById(a *API, w http.ResponseWriter,
     for _, ider := range res {
         roi := NewRelationshipOutputInjector(a, rmr, ider, r, ii);
         data = append(data, &OutputDatum{
-            Datum: NewRecordWrapper(ider, rmr.Name, roi),
+            Datum: NewRecordWrapper(ider, rmr.Name, roi, true),
         });
     }
     fmt.Printf("Data: %#v\n", data);
@@ -99,7 +99,7 @@ func(rr *RequestResolver) HandlerFindLinksByResourceId(a *API, w http.ResponseWr
     tii := NewIncludeInstructionsEmpty();
     tii.Push([]string{ps.ByName("linkname")});
     roi := NewRelationshipOutputInjector(a, rmr, ider, r, tii);
-    wrapper := NewRecordWrapper(ider, rmr.Name, roi);
+    wrapper := NewRecordWrapper(ider, rmr.Name, roi, true);
 
     include := &[]Record{};
     linkset := wrapper.Link(include);
@@ -122,7 +122,7 @@ func(rr *RequestResolver) HandlerFindLinksByResourceId(a *API, w http.ResponseWr
         lroi := NewRelationshipOutputInjector(a, lrmr, lider, r, ii);
         output.Data = NewOutputDataResources(true, []*OutputDatum{
             &OutputDatum{
-                Datum: NewRecordWrapper(lider, lrmr.Name, lroi),
+                Datum: NewRecordWrapper(lider, lrmr.Name, lroi, true),
             },
         });
     } else {
@@ -160,7 +160,7 @@ func(rr *RequestResolver) HandlerFindLinkByNameAndResourceId(a *API, w http.Resp
     }
     roi := NewRelationshipOutputInjector(a, rmr, ider, r, ii);
     roi.Limit = []string{ps.ByName(":linkname")}
-    wrapper := NewRecordWrapper(ider, rmr.Name, roi);
+    wrapper := NewRecordWrapper(ider, rmr.Name, roi, true);
 
     include := &[]Record{};
     linkages := wrapper.Link(include);

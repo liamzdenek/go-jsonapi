@@ -21,31 +21,17 @@ func NewRelationshipOutputInjector(a *API, rmr *ResourceManagerResource, ider Id
     };
 }
 
-func(loi *RelationshipOutputInjector) ShouldInclude(s string) bool {
-    for include, _ := range loi.Include.Instructions {
-        if(include == s) {
-            for _, limit := range loi.Limit {
-                if(include == limit) {
-                    return false;
-                }
-            }
-            return loi.Include.Handling(include);
-        }
-    }
-    return false;
-}
-
 func(loi RelationshipOutputInjector) Link(included *[]Record) (*OutputLinkageSet) {
     rmr := loi.ResourceManagerResource;
     res := &OutputLinkageSet{
         RelatedBase: loi.A.GetBaseURL(loi.Request)+rmr.Name+"/"+loi.Ider.Id(),
     };
     for linkname,rel := range rmr.RM.GetRelationshipsByResource(rmr.Name){
-        shouldInclude := loi.ShouldInclude(linkname);
-        link, new_included := rel.Resolve(loi.Ider, loi.Request, shouldInclude, loi.Include.GetChild(linkname));
+        shouldFetch := loi.Include.ShouldFetch(linkname);
+        link, new_included := rel.Resolve(loi.Ider, loi.Request, shouldFetch, loi.Include);
         link.LinkName = linkname;
         res.Linkages = append(res.Linkages, link);
-        if(shouldInclude) {
+        if(shouldFetch) {
             *included = append(*included, new_included...);
         }
     }
