@@ -7,7 +7,7 @@ type OutputData struct { // data
     LinkageSet *OutputLinkageSet
     Linkage *OutputLinkage
     Target OutputDataType
-    Included *[]Record
+    Included *[]Record `json:"-"`
 }
 
 type OutputDataType int;
@@ -46,8 +46,7 @@ func(o *OutputData) Prepare() {
         if(o.Included == nil) {
             panic("Cannot send response, OutputData Included is nil ptr");
         }
-        datum.Included = o.Included;
-        datum.Prepare();
+        datum.Prepare(o.Included);
     }
 }
 
@@ -59,9 +58,6 @@ func (o OutputData) MarshalJSON() ([]byte, error) {
     // A logical collection of resources (e.g., the target of a to-many relationship) MUST be represented as an array, even if it only contains one item.
     o.Included = &[]Record{};
     if(o.Target == ManyResources || o.Target == SingleResource) {
-        for _, v := range o.Data {
-            v.Included = o.Included;
-        }
         if(o.Target == ManyResources) {
             return json.Marshal(o.Data);
         }
@@ -89,17 +85,16 @@ func (o OutputData) MarshalJSON() ([]byte, error) {
 
 type OutputDatum struct { // data[i]
     Datum Record
-    Included *[]Record
     res map[string]interface{}
 }
 
-func (o *OutputDatum) Prepare() {
+func (o *OutputDatum) Prepare(included *[]Record) {
     res := DenatureObject(o.Datum);
     delete(res, "ID");
     delete(res, "Id");
     delete(res, "iD");
     res["id"] = o.Datum.Id();
-    res["links"] = o.Datum.Link(o.Included);
+    res["links"] = o.Datum.Link(included);
     res["type"] = o.Datum.Type();
     o.res = res;
 }

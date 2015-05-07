@@ -129,6 +129,7 @@ func(rr *RequestResolver) HandlerFindLinksByResourceId(a *API, w http.ResponseWr
         // TODO: it should
         panic("This request does not support one to many linkages");
     }
+    fmt.Printf("\nREPLYING\n\n");
 
     Reply(output);
 }
