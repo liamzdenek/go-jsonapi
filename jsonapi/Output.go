@@ -19,6 +19,9 @@ func NewOutput(r *http.Request) *Output {
 }
 
 func (o *Output) Prepare() {
+    if(o.Data.Included == nil) {
+        o.Data.Included = o.Included.Included;
+    }
     o.Data.Prepare();
 }
 

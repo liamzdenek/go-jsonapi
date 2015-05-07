@@ -37,6 +37,7 @@ func(rr *RequestResolver) HandlerFindResourceById(a *API, w http.ResponseWriter,
             Datum: NewIderLinkerTyperWrapper(ider, rmr.Name, roi),
         });
     }
+    fmt.Printf("Data: %#v\n", data);
     output.Data = NewOutputDataResources(isSingle, data);
     Reply(output);
 }
@@ -129,9 +130,6 @@ func(rr *RequestResolver) HandlerFindLinksByResourceId(a *API, w http.ResponseWr
         panic("This request does not support one to many linkages");
     }
 
-    output.Data.Included = output.Included.Included;
-    fmt.Printf("\nOUTPUT\n\nLinkset: %#v\n", linkset.Linkages[0]);
-    output.Prepare();
     Reply(output);
 }
 

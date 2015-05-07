@@ -66,6 +66,7 @@ func(a *API) CatchResponses(w http.ResponseWriter, r *http.Request) {
     if raw := recover(); raw != nil {
         switch r := raw.(type) {
         case *Output:
+            r.Prepare();
             a.Send(r, w);
         case error:
             res := &Output{};
