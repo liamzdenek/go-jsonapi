@@ -61,16 +61,19 @@ func(a *API) ServeHTTP(w http.ResponseWriter, r *http.Request) {
     a.Router.ServeHTTP(w, r);
 }
 
-func(a *API) CatchResponses(w http.ResponseWriter, r *http.Request) {
+func(a *API) CatchResponses(w http.ResponseWriter, req *http.Request) {
     if raw := recover(); raw != nil {
         switch r := raw.(type) {
+        case Responder:
+            r.Respond(a,w,req);
         case *Output:
-            r.Prepare();
-            a.Send(r, w);
+            re := NewResponderOutput(r);
+            re.Respond(a,w,req);
         case error:
-            res := &Output{};
-            res.Errors = []error{r};
-            a.Send(res, w);
+            o := &Output{};
+            o.Errors = []error{r};
+            re := NewResponderOutput(o);
+            re.Respond(a,w,req);
             panic(r);
         default:
             w.Write([]byte(fmt.Sprintf("Internal error handling request. Improper object sent to response method: %#v\n", r)));
