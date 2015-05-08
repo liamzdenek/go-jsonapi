@@ -80,6 +80,11 @@ func(sr *ResourceSQL) FindManyByField(field string, value string) ([]Ider, error
     return sr.ConvertInterfaceSliceToIderSlice(vs), err;
 }
 
+func(sr *ResourceSQL) Delete(id string) error {
+    _, err := sr.DB.Exec("DELETE FROM "+sr.Table+" WHERE id=?", id);
+    return err;
+}
+
 func (sr *ResourceSQL) ConvertInterfaceSliceToIderSlice(src interface{}) []Ider {
     res := []Ider{};
 

@@ -51,6 +51,7 @@ func (a *API) InitRouter() {
             a.WrapPlain(http.NotFound), // else
         ),
     );
+    a.Router.DELETE("/:resource/:id", a.Wrap(a.RR.HandlerDelete));
     a.Router.GET("/:resource/:id", a.Wrap(a.RR.HandlerFindResourceById));
 }
 

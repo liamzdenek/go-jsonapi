@@ -47,6 +47,10 @@ func(sr *SessionResource) FindManyByField(field string, value string) ([]jsonapi
     panic("Session does not support FindManyByField");
 }
 
+func(sr *SessionResource) Delete(id string) error {
+    panic("Session does not support Delete");
+}
+
 type User struct{
     ID int `meddler:"id,pk"`
     Name string `meddler:"name" json:"name"`

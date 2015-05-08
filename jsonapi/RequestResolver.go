@@ -175,3 +175,33 @@ func(rr *RequestResolver) HandlerFindLinkByNameAndResourceId(a *API, w http.Resp
     output.Data = NewOutputDataLinkage(true, link);
     Reply(output);
 }
+
+/************************************************
+ *
+ * HandlerDelete is the entrypoint for
+ * * DELETE /:resource/:id requests:
+ *
+ * this handler does not support requests for multiple IDs -- TODO: but it should:
+ * * DELETE /user/1,2,3
+ */
+
+func(rr *RequestResolver) HandlerDelete(a *API, w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+    ids := strings.Split(ps.ByName("id"),",");
+    isSingle := len(ids) == 1;
+    if(!isSingle) {
+        panic("This request does not support more than one id");
+    }
+
+    resource_str := ps.ByName("resource");
+    resource := a.RM.GetResource(resource_str);
+
+    if(resource == nil) {
+        panic(&ErrorResourceDoesNotExist{ResourceName:resource_str});
+    }
+
+    resource.A.Authenticate("resource.Delete."+resource_str, ids[0], r);
+
+    err := resource.R.Delete(ids[0]);
+    Check(err);
+    
+}
