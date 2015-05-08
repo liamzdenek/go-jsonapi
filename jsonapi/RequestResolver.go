@@ -1,6 +1,6 @@
 package jsonapi;
 
-import ("net/http";"strings";"github.com/julienschmidt/httprouter";"fmt");
+import ("net/http";"strings";"github.com/julienschmidt/httprouter";"fmt";"errors";);
 
 type RequestResolver struct{}
 
@@ -46,7 +46,7 @@ func(rr *RequestResolver) FindOne(a *API, r *http.Request, resource_str, id_str 
     resource := a.RM.GetResource(resource_str);
 
     if(resource == nil) {
-        panic(&ErrorResourceDoesNotExist{ResourceName:resource_str});
+        panic(NewErrorResourceDoesNotExist(resource_str));
     }
 
     resource.A.Authenticate("resource.FindOne."+resource_str, id_str, r);
@@ -60,7 +60,7 @@ func(rr *RequestResolver) FindMany(a *API, r *http.Request, resource_str string,
     resource := a.RM.GetResource(resource_str);
 
     if(resource == nil) {
-        panic(&ErrorResourceDoesNotExist{ResourceName:resource_str});
+        panic(NewErrorResourceDoesNotExist(resource_str));
     }
 
     id_str := strings.Join(ids, ",");
@@ -92,7 +92,7 @@ func(rr *RequestResolver) HandlerFindLinksByResourceId(a *API, w http.ResponseWr
     if len(ids) > 1 {
         //res, rmr = rr.FindMany(a,r,ps,ids);
         // TODO: fix this maybe?
-        panic("/:resource/:id/links does not support a list of links");
+        panic(NewErrorOperationNotSupported("/:resource/:id/links does not support a list of links"));
     } else {
         ider, rmr = rr.FindOne(a,r,resource_str,ids[0]);
     }
@@ -105,8 +105,7 @@ func(rr *RequestResolver) HandlerFindLinksByResourceId(a *API, w http.ResponseWr
     linkset := wrapper.Link(include);
 
     if(len(linkset.Linkages) == 0) {
-        // TODO: spec compliance
-        panic("This linkage does not exist");
+        panic(NewErrorRelationshipDoesNotExist(ps.ByName("linkname")));
     }
 
     linkage := linkset.Linkages[0];
@@ -115,7 +114,6 @@ func(rr *RequestResolver) HandlerFindLinksByResourceId(a *API, w http.ResponseWr
         // TODO: this
         output.Data.Data = nil;
         Reply(output);
-        //panic("this should return with primary data as null");
     }
     if(len(linkage.Links) == 1) {
         lider, lrmr := rr.FindOne(a,r,linkage.Links[0].Type,linkage.Links[0].Id);
@@ -129,7 +127,7 @@ func(rr *RequestResolver) HandlerFindLinksByResourceId(a *API, w http.ResponseWr
         });
     } else {
         // TODO: it should
-        panic("This request does not support one to many linkages");
+        panic(NewResponderError(errors.New("This request does not support one to many linkages")));
     }
     fmt.Printf("\nREPLYING\n\n");
 
@@ -156,7 +154,7 @@ func(rr *RequestResolver) HandlerFindLinkByNameAndResourceId(a *API, w http.Resp
     var ider Ider;
     var rmr *ResourceManagerResource;
     if len(ids) > 1 {
-        panic("/:resource/:id/links/:linkname does not support a list of links");
+        panic(NewResponderError(errors.New("/:resource/:id/links/:linkname does not support a list of links")));
     } else {
         ider, rmr = rr.FindOne(a,r,resource_str,ids[0]);
     }
@@ -189,19 +187,19 @@ func(rr *RequestResolver) HandlerDelete(a *API, w http.ResponseWriter, r *http.R
     ids := strings.Split(ps.ByName("id"),",");
     isSingle := len(ids) == 1;
     if(!isSingle) {
-        panic("This request does not support more than one id");
+        panic(NewResponderError(errors.New("This request does not support more than one id")));
     }
 
     resource_str := ps.ByName("resource");
     resource := a.RM.GetResource(resource_str);
 
     if(resource == nil) {
-        panic(&ErrorResourceDoesNotExist{ResourceName:resource_str});
+        panic(NewErrorResourceDoesNotExist(resource_str));
     }
 
     resource.A.Authenticate("resource.Delete."+resource_str, ids[0], r);
 
     err := resource.R.Delete(ids[0]);
     Check(err);
-    
+    Reply(NewResponderResourceSuccessfullyDeleted());
 }

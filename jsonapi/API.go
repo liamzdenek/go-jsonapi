@@ -1,6 +1,6 @@
 package jsonapi;
 
-import ("github.com/julienschmidt/httprouter";"net/http";"fmt";"encoding/json";);
+import ("github.com/julienschmidt/httprouter";"net/http";"fmt";"encoding/json";"errors");
 
 type API struct{
     Router *httprouter.Router
@@ -70,11 +70,12 @@ func(a *API) CatchResponses(w http.ResponseWriter, req *http.Request) {
             re := NewResponderOutput(r);
             re.Respond(a,w,req);
         case error:
-            o := &Output{};
-            o.Errors = []error{r};
-            re := NewResponderOutput(o);
+            re := NewResponderError(r);
             re.Respond(a,w,req);
-            panic(r);
+        case string:
+            fmt.Printf("Panic(string) is deprecated as it is always ambiguous. You probably intend to use panic(NewResponderError()) instead");
+            re := NewResponderError(errors.New(r));
+            re.Respond(a,w,req);
         default:
             w.Write([]byte(fmt.Sprintf("Internal error handling request. Improper object sent to response method: %#v\n", r)));
         }

@@ -1,6 +1,6 @@
 package jsonapi;
 
-import ("encoding/json";);
+import ("encoding/json";"errors");
 
 type OutputData struct { // data
     Data []*OutputDatum
@@ -44,7 +44,7 @@ func NewOutputDataLinkage(isSingle bool, l *OutputLinkage) *OutputData {
 func(o *OutputData) Prepare() {
     for _,datum := range o.Data {
         if(o.Included == nil) {
-            panic("Cannot send response, OutputData Included is nil ptr");
+            panic(NewResponderError(errors.New("Cannot send response, OutputData Included is nil ptr")));
         }
         datum.Prepare(o.Included);
     }
@@ -80,7 +80,7 @@ func (o OutputData) MarshalJSON() ([]byte, error) {
     if(o.Target == OneToManyLinkage) {
         return json.Marshal(o.Linkage.Links);
     }
-    panic("Unknown data type sent to OutputData");
+    panic(NewResponderError(errors.New("Unknown data type sent to OutputData")));
 }
 
 type OutputDatum struct { // data[i]

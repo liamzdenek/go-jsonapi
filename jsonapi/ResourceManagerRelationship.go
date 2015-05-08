@@ -1,6 +1,6 @@
 package jsonapi;
 
-import ("net/http";"fmt");
+import ("net/http";"fmt";"errors");
 
 type ResourceManagerRelationship struct {
     RM *ResourceManager
@@ -73,6 +73,6 @@ func(rmr *ResourceManagerRelationship) Resolve(src Ider, r *http.Request, should
         case IderRelationshipBehavior:
             return rmr.ResolveIder(r, lb, src, shouldFetch, include);
         default:
-            panic("Attempted to resolve a linkage behavior that is neither an Id or Ider LinkageBehavior.. This should never happen");
+            panic(NewResponderError(errors.New("Attempted to resolve a linkage behavior that is neither an Id or Ider LinkageBehavior.. This should never happen")));
     }
 }
