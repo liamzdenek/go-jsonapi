@@ -16,9 +16,10 @@ func NewResponderErrors(e []error) *ResponderErrors {
     }
 }
 
-func(re *ResponderErrors) Respond(a *API, w http.ResponseWriter, r *http.Request) {
+func(re *ResponderErrors) Respond(a *API, w http.ResponseWriter, r *http.Request) error {
     o := NewOutput(r);
     o.Errors = re.Errors;
     o.Prepare();
-    a.Send(r,w)
+    a.Send(o,w)
+    return nil;
 }

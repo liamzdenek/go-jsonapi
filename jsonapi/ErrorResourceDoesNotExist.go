@@ -11,10 +11,10 @@ func NewErrorResourceDoesNotExist(relname string) *ErrorResourceDoesNotExist {
         ResourceName: relname,
     }
 }
-func(e *ErrorResourceDoesNotExist) Respond(a *API, w http.ResponseWriter, r *http.Request) {
+func(e *ErrorResourceDoesNotExist) Respond(a *API, w http.ResponseWriter, r *http.Request) error {
     re := NewResponderError(errors.New(
         fmt.Sprintf("The provided resource \"%s\" does not exist.", e.ResourceName),
     ));
-    re.Respond(a,w,r);
+    return re.Respond(a,w,r);
 }
 

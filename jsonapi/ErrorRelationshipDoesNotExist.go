@@ -12,9 +12,9 @@ func NewErrorRelationshipDoesNotExist(relname string) *ErrorRelationshipDoesNotE
     }
 }
 
-func(e *ErrorRelationshipDoesNotExist) Respond(a *API, w http.ResponseWriter, r *http.Request) {
+func(e *ErrorRelationshipDoesNotExist) Respond(a *API, w http.ResponseWriter, r *http.Request) error {
     re := NewResponderError(errors.New(
         fmt.Sprintf("The provided relationship \"%s\" does not exist.", e.RelationshipName),
     ));
-    re.Respond(a,w,r);
+    return re.Respond(a,w,r);
 }
