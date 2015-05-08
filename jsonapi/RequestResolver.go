@@ -32,7 +32,7 @@ func(rr *RequestResolver) HandlerFindResourceById(a *API, w http.ResponseWriter,
     }
     data := []*OutputDatum{};
     for _, ider := range res {
-        roi := NewRelationshipOutputInjector(a, rmr, ider, r, ii);
+        roi := NewLinkerDefault(a, rmr, ider, r, ii);
         data = append(data, &OutputDatum{
             Datum: NewRecordWrapper(ider, rmr.Name, roi, true),
         });
@@ -98,7 +98,7 @@ func(rr *RequestResolver) HandlerFindLinksByResourceId(a *API, w http.ResponseWr
     }
     tii := NewIncludeInstructionsEmpty();
     tii.Push([]string{ps.ByName("linkname")});
-    roi := NewRelationshipOutputInjector(a, rmr, ider, r, tii);
+    roi := NewLinkerDefault(a, rmr, ider, r, tii);
     wrapper := NewRecordWrapper(ider, rmr.Name, roi, true);
 
     include := &[]Record{};
@@ -121,7 +121,7 @@ func(rr *RequestResolver) HandlerFindLinksByResourceId(a *API, w http.ResponseWr
         lider, lrmr := rr.FindOne(a,r,linkage.Links[0].Type,linkage.Links[0].Id);
         
         // TODO: properly chain final argument here for includes
-        lroi := NewRelationshipOutputInjector(a, lrmr, lider, r, ii);
+        lroi := NewLinkerDefault(a, lrmr, lider, r, ii);
         output.Data = NewOutputDataResources(true, []*OutputDatum{
             &OutputDatum{
                 Datum: NewRecordWrapper(lider, lrmr.Name, lroi, true),
@@ -160,7 +160,7 @@ func(rr *RequestResolver) HandlerFindLinkByNameAndResourceId(a *API, w http.Resp
     } else {
         ider, rmr = rr.FindOne(a,r,resource_str,ids[0]);
     }
-    roi := NewRelationshipOutputInjector(a, rmr, ider, r, ii);
+    roi := NewLinkerDefault(a, rmr, ider, r, ii);
     roi.Limit = []string{ps.ByName(":linkname")}
     wrapper := NewRecordWrapper(ider, rmr.Name, roi, true);
 

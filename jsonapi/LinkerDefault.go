@@ -2,7 +2,7 @@ package jsonapi;
 
 import ("net/http";)
 
-type RelationshipOutputInjector struct {
+type LinkerDefault struct {
     Request *http.Request
     Ider Ider
     ResourceManagerResource *ResourceManagerResource
@@ -11,8 +11,8 @@ type RelationshipOutputInjector struct {
     Limit []string
 }
 
-func NewRelationshipOutputInjector(a *API, rmr *ResourceManagerResource, ider Ider, request *http.Request, include *IncludeInstructions) *RelationshipOutputInjector {
-    return &RelationshipOutputInjector{
+func NewLinkerDefault(a *API, rmr *ResourceManagerResource, ider Ider, request *http.Request, include *IncludeInstructions) *LinkerDefault {
+    return &LinkerDefault{
         A: a,
         ResourceManagerResource: rmr,
         Ider: ider,
@@ -21,7 +21,7 @@ func NewRelationshipOutputInjector(a *API, rmr *ResourceManagerResource, ider Id
     };
 }
 
-func(loi RelationshipOutputInjector) Link(included *[]Record) (*OutputLinkageSet) {
+func(loi LinkerDefault) Link(included *[]Record) (*OutputLinkageSet) {
     rmr := loi.ResourceManagerResource;
     res := &OutputLinkageSet{
         RelatedBase: loi.A.GetBaseURL(loi.Request)+rmr.Name+"/"+loi.Ider.Id(),

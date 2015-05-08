@@ -30,7 +30,7 @@ func(rmr *ResourceManagerRelationship) ResolveId(r *http.Request, lb IdRelations
         shouldInclude := include.ShouldInclude(rmr.Name);
         for _, link := range linkdata {
             fmt.Printf("Passing thru child include: %#v\n\n\n", include);
-            roi := NewRelationshipOutputInjector(rmr.API, dstRmr, link, r, include.GetChild(rmr.Name));
+            roi := NewLinkerDefault(rmr.API, dstRmr, link, r, include.GetChild(rmr.Name));
             included = append(included, NewRecordWrapper(link,rmr.DstR,roi, shouldInclude));
         }
     }
@@ -50,7 +50,7 @@ func(rmr *ResourceManagerRelationship) ResolveIder(r *http.Request, lb IderRelat
         });
         //fmt.Printf("\nShouldFetch %v ShouldInclude %v\n\n", shouldFetch, shouldInclude);
         if(shouldFetch) {
-            roi := NewRelationshipOutputInjector(rmr.API, dstRmr, link, r, include.GetChild(rmr.Name));
+            roi := NewLinkerDefault(rmr.API, dstRmr, link, r, include.GetChild(rmr.Name));
             included = append(included, NewRecordWrapper(link,rmr.DstR, roi, shouldInclude));
         }
     }
