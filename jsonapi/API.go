@@ -52,6 +52,7 @@ func (a *API) InitRouter() {
         ),
     );
     a.Router.DELETE("/:resource/:id", a.Wrap(a.RR.HandlerDelete));
+    a.Router.POST("/:resource", a.Wrap(a.RR.HandlerCreate));
     a.Router.GET("/:resource/:id", a.Wrap(a.RR.HandlerFindResourceById));
 }
 

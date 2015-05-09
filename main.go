@@ -51,6 +51,10 @@ func(sr *SessionResource) Delete(id string) error {
     panic(jsonapi.NewErrorOperationNotSupported("Session does not support Delete"));
 }
 
+func(sr *SessionResource) Create(raw []byte) error {
+    panic(jsonapi.NewErrorOperationNotSupported("Session does not support Create"));
+}
+
 type User struct{
     ID int `meddler:"id,pk"`
     Name string `meddler:"name" json:"name"`

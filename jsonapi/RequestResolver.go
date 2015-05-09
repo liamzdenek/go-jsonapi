@@ -1,6 +1,6 @@
 package jsonapi;
 
-import ("net/http";"strings";"github.com/julienschmidt/httprouter";"fmt";"errors";);
+import ("net/http";"strings";"github.com/julienschmidt/httprouter";"fmt";"errors";"io/ioutil");
 
 type RequestResolver struct{}
 
@@ -202,4 +202,30 @@ func(rr *RequestResolver) HandlerDelete(a *API, w http.ResponseWriter, r *http.R
     err := resource.R.Delete(ids[0]);
     Check(err);
     Reply(NewResponderResourceSuccessfullyDeleted());
+}
+/************************************************
+ *
+ * HandlerCreate is the entrypoint for:
+ * * POST /:resource
+ */
+func(rr *RequestResolver) HandlerCreate(a *API, w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+    resource_str := ps.ByName("resource");
+    resource := a.RM.GetResource(resource_str);
+
+    if(resource == nil) {
+        panic(NewErrorResourceDoesNotExist(resource_str));
+    }
+
+    resource.A.Authenticate("resource.Create."+resource_str, "", r);
+
+    body, err := ioutil.ReadAll(r.Body);
+    if err != nil {
+        panic(NewResponderError(errors.New(fmt.Sprintf("Body could not be parsed: %v\n", err))));
+    }
+
+    fmt.Printf("Request post body: %s\n", body);
+    err = resource.R.Create(body);
+    if err != nil {
+        panic(NewResponderError(err));
+    }
 }

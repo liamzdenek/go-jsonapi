@@ -7,6 +7,7 @@ import (
     "strings"
     "fmt"
     "errors"
+    "encoding/json"
 );
 
 type ResourceSQL struct{
@@ -83,6 +84,15 @@ func(sr *ResourceSQL) FindManyByField(field string, value string) ([]Ider, error
 func(sr *ResourceSQL) Delete(id string) error {
     _, err := sr.DB.Exec("DELETE FROM "+sr.Table+" WHERE id=?", id);
     return err;
+}
+
+func(sr *ResourceSQL) Create(raw []byte) error {
+    vs := reflect.New(reflect.PtrTo(sr.Type)).Interface();
+    rp := NewRecordParserSimple(vs);
+    err := json.Unmarshal(raw, rp);
+    Check(err);
+    fmt.Printf("Data: %v\n", rp.Data.Output);
+    panic("TODO");
 }
 
 func (sr *ResourceSQL) ConvertInterfaceSliceToIderSlice(src interface{}) []Ider {
