@@ -25,7 +25,7 @@ func NatureObject(data map[string]interface{}, res interface{}) {
             continue;
         }
         var f string;
-        if f = t.Field(i).Tag.Get("nature-json"); len(f) == 0 {
+        if f = t.Field(i).Tag.Get("unmarshal-json"); len(f) == 0 {
             f = t.Field(i).Tag.Get("json");
         }
         tag := strings.Split(f, ",");

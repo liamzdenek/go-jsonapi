@@ -20,7 +20,11 @@ func DenatureObject(data interface{}) map[string]interface{} {
     values := make(map[string]interface{}, t.NumField());
 
     for i := 0; i < t.NumField(); i++ {
-        tag := strings.Split(t.Field(i).Tag.Get("json"), ",");
+        var f string;
+        if f = t.Field(i).Tag.Get("marshal-json"); len(f) == 0 {
+            f = t.Field(i).Tag.Get("json");
+        }
+        tag := strings.Split(f, ",");
         if len(tag[0]) == 0 {
             tag[0] = t.Field(i).Name
         }
