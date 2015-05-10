@@ -93,6 +93,7 @@ func (o *OutputDatum) Prepare(included *[]Record) {
     delete(res, "ID");
     delete(res, "Id");
     delete(res, "iD");
+    res = map[string]interface{}{"attributes":res};
     res["id"] = o.Datum.Id();
     if(included != nil) {
         links := o.Datum.Link(included);

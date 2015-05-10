@@ -14,6 +14,6 @@ func NewResponderOutput(o *Output) *ResponderOutput {
 
 func(ro *ResponderOutput) Respond(a *API, w http.ResponseWriter, r *http.Request) error {
     ro.Output.Prepare();
-    a.Send(r,w)
+    a.Send(ro.Output,w)
     return nil;
 }

@@ -22,7 +22,6 @@ func(o OutputIncluded) MarshalJSON() ([]byte, error) {
         } else {
             break;
         }
-        //fmt.Printf("DATUM: %#v\n", DenatureObject(inc));
         d := &OutputDatum{Datum:inc};
         d.Prepare(&todo_list);
         if(inc.Include()) {

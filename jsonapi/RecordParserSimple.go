@@ -1,6 +1,6 @@
 package jsonapi;
 
-import("encoding/json";"errors")
+import("encoding/json";)
 
 type RecordParserSimple struct {
     Data *RecordParserSimpleData `json:"data"`
@@ -9,36 +9,29 @@ type RecordParserSimple struct {
 func NewRecordParserSimple(res interface{}) *RecordParserSimple {
     return &RecordParserSimple{
         Data: &RecordParserSimpleData{
-            Output: res,
+            Attributes: RecordParserSimpleAttributes{
+                Output: res,
+            },
         },
     };
 }
 
 type RecordParserSimpleData struct {
-    Output interface{} `json:"-"`
-    Id *string
-    Type string
+    Attributes RecordParserSimpleAttributes
+    Id *string `json:"id"`
+    Type string `json:"type"`
 }
 
-func (rp *RecordParserSimpleData) UnmarshalJSON(data []byte) error {
+type RecordParserSimpleAttributes struct {
+    Output interface{} `json:"-"`
+}
+
+func (rp *RecordParserSimpleAttributes) UnmarshalJSON(data []byte) error {
     raw := map[string]interface{}{};
     err := json.Unmarshal(data, &raw);
     if(err != nil) {
         return err;
     }
     NatureObject(raw, rp.Output);
-    if v, ok := raw["type"]; ok {
-        rp.Type, ok = v.(string);
-        if(!ok) {
-            return errors.New("Type is required to be a string")
-        }
-    }
-    if v, ok := raw["id"]; ok {
-        nid, ok := v.(string);
-        if(!ok) {
-            return errors.New("Id is required to be a string");
-        }
-        rp.Id = &nid;
-    }
     return nil;
 }

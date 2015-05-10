@@ -6,7 +6,8 @@ type Resource interface {
     FindManyByField(field, value string) ([]Ider, error)
     // TODO: this iss necessary for optimizations but the backend
     // does not easily support this right now
-    //FindManyByFieldValues(field string, []value string) ([]Ider, error)
+    //FindManyByFieldWithManyValues(field string, []value string) ([]Ider, error)
     Delete(id string) error
     Create(resource_str string, raw []byte) (ider Ider, status RecordCreatedStatus, err error)
+    //Update(resource_str, id string, ) error
 }

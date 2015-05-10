@@ -52,6 +52,7 @@ func (a *API) InitRouter() {
         ),
     );
     a.Router.DELETE("/:resource/:id", a.Wrap(a.RR.HandlerDelete));
+    a.Router.PATCH("/:resource/:id", a.Wrap(a.RR.HandlerUpdate));
     a.Router.POST("/:resource", a.Wrap(a.RR.HandlerCreate));
     a.Router.GET("/:resource/:id", a.Wrap(a.RR.HandlerFindResourceById));
 }
@@ -68,6 +69,7 @@ func(a *API) CatchResponses(w http.ResponseWriter, req *http.Request) {
         case Responder:
             r.Respond(a,w,req);
         case *Output:
+            fmt.Printf("Responder output\n");
             re := NewResponderOutput(r);
             re.Respond(a,w,req);
         case error:

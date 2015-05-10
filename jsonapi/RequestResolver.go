@@ -227,3 +227,7 @@ func(rr *RequestResolver) HandlerCreate(a *API, w http.ResponseWriter, r *http.R
     ider, createdStatus, err := resource.R.Create(resource_str,body);
     Reply(NewResponderRecordCreate(resource_str, ider, createdStatus, err));
 }
+
+func(rr *RequestResolver) HandlerUpdate(a *API, w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+
+}

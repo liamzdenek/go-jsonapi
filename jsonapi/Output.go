@@ -1,6 +1,6 @@
 package jsonapi;
 
-import("encoding/json";"net/http";"fmt");
+import("encoding/json";"net/http";);
 
 type Output struct { // responsible for the root node
     Data *OutputData `json:"data,omitempty"`
@@ -28,7 +28,7 @@ func (o *Output) Prepare() {
 func (o Output) MarshalJSON() ([]byte, error) {
     // A document MUST contain either primary data or an array of error objects.
     if(len(o.Errors) > 0) {
-        fmt.Printf("ERrors: %v\n", o.Errors);
+        //fmt.Printf("ERrors: %v\n", o.Errors);
         es := []string{};
         for _,e := range o.Errors {
             es = append(es, e.Error());
