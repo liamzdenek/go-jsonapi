@@ -67,6 +67,7 @@ func(u *User) Id() string {
 type Post struct {
     ID int `meddler:"id,pk"`
     UserId int `meddler:"user_id" json:"-" unmarshal-json:"user_id"`
+    Text string `meddler:"text" json:"text"`
 }
 
 func(p *Post) Id() string {
