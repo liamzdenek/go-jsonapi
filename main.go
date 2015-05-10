@@ -51,7 +51,7 @@ func(sr *SessionResource) Delete(id string) error {
     panic(jsonapi.NewErrorOperationNotSupported("Session does not support Delete"));
 }
 
-func(sr *SessionResource) Create(raw []byte) error {
+func(sr *SessionResource) Create(resource_str string, raw []byte) error {
     panic(jsonapi.NewErrorOperationNotSupported("Session does not support Create"));
 }
 
@@ -66,7 +66,7 @@ func(u *User) Id() string {
 
 type Post struct {
     ID int `meddler:"id,pk"`
-    UserId int `meddler:"user_id" json:"-"`
+    UserId int `meddler:"user_id" json:"-" nature-json:"user_id"`
 }
 
 func(p *Post) Id() string {

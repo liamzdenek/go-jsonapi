@@ -86,13 +86,23 @@ func(sr *ResourceSQL) Delete(id string) error {
     return err;
 }
 
-func(sr *ResourceSQL) Create(raw []byte) error {
-    vs := reflect.New(reflect.PtrTo(sr.Type)).Interface();
+func(sr *ResourceSQL) Create(resource_str string, raw []byte) error {
+    vs := reflect.New(sr.Type).Interface();
     rp := NewRecordParserSimple(vs);
     err := json.Unmarshal(raw, rp);
-    Check(err);
-    fmt.Printf("Data: %v\n", rp.Data.Output);
-    panic("TODO");
+    //rp := RecordParserSimpleData{Output:vs};
+    //err := rp.UnmarshalJSON([]byte("{\"user_id\":123,\"id\":\"1234\",\"type\":\"post\"}"));
+    if(err != nil) {
+        return err;
+    }
+    if(rp.Data.Id != nil) {
+        return errors.New("ResourceSQL does not support specifying an ID for Create() requests."); // TODO: it should
+    }
+    if(rp.Data.Type != resource_str) {
+        return errors.New(fmt.Sprintf("This is resource \"%s\" but the new object includes type:\"%s\"", resource_str, rp.Data.Type));
+    }
+    fmt.Printf("Data: %v %v\n", rp.Data.Output, rp.Data.Type);
+    return meddler.Insert(sr.DB, sr.Table, vs);
 }
 
 func (sr *ResourceSQL) ConvertInterfaceSliceToIderSlice(src interface{}) []Ider {
