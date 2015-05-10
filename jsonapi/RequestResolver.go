@@ -46,7 +46,7 @@ func(rr *RequestResolver) FindOne(a *API, r *http.Request, resource_str, id_str 
     resource := a.RM.GetResource(resource_str);
 
     if(resource == nil) {
-        panic(NewErrorResourceDoesNotExist(resource_str));
+        panic(NewResponderErrorResourceDoesNotExist(resource_str));
     }
 
     resource.A.Authenticate("resource.FindOne."+resource_str, id_str, r);
@@ -60,7 +60,7 @@ func(rr *RequestResolver) FindMany(a *API, r *http.Request, resource_str string,
     resource := a.RM.GetResource(resource_str);
 
     if(resource == nil) {
-        panic(NewErrorResourceDoesNotExist(resource_str));
+        panic(NewResponderErrorResourceDoesNotExist(resource_str));
     }
 
     id_str := strings.Join(ids, ",");
@@ -92,7 +92,7 @@ func(rr *RequestResolver) HandlerFindLinksByResourceId(a *API, w http.ResponseWr
     if len(ids) > 1 {
         //res, rmr = rr.FindMany(a,r,ps,ids);
         // TODO: fix this maybe?
-        panic(NewErrorOperationNotSupported("/:resource/:id/links does not support a list of links"));
+        panic(NewResponderErrorOperationNotSupported("/:resource/:id/links does not support a list of links"));
     } else {
         ider, rmr = rr.FindOne(a,r,resource_str,ids[0]);
     }
@@ -105,7 +105,7 @@ func(rr *RequestResolver) HandlerFindLinksByResourceId(a *API, w http.ResponseWr
     linkset := wrapper.Link(include);
 
     if(len(linkset.Linkages) == 0) {
-        panic(NewErrorRelationshipDoesNotExist(ps.ByName("linkname")));
+        panic(NewResponderErrorRelationshipDoesNotExist(ps.ByName("linkname")));
     }
 
     linkage := linkset.Linkages[0];
@@ -194,7 +194,7 @@ func(rr *RequestResolver) HandlerDelete(a *API, w http.ResponseWriter, r *http.R
     resource := a.RM.GetResource(resource_str);
 
     if(resource == nil) {
-        panic(NewErrorResourceDoesNotExist(resource_str));
+        panic(NewResponderErrorResourceDoesNotExist(resource_str));
     }
 
     resource.A.Authenticate("resource.Delete."+resource_str, ids[0], r);
@@ -213,7 +213,7 @@ func(rr *RequestResolver) HandlerCreate(a *API, w http.ResponseWriter, r *http.R
     resource := a.RM.GetResource(resource_str);
 
     if(resource == nil) {
-        panic(NewErrorResourceDoesNotExist(resource_str));
+        panic(NewResponderErrorResourceDoesNotExist(resource_str));
     }
 
     resource.A.Authenticate("resource.Create."+resource_str, "", r);

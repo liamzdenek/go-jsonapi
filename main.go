@@ -44,15 +44,15 @@ func(sr *SessionResource) FindOne(id string) (jsonapi.Ider, error) {
 }
 
 func(sr *SessionResource) FindManyByField(field string, value string) ([]jsonapi.Ider, error) {
-    panic(jsonapi.NewErrorOperationNotSupported("Session does not support FindManyByField"));
+    panic(jsonapi.NewResponderErrorOperationNotSupported("Session does not support FindManyByField"));
 }
 
 func(sr *SessionResource) Delete(id string) error {
-    panic(jsonapi.NewErrorOperationNotSupported("Session does not support Delete"));
+    panic(jsonapi.NewResponderErrorOperationNotSupported("Session does not support Delete"));
 }
 
 func(sr *SessionResource) Create(resource_str string, raw []byte) error {
-    panic(jsonapi.NewErrorOperationNotSupported("Session does not support Create"));
+    panic(jsonapi.NewResponderErrorOperationNotSupported("Session does not support Create"));
 }
 
 type User struct{
