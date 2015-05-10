@@ -51,7 +51,7 @@ func(sr *SessionResource) Delete(id string) error {
     panic(jsonapi.NewResponderErrorOperationNotSupported("Session does not support Delete"));
 }
 
-func(sr *SessionResource) Create(resource_str string, raw []byte) error {
+func(sr *SessionResource) Create(resource_str string, raw []byte) (jsonapi.Ider, jsonapi.RecordCreatedStatus, error) {
     panic(jsonapi.NewResponderErrorOperationNotSupported("Session does not support Create"));
 }
 

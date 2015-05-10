@@ -86,23 +86,24 @@ func(sr *ResourceSQL) Delete(id string) error {
     return err;
 }
 
-func(sr *ResourceSQL) Create(resource_str string, raw []byte) error {
-    vs := reflect.New(sr.Type).Interface();
-    rp := NewRecordParserSimple(vs);
+func(sr *ResourceSQL) Create(resource_str string, raw []byte) (Ider, RecordCreatedStatus, error) {
+    v := reflect.New(sr.Type).Interface();
+    rp := NewRecordParserSimple(v);
     err := json.Unmarshal(raw, rp);
-    //rp := RecordParserSimpleData{Output:vs};
+    //rp := RecordParserSimpleData{Output:v};
     //err := rp.UnmarshalJSON([]byte("{\"user_id\":123,\"id\":\"1234\",\"type\":\"post\"}"));
     if(err != nil) {
-        return err;
+        return nil, StatusFailed, err;
     }
     if(rp.Data.Id != nil) {
-        return errors.New("ResourceSQL does not support specifying an ID for Create() requests."); // TODO: it should
+        return nil, StatusFailed, errors.New("ResourceSQL does not support specifying an ID for Create() requests."); // TODO: it should
     }
     if(rp.Data.Type != resource_str) {
-        return errors.New(fmt.Sprintf("This is resource \"%s\" but the new object includes type:\"%s\"", resource_str, rp.Data.Type));
+        return nil, StatusFailed, errors.New(fmt.Sprintf("This is resource \"%s\" but the new object includes type:\"%s\"", resource_str, rp.Data.Type));
     }
     fmt.Printf("Data: %v %v\n", rp.Data.Output, rp.Data.Type);
-    return meddler.Insert(sr.DB, sr.Table, vs);
+    err = meddler.Insert(sr.DB, sr.Table, v)
+    return v.(Ider), StatusCreated, err;
 }
 
 func (sr *ResourceSQL) ConvertInterfaceSliceToIderSlice(src interface{}) []Ider {

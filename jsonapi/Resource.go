@@ -8,5 +8,5 @@ type Resource interface {
     // does not easily support this right now
     //FindManyByFieldValues(field string, []value string) ([]Ider, error)
     Delete(id string) error
-    Create(resource_str string, raw []byte) error
+    Create(resource_str string, raw []byte) (ider Ider, status RecordCreatedStatus, err error)
 }

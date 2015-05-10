@@ -58,7 +58,7 @@ func (a *API) InitRouter() {
 
 // so the API can be mounted as a http handler
 func(a *API) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-    //defer a.CatchResponses(w,r);
+    defer a.CatchResponses(w,r);
     a.Router.ServeHTTP(w, r);
 }
 
