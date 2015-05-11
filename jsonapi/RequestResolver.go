@@ -224,7 +224,7 @@ func(rr *RequestResolver) HandlerCreate(a *API, w http.ResponseWriter, r *http.R
     }
 
     fmt.Printf("Request post body: %s\n", body);
-    ider, createdStatus, err := resource.R.Create(resource_str,body);
+    ider,createdStatus, err := resource.R.Create(resource_str,body);
     Reply(NewResponderRecordCreate(resource_str, ider, createdStatus, err));
 }
 

@@ -101,7 +101,8 @@ func(sr *ResourceSQL) Create(resource_str string, raw []byte) (Ider, RecordCreat
     if(rp.Data.Type != resource_str) {
         return nil, StatusFailed, errors.New(fmt.Sprintf("This is resource \"%s\" but the new object includes type:\"%s\"", resource_str, rp.Data.Type));
     }
-    //fmt.Printf("Data: %v %v\n", rp.Data.Output, rp.Data.Type);
+    fmt.Printf("Data: %#v\n", rp.Linkages());
+    panic("TODO");
     err = meddler.Insert(sr.DB, sr.Table, v)
     return v.(Ider), StatusCreated, err;
 }
