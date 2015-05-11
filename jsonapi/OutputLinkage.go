@@ -1,6 +1,6 @@
 package jsonapi;
 
-import ("encoding/json";"errors");
+import ("encoding/json";"errors";);
 
 type OutputLink struct { // data[i].links["linkname"].linkage[j]
     Type string `json:"type"`
@@ -49,6 +49,10 @@ func(o *OutputLinkageSet) UnmarshalJSON(data []byte) error {
     res := map[string]*OutputLinkage{};
     err := json.Unmarshal(data, &res);
     if(err != nil) { return err; }
+    for linkname,r := range res {
+        r.LinkName = linkname;
+        o.Linkages = append(o.Linkages, r);
+    }
     return nil;
 }
 

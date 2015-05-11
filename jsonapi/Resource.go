@@ -10,6 +10,6 @@ type Resource interface {
     // does not easily support this right now
     //FindManyByFieldWithManyValues(field string, []value string) ([]Ider, error)
     Delete(id string) error
-    Create(resource_str string, raw []byte/*, verify ResourceCreateVerifyFunc*/) (ider Ider, status RecordCreatedStatus, err error)
+    Create(resource_str string, raw []byte, verify ResourceCreateVerifyFunc) (ider Ider, status RecordCreatedStatus, err error)
     //Update(resource_str, id string, ) error
 }

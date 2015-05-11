@@ -29,3 +29,7 @@ func(l *RelationshipBehaviorFromFieldToField) LinkIder(srcR, dstR *ResourceManag
     }
     return dst;
 }
+
+func(l *RelationshipBehaviorFromFieldToField) VerifyLinks(ider Ider, linkages *OutputLinkage) error {
+    return nil;
+}

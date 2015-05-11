@@ -1,8 +1,10 @@
 package jsonapi;
 
-// RelationshipBehavior is just syntax sugar.. what we're really
-// looking for is either an IdRelationshipBehavior or a HasIdRelationshipBehavior
-type RelationshipBehavior interface {}
+// RelationshipBehavior is a "base interface"
+// children: IdRelationshipBehavior or a HasIdRelationshipBehavior
+type RelationshipBehavior interface {
+    VerifyLinks(ider Ider, linkages *OutputLinkage) (error)
+}
 
 type IdRelationshipBehavior interface{
     LinkId(srcR, dstR *ResourceManagerResource, src Ider) (ids []string)

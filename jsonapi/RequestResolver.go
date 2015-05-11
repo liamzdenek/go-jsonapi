@@ -223,8 +223,18 @@ func(rr *RequestResolver) HandlerCreate(a *API, w http.ResponseWriter, r *http.R
         panic(NewResponderError(errors.New(fmt.Sprintf("Body could not be parsed: %v\n", err))));
     }
 
+    var linkages *OutputLinkageSet;
+    verify := func(ider Ider, tlinkages *OutputLinkageSet) error {
+        linkages = tlinkages;
+        for _,linkage := range linkages.Linkages {
+            rel := a.RM.GetRelationship(resource_str, linkage.LinkName)
+            rel.B.VerifyLinks(ider,linkage); 
+        }
+        return errors.New("poop");
+    }
+
+    ider,createdStatus, err := resource.R.Create(resource_str,body,verify);
     fmt.Printf("Request post body: %s\n", body);
-    ider,createdStatus, err := resource.R.Create(resource_str,body);
     Reply(NewResponderRecordCreate(resource_str, ider, createdStatus, err));
 }
 

@@ -28,3 +28,7 @@ func(l *RelationshipBehaviorFromFieldToId) LinkId(srcR, dstR *ResourceManagerRes
     }
     return ids;
 }
+
+func(l *RelationshipBehaviorFromFieldToId) VerifyLinks(ider Ider, linkages *OutputLinkage) error {
+    return nil;
+}
