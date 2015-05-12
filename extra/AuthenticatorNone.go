@@ -1,4 +1,4 @@
-package jsonapi;
+package jsonapie;
 
 import ("net/http";"fmt");
 

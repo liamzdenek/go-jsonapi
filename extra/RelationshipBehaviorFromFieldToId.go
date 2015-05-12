@@ -1,10 +1,11 @@
-package jsonapi;
+package jsonapie;
 
 import(
     "reflect"
     "strconv"
     "fmt"
     "errors"
+    . ".." // jsonapi
 );
 
 type RelationshipBehaviorFromFieldToId struct {
@@ -33,8 +34,8 @@ func(l *RelationshipBehaviorFromFieldToId) LinkId(srcR, dstR *ResourceManagerRes
 }
 
 func(l *RelationshipBehaviorFromFieldToId) VerifyLinks(ider Ider, linkages *OutputLinkage) error {
+    fmt.Printf("Verify links\n");
     isEmpty := linkages == nil || linkages.Links == nil || len(linkages.Links) == 0;
-    fmt.Printf("LINKAGES: %#v\n", linkages);
     if(isEmpty && l.Required == Required) {
         return errors.New("Linkage is empty but is required");
     }

@@ -1,6 +1,9 @@
-package jsonapi;
+package jsonapie;
 
-import( "fmt"; );
+import(
+    "fmt";
+    . ".."
+);
 
 type RelationshipBehaviorFromFieldToField struct {
     SrcFieldName string

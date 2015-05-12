@@ -260,7 +260,7 @@ func(rr *RequestResolver) HandlerCreate(a *API, w http.ResponseWriter, r *http.R
     }
 
     ider,createdStatus, err := resource.R.Create(resource_str,body,verify);
-    if(err == nil && ider != nil && createdStatus & StatusCreated > 0) {
+    if(err == nil && ider != nil && createdStatus & StatusCreated != 0) {
         for _,linkage := range linkages.Linkages {
             rel := a.RM.GetRelationship(resource_str, linkage.LinkName)
             err = rel.B.PostCreate(ider,linkage);

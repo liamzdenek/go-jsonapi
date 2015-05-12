@@ -1,4 +1,4 @@
-package jsonapi;
+package jsonapie;
 
 import (
     "database/sql";
@@ -8,6 +8,7 @@ import (
     "fmt"
     "errors"
     "encoding/json"
+    . ".."
 );
 
 type ResourceSQL struct{
