@@ -19,7 +19,7 @@ func(rmr *ResourceManagerRelationship) ResolveId(r *http.Request, lb IdRelations
     dstRmr := rmr.RM.GetResource(rmr.DstR);
     ids := lb.LinkId(rmr.RM.GetResource(rmr.SrcR), dstRmr, src);
     for _, id := range ids {
-        res.Links = append(res.Links, OutputLink{
+        res.Links = append(res.Links, &OutputLink{
             Type: rmr.DstR,
             Id: id,
         });
@@ -44,7 +44,7 @@ func(rmr *ResourceManagerRelationship) ResolveIder(r *http.Request, lb IderRelat
     links := lb.LinkIder(rmr.RM.GetResource(rmr.SrcR), dstRmr, src);
     shouldInclude := include.ShouldInclude(rmr.Name);
     for _, link := range links {
-        res.Links = append(res.Links, OutputLink{
+        res.Links = append(res.Links, &OutputLink{
             Type: rmr.DstR,
             Id: link.Id(),
         });

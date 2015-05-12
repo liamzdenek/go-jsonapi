@@ -1,5 +1,12 @@
 package jsonapi;
 
+type RelationshipRequirement int;
+
+const (
+    Required RelationshipRequirement = iota;
+    NotRequired
+);
+
 // RelationshipBehavior is a "base interface"
 // children: IdRelationshipBehavior or a HasIdRelationshipBehavior
 type RelationshipBehavior interface {

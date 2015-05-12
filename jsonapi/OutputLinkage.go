@@ -9,14 +9,14 @@ type OutputLink struct { // data[i].links["linkname"].linkage[j]
 
 type OutputLinkage struct { // data[i].links["linkname"] etc
     LinkName string
-    Links []OutputLink `json:"linkage"`
+    Links []*OutputLink `json:"linkage"`
 }
 
 type OutputLinkageMany struct {
-    Links []OutputLink `json:"linkage"`
+    Links []*OutputLink `json:"linkage"`
 }
 type OutputLinkageSingle struct {
-    Link OutputLink `json:"linkage"`
+    Link *OutputLink `json:"linkage"`
 }
 
 func(o *OutputLinkage) UnmarshalJSON(data []byte) error {
@@ -24,15 +24,15 @@ func(o *OutputLinkage) UnmarshalJSON(data []byte) error {
     a := &OutputLinkageSingle{}
     err := json.Unmarshal(data, a);
 
-    if err != nil {
-        o.Links = []OutputLink{a.Link};
+    if err == nil {
+        o.Links = []*OutputLink{a.Link};
         return nil;
     }
 
     b := &OutputLinkageMany{};
     err = json.Unmarshal(data, b);
 
-    if err != nil {
+    if err == nil {
         o.Links = b.Links;
         return nil;
     }
@@ -65,7 +65,7 @@ func(o *OutputLinkageSet) MarshalJSON() ([]byte,error) {
     out := map[string]interface{}{};
     for _, linkage := range o.Linkages {
         out[linkage.LinkName] = struct{
-            Links []OutputLink `json:"linkage"`
+            Links []*OutputLink `json:"linkage"`
             Self string `json:"self"`
             Related string `json:"related"`
         }{

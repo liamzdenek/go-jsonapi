@@ -8,11 +8,11 @@ type RelationshipBehaviorFromFieldToField struct {
     FromFieldToId *RelationshipBehaviorFromFieldToId
 }
 
-func NewRelationshipBehaviorFromFieldToField(srcFieldName, dstFieldName string) *RelationshipBehaviorFromFieldToField {
+func NewRelationshipBehaviorFromFieldToField(srcFieldName, dstFieldName string, required RelationshipRequirement) *RelationshipBehaviorFromFieldToField {
     return &RelationshipBehaviorFromFieldToField{
         SrcFieldName: srcFieldName,
         DstFieldName: dstFieldName,
-        FromFieldToId: NewRelationshipBehaviorFromFieldToId(srcFieldName),
+        FromFieldToId: NewRelationshipBehaviorFromFieldToId(srcFieldName, required),
     }
 }
 
@@ -31,13 +31,11 @@ func(l *RelationshipBehaviorFromFieldToField) LinkIder(srcR, dstR *ResourceManag
 }
 
 func(l *RelationshipBehaviorFromFieldToField) VerifyLinks(ider Ider, linkages *OutputLinkage) error {
-    return nil;
+    return l.FromFieldToId.VerifyLinks(ider,linkages);
 }
 func(l *RelationshipBehaviorFromFieldToField) PreCreate(ider Ider, linkages *OutputLinkage) error {
-    fmt.Printf("Pre create\n");
-    return nil;
+    return l.FromFieldToId.PreCreate(ider,linkages);
 }
 func(l *RelationshipBehaviorFromFieldToField) PostCreate(ider Ider, linkages *OutputLinkage) error {
-    fmt.Printf("Post create\n");
-    return nil;
+    return l.FromFieldToId.PostCreate(ider,linkages);
 }

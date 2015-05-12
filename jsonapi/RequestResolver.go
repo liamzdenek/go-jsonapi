@@ -260,14 +260,15 @@ func(rr *RequestResolver) HandlerCreate(a *API, w http.ResponseWriter, r *http.R
     }
 
     ider,createdStatus, err := resource.R.Create(resource_str,body,verify);
-    for _,linkage := range linkages.Linkages {
-        rel := a.RM.GetRelationship(resource_str, linkage.LinkName)
-        err := rel.B.PostCreate(ider,linkage);
-        if err != nil {
-            Reply(NewResponderRecordCreate(resource_str, nil, StatusFailed, err));
+    if(err == nil && ider != nil && createdStatus & StatusCreated > 0) {
+        for _,linkage := range linkages.Linkages {
+            rel := a.RM.GetRelationship(resource_str, linkage.LinkName)
+            err = rel.B.PostCreate(ider,linkage);
+            if err != nil {
+                Reply(NewResponderRecordCreate(resource_str, nil, StatusFailed, err));
+            }
         }
     }
-    fmt.Printf("Request post body: %s\n", body);
     Reply(NewResponderRecordCreate(resource_str, ider, createdStatus, err));
 }
 

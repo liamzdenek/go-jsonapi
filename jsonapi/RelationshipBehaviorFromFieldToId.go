@@ -4,20 +4,22 @@ import(
     "reflect"
     "strconv"
     "fmt"
+    "errors"
 );
 
 type RelationshipBehaviorFromFieldToId struct {
     SrcFieldName string
+    Required RelationshipRequirement
 }
 
-func NewRelationshipBehaviorFromFieldToId(srcFieldName string) *RelationshipBehaviorFromFieldToId {
+func NewRelationshipBehaviorFromFieldToId(srcFieldName string, required RelationshipRequirement) *RelationshipBehaviorFromFieldToId {
     return &RelationshipBehaviorFromFieldToId{
         SrcFieldName: srcFieldName,
     }
 }
 
 func(l *RelationshipBehaviorFromFieldToId) LinkId(srcR, dstR *ResourceManagerResource, src Ider) (ids []string) {
-    v := reflect.Indirect(reflect.ValueOf(src)).FieldByName(l.SrcFieldName);
+    v := reflect.ValueOf(GetField(l.SrcFieldName, src));
     k := v.Kind()
     switch k { // TODO: fill this out
     case reflect.String:
@@ -31,10 +33,22 @@ func(l *RelationshipBehaviorFromFieldToId) LinkId(srcR, dstR *ResourceManagerRes
 }
 
 func(l *RelationshipBehaviorFromFieldToId) VerifyLinks(ider Ider, linkages *OutputLinkage) error {
-    fmt.Printf("Verify links\n");
+    isEmpty := linkages == nil || linkages.Links == nil || len(linkages.Links) == 0;
+    fmt.Printf("LINKAGES: %#v\n", linkages);
+    if(isEmpty && l.Required == Required) {
+        return errors.New("Linkage is empty but is required");
+    }
+    if(!isEmpty && len(linkages.Links) != 1) {
+        return errors.New("RelationshipBehaviorFromFieldToId requires exactly one link");
+    }
     return nil;
 }
 func(l *RelationshipBehaviorFromFieldToId) PreCreate(ider Ider, linkages *OutputLinkage) error {
+    str, err := strconv.Atoi(linkages.Links[0].Id);
+    if err != nil {
+        return err;
+    }
+    SetField(l.SrcFieldName, ider, str);
     fmt.Printf("Pre create\n");
     return nil;
 }
