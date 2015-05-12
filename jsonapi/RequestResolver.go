@@ -225,15 +225,48 @@ func(rr *RequestResolver) HandlerCreate(a *API, w http.ResponseWriter, r *http.R
 
     var linkages *OutputLinkageSet;
     verify := func(ider Ider, tlinkages *OutputLinkageSet) error {
+        if(ider == nil) {
+            panic(NewResponderError(errors.New("ider MUST not be null to call to verify func")));
+        }
+
         linkages = tlinkages;
+
+        // first, we must check the permissions and verify that the
+        // supplied linkages for each relationship is valid per the
+        // rules of that relationship, eg, we don't want to let in
+        // many linkages for a one to one relationship
+        for _,linkage := range linkages.Linkages {
+            fmt.Printf("Linkage: %#v\n", linkage);
+            rel := a.RM.GetRelationship(resource_str, linkage.LinkName)
+            fmt.Printf("REL: %s %s %#v\n", resource_str, linkage.LinkName, rel);
+            if(rel == nil) {
+                // user attempted to speify a relationship that does not exist
+                panic("TODO: This");
+            }
+            //rel.A.Authenticate("relationship.Create."+rel.SrcR+"."+rel.Name+"."+rel.DstR, "", r);
+            err := rel.B.VerifyLinks(ider,linkage);
+            if err != nil {
+                return err;
+            }
+        }
         for _,linkage := range linkages.Linkages {
             rel := a.RM.GetRelationship(resource_str, linkage.LinkName)
-            rel.B.VerifyLinks(ider,linkage); 
+            err := rel.B.PreCreate(ider,linkage);
+            if err != nil {
+                return err;
+            }
         }
-        return errors.New("poop");
+        return nil;
     }
 
     ider,createdStatus, err := resource.R.Create(resource_str,body,verify);
+    for _,linkage := range linkages.Linkages {
+        rel := a.RM.GetRelationship(resource_str, linkage.LinkName)
+        err := rel.B.PostCreate(ider,linkage);
+        if err != nil {
+            Reply(NewResponderRecordCreate(resource_str, nil, StatusFailed, err));
+        }
+    }
     fmt.Printf("Request post body: %s\n", body);
     Reply(NewResponderRecordCreate(resource_str, ider, createdStatus, err));
 }

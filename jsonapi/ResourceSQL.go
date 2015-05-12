@@ -102,11 +102,9 @@ func(sr *ResourceSQL) Create(resource_str string, raw []byte, verify ResourceCre
         return nil, StatusFailed, errors.New(fmt.Sprintf("This is resource \"%s\" but the new object includes type:\"%s\"", resource_str, rp.Data.Type));
     }
     ider := v.(Ider);
-    fmt.Printf("Data: %#v\n", rp.Linkages());
     if err = verify(ider, rp.Linkages()); err != nil {
         return nil, StatusFailed, errors.New(fmt.Sprintf("The linkage verification function returned an error: %s\n", err));
     }
-    panic("TODO");
     err = meddler.Insert(sr.DB, sr.Table, ider)
     return ider, StatusCreated, err;
 }

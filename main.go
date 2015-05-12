@@ -100,6 +100,7 @@ func main() {
 
     api.MountRelationship("logged_in_as", "session", "user", jsonapi.NewRelationshipBehaviorFromFieldToId("UserId"), jsonapi.NewAuthenticatorNone());
     api.MountRelationship("posts", "user", "post", jsonapi.NewRelationshipBehaviorFromFieldToField("ID", "UserId"), jsonapi.NewAuthenticatorNone());
+    api.MountRelationship("author", "post", "user", jsonapi.NewRelationshipBehaviorFromFieldToId("UserId"), jsonapi.NewAuthenticatorNone());
     api.MountRelationship("comments", "post", "comment", jsonapi.NewRelationshipBehaviorFromFieldToField("ID", "PostId"), jsonapi.NewAuthenticatorNone());
 
     // curl localhost:3030/api/user/0/pets

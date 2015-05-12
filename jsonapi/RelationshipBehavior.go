@@ -3,7 +3,9 @@ package jsonapi;
 // RelationshipBehavior is a "base interface"
 // children: IdRelationshipBehavior or a HasIdRelationshipBehavior
 type RelationshipBehavior interface {
-    VerifyLinks(ider Ider, linkages *OutputLinkage) (error)
+    VerifyLinks(ider Ider, linkages *OutputLinkage) error
+    PreCreate(ider Ider, linkages *OutputLinkage) error
+    PostCreate(ider Ider, linkages *OutputLinkage) error
 }
 
 type IdRelationshipBehavior interface{

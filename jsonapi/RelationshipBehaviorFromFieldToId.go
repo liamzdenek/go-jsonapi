@@ -3,6 +3,7 @@ package jsonapi;
 import(
     "reflect"
     "strconv"
+    "fmt"
 );
 
 type RelationshipBehaviorFromFieldToId struct {
@@ -30,5 +31,14 @@ func(l *RelationshipBehaviorFromFieldToId) LinkId(srcR, dstR *ResourceManagerRes
 }
 
 func(l *RelationshipBehaviorFromFieldToId) VerifyLinks(ider Ider, linkages *OutputLinkage) error {
+    fmt.Printf("Verify links\n");
+    return nil;
+}
+func(l *RelationshipBehaviorFromFieldToId) PreCreate(ider Ider, linkages *OutputLinkage) error {
+    fmt.Printf("Pre create\n");
+    return nil;
+}
+func(l *RelationshipBehaviorFromFieldToId) PostCreate(ider Ider, linkages *OutputLinkage) error {
+    fmt.Printf("Post create\n");
     return nil;
 }

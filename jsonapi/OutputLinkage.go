@@ -12,26 +12,28 @@ type OutputLinkage struct { // data[i].links["linkname"] etc
     Links []OutputLink `json:"linkage"`
 }
 
+type OutputLinkageMany struct {
+    Links []OutputLink `json:"linkage"`
+}
+type OutputLinkageSingle struct {
+    Link OutputLink `json:"linkage"`
+}
+
 func(o *OutputLinkage) UnmarshalJSON(data []byte) error {
-    type A struct {
-        Links []OutputLink `json:"linkage"`
-    }
-    type B struct {
-        Link OutputLink `json:"linkage"`
-    }
-    a := &A{}
+
+    a := &OutputLinkageSingle{}
     err := json.Unmarshal(data, a);
 
     if err != nil {
-        o.Links = a.Links;
+        o.Links = []OutputLink{a.Link};
         return nil;
     }
 
-    b := &B{};
+    b := &OutputLinkageMany{};
     err = json.Unmarshal(data, b);
 
     if err != nil {
-        o.Links = []OutputLink{b.Link};
+        o.Links = b.Links;
         return nil;
     }
 
