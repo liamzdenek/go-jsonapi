@@ -94,29 +94,81 @@ func main() {
 
     api := NewAPI();
 
-    api.MountResource("user", NewResourceSQL(db, "users", &User{}), NewAuthenticatorNone());
-    api.MountResource("post", NewResourceSQL(db, "posts", &Post{}), NewAuthenticatorNone());
-    api.MountResource("comment", NewResourceSQL(db, "comments", &Comment{}), NewAuthenticatorNone());
-    api.MountResource("session", NewSessionResource(), NewAuthenticatorNone());
+    // initialize our authentication scheme. The authenticator is where you put code to
+    // permit or refuse access to certain resources or linkages based on whatever rules
+    // for example, a resource might be admin-only, or retrieving a certain link might
+    // depend on any arbitrary condition
+    // AuthenticatorNone() is the only built in authenticator. Every request is granted.
+    no_auth := NewAuthenticatorNone();
 
-    api.MountRelationship("logged_in_as", "session", "user",
+    // Resources are one of the primary concepts in jsonapi. A resource defines CRUD primitives for
+    // retrieving and manipulating the underlying data. There are no resources built in to core,
+    // but the 'extras' folder (jsonapie) provides a few, such as ResourceSQL
+    resource_user := NewResourceSQL(db, "users", &User{}) // database, table name, raw struct to unwrap into
+    resource_post := NewResourceSQL(db, "posts", &Post{})
+    resource_comment := NewResourceSQL(db, "comments", &Comment{})
+    resource_session := NewSessionResource()
+
+    // api.MountResource informs the api of the provided resource, and makes the resource
+    // available to requests using the string given as the first parameter.
+    // Example requests (note, these are not exact responses as they have been simplified to exaggerate mechanics):
+    // * curl -X GET "localhost:3030/user/1"
+    //   * returns: {"data":{"type":"user","id":"1","attributes":{"name":"Jsonapi IsGreat"}}}
+    //
+    // * curl -X GET "localhost:3030/user/1,2,3"
+    //   * returns: {"data":[{"type":"user","id":"1","attributes":{"name":"Jsonapi IsGreat"}},{"type":"user","id":2", ...} ...]}
+    //
+    // * curl -X POST "localhost:3030/user" -d '{"data":"{"type":"user","id":"2","attributes":{"name":"JsonapiMakes Apis SoEasy"}}}'
+    //   * returns: 201 Created + Location header upon success
+    // TODO: write real docs about how all of this works
+    api.MountResource("user", resource_user, no_auth);
+    api.MountResource("post", resource_post, no_auth);
+    api.MountResource("comment", resource_comment, no_auth);
+    api.MountResource("session", resource_session, no_auth);
+
+    // Relationships are the other large concept in addition to Resources. Each relationship
+    // is a unidirectional associations between two resources. The relationship is given a name--
+    // in the following example, the relationship name is "logged_in_as", and it associates a given
+    // "session" with a "user." 
+    //
+    // Relationships have a RelationshipBehavior, which is responsible for taking any arbitrary
+    // record of the source resource, and converting it into the destination resource. There are
+    // no behaviors built in to core, but there are a few in jsonapi/extras
+    //
+    // Finally, relationships have an authenticator, which can refuse access upon any arbitrary
+    // conditions, just like Resources TODO: this isn't totally working as desired yet, so use with caution
+    // Example requests (note, these are not exact responses as they have been simplified to exaggerate mechanics):
+    // * curl -X GET "localhost:3030/session/1/logged_in_as"
+    //   * returns: {"data":{"type":"user","id":"1","attributes":{"name":"Jsonapi IsGreat"}}}
+    //
+    // * curl -X GET "localhost:3030/session/1/links/logged_in_as
+    //   * returns: {"data":{"type":"user","id":"1"}}
+    api.MountRelationship("logged_in_as", "session", "user", // name, src, dest
         NewRelationshipBehaviorFromFieldToId("UserId", Required),
-        NewAuthenticatorNone(),
+        no_auth,
     );
     api.MountRelationship("posts", "user", "post",
         NewRelationshipBehaviorFromFieldToField("ID", "UserId", Required),
-        NewAuthenticatorNone(),
+        no_auth,
     );
     api.MountRelationship("author", "post", "user",
         NewRelationshipBehaviorFromFieldToId("UserId", Required),
-        NewAuthenticatorNone(),
+        no_auth,
     );
     api.MountRelationship("comments", "post", "comment",
         NewRelationshipBehaviorFromFieldToField("ID", "PostId", Required),
-        NewAuthenticatorNone(),
+        no_auth,
     );
 
-    // curl localhost:3030/api/user/0/pets
+    // For requests with a resource as the primary "data" (aka, not a /:resource/:id/links/:linkname request),
+    // you may specify ?include=[includefmt] to include the data for additional links. For example:
+    //
+    // * curl -X GET "localhost:3030/session/1/logged_in_as?include=posts,posts.comments
+    //   * includes the additional field "includes" populated with all the data needed to navigate through the links.
+
+    // For guided documentation, see the 'docs' folder
+
+    // that's it! start the API
     fmt.Printf("Listening\n");
     err = http.ListenAndServe(":3030", api);
     if err != nil {
