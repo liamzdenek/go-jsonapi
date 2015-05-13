@@ -73,6 +73,10 @@ func main() {
     resource_comment := NewResourceSQL(db, "comments", &Comment{})
     resource_session := NewResourceRAM(&Session{});
 
+    // load up some test data to the session since it is entirely in RAM
+    resource_session.Push("1", &Session{ID: "1", UserId: 1, Created:time.Now()});
+    resource_session.Push("2", &Session{ID: "2", UserId: 2, Created:time.Now()});
+
     // api.MountResource informs the api of the provided resource, and makes the resource
     // available to requests using the string given as the first parameter.
     // Example requests (note, these are not exact responses as they have been simplified to exaggerate mechanics):

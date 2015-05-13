@@ -1,6 +1,6 @@
 package jsonapi;
 
-import ("encoding/json";"errors");
+import ("encoding/json";"errors";"fmt");
 
 type OutputData struct { // data
     Data []*OutputDatum
@@ -42,7 +42,12 @@ func NewOutputDataLinkage(isSingle bool, l *OutputLinkage) *OutputData {
 }
 
 func(o *OutputData) Prepare() {
-    for _,datum := range o.Data {
+    for i,datum := range o.Data {
+        if(datum.Datum == nil) {
+            fmt.Printf("DAtum is null\n");
+            o.Data = append(o.Data[:i],o.Data[i+1:]...);
+            continue;
+        }
         if(o.Included == nil) {
             panic(NewResponderError(errors.New("Cannot send response, OutputData Included is nil ptr")));
         }
@@ -89,6 +94,7 @@ type OutputDatum struct { // data[i]
 }
 
 func (o *OutputDatum) Prepare(included *[]Record) {
+    fmt.Printf("Denatre object: %#v\n", o.Datum);
     res := DenatureObject(o.Datum);
     delete(res, "ID");
     delete(res, "Id");

@@ -28,6 +28,10 @@ func NewResourceRAM(t Ider) *ResourceRAM {
     }
 }
 
+func(rr *ResourceRAM) Push(id string, ider Ider) {
+    rr.Storage[id] = ider;
+}
+
 func(rr *ResourceRAM) FindOne(id string) (Ider, error) {
     val, exists := rr.Storage[id];
     if(!exists) {

@@ -28,7 +28,9 @@ func(rr *RequestResolver) HandlerFindResourceById(a *API, w http.ResponseWriter,
     } else {
         var tres Ider;
         tres, rmr = rr.FindOne(a,r,resource_str,ids[0]);
-        res = []Ider{tres}
+        if(tres != nil) {
+            res = []Ider{tres}
+        }
     }
     data := []*OutputDatum{};
     for _, ider := range res {
