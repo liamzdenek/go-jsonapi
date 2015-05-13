@@ -12,7 +12,7 @@ import (
 );
 type Session struct{
     ID string `jsonapi:"id"`
-    UserId int `json:"user_id"`
+    UserId int `json:"-"`
     Created *time.Time `json:"created,omitempty"`
 }
 
@@ -50,7 +50,7 @@ func main() {
     no_auth := NewAuthenticatorNone();
 
     // Resources are one of the primary concepts in jsonapi. A resource defines CRUD primitives for
-    // retrieving and manipulating the underlying data. There are no resources built in to core,
+    // retrieving, manipulating, and parsing the underlying data. There are no resources built in to core,
     // but the 'extras' folder (jsonapie) provides a few, such as ResourceSQL
     resource_user := NewResourceSQL(db, "users", &User{}) // database, table name, raw struct to unwrap into
     resource_post := NewResourceSQL(db, "posts", &Post{})
