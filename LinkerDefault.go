@@ -24,7 +24,7 @@ func NewLinkerDefault(a *API, rmr *ResourceManagerResource, ider Ider, request *
 func(loi LinkerDefault) Link(included *[]Record) (*OutputLinkageSet) {
     rmr := loi.ResourceManagerResource;
     res := &OutputLinkageSet{
-        RelatedBase: loi.A.GetBaseURL(loi.Request)+rmr.Name+"/"+loi.Ider.Id(),
+        RelatedBase: loi.A.GetBaseURL(loi.Request)+rmr.Name+"/"+GetId(loi.Ider),
     };
     for linkname,rel := range rmr.RM.GetRelationshipsByResource(rmr.Name){
         shouldFetch := loi.Include.ShouldFetch(linkname);

@@ -26,7 +26,7 @@ func (rrc *ResponderRecordCreate) Respond(a *API, w http.ResponseWriter, r *http
     }
     if rrc.Status & StatusCreated != 0 {
         w.WriteHeader(201) // 201 Created
-        w.Header().Add("Location", a.GetBaseURL(r)+rrc.Resource+"/"+rrc.Ider.Id());
+        w.Header().Add("Location", a.GetBaseURL(r)+rrc.Resource+"/"+GetId(rrc.Ider));
     }
     //if rrc.Status & Status
     return nil;

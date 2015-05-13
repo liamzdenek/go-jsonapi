@@ -17,7 +17,11 @@ func NewRecordWrapper(i Ider, t string, l Linker, show bool) *RecordWrapper {
 }
 
 func(w *RecordWrapper) Id() string {
-    return w.Ider.Id();
+    return GetId(w.Ider);
+}
+
+func(w *RecordWrapper) SetId(s string) error {
+    panic("TODO: This");
 }
 
 func(w *RecordWrapper) Link(included *[]Record) *OutputLinkageSet {

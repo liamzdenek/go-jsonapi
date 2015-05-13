@@ -36,7 +36,7 @@ func(o OutputIncluded) MarshalJSON() ([]byte, error) {
     deduplicate := map[string]bool{};
     realres := []*OutputDatum{};
     for _,datum := range res {
-        s := datum.Datum.Type()+"_"+datum.Datum.Id();
+        s := datum.Datum.Type()+"_"+GetId(datum.Datum);
         if deduplicate[s] {
             continue;
         }

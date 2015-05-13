@@ -69,8 +69,8 @@ func(rr *ResourceRAM) Create(resource_str string, ider Ider, id *string) (Record
     if(id == nil) {
         return StatusFailed, errors.New("ResourceRAM requires specifying an ID for Create() requests."); // TODO: it should
     }
-    fmt.Printf("Setting %s = %#v\n", ider.Id(), ider);
-    rr.Storage[ider.Id()] = ider;
+    fmt.Printf("Setting %s = %#v\n", GetId(ider), ider);
+    rr.Storage[GetId(ider)] = ider;
     return StatusCreated, nil;
 }
 

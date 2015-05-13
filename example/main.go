@@ -11,43 +11,27 @@ import (
     "database/sql"
 );
 type Session struct{
-    ID string
+    ID string `jsonapi:"id"`
     UserId int `json:"user_id"`
     Created *time.Time `json:"created,omitempty"`
 }
 
-func(s *Session) Id() string {
-    return s.ID;
-}
-
 type User struct{
-    ID int `meddler:"id,pk"`
+    ID int `meddler:"id,pk" jsonapi:"id"`
     Name string `meddler:"name" json:"name"`
 }
 
-func(u *User) Id() string {
-    return fmt.Sprintf("%d",u.ID);
-}
-
 type Post struct {
-    ID int `meddler:"id,pk"`
+    ID int `meddler:"id,pk" jsonapi:"id"`
     UserId int `meddler:"user_id" json:"-"`
     Text string `meddler:"text" json:"text"`
 }
 
-func(p *Post) Id() string {
-    return fmt.Sprintf("%d",p.ID);
-}
-
 type Comment struct {
-    ID int `meddler:"id,pk"`
+    ID int `meddler:"id,pk" jsonapi:"id"`
     UserId int `meddler:"user_id" json:"-"`
     PostId int `meddler:"post_id" json:"-"`
     Text string `meddler:"text"`
-}
-
-func(c *Comment) Id() string {
-    return fmt.Sprintf("%d",c.ID);
 }
 
 func main() {

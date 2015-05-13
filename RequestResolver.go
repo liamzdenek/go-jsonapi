@@ -236,6 +236,12 @@ func(rr *RequestResolver) HandlerCreate(a *API, w http.ResponseWriter, r *http.R
     if(rtype != nil && *rtype != resource_str) {
         Reply(NewResponderRecordCreate(resource_str, nil, StatusFailed, errors.New(fmt.Sprintf("This is resource \"%s\" but the new object includes type:\"%s\"", resource_str, rtype))));
     }
+    if(id != nil && *id != "") {
+        err = SetId(ider, *id);
+        if(err != nil) {
+            Reply(NewResponderRecordCreate(resource_str, nil, StatusFailed, errors.New(fmt.Sprintf("SetId failed:\"%s\"", err))));
+        }
+    }
 
     // first, we must check the permissions and verify that the
     // supplied linkages for each relationship is valid per the

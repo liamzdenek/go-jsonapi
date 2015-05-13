@@ -46,7 +46,7 @@ func(rmr *ResourceManagerRelationship) ResolveIder(r *http.Request, lb IderRelat
     for _, link := range links {
         res.Links = append(res.Links, &OutputLink{
             Type: rmr.DstR,
-            Id: link.Id(),
+            Id: GetId(link),
         });
         //fmt.Printf("\nShouldFetch %v ShouldInclude %v\n\n", shouldFetch, shouldInclude);
         if(shouldFetch) {
@@ -59,7 +59,7 @@ func(rmr *ResourceManagerRelationship) ResolveIder(r *http.Request, lb IderRelat
 
 func(rmr *ResourceManagerRelationship) Resolve(src Ider, r *http.Request, shouldFetch bool, include *IncludeInstructions) (*OutputLinkage, []Record) {
     // TODO: make this authentication request captured here... a failure at a relationship should merely exclude that relationship
-    rmr.A.Authenticate("relationship.FindAll."+rmr.SrcR+"."+rmr.Name+"."+rmr.DstR, src.Id(), r);
+    rmr.A.Authenticate("relationship.FindAll."+rmr.SrcR+"."+rmr.Name+"."+rmr.DstR, GetId(src), r);
     // if we want included and it satisfies IderRelationshipBehavior, we 
     // should always prefer that over IdRelationshipBehavior
     if(shouldFetch) {
