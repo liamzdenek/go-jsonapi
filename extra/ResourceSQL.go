@@ -7,7 +7,6 @@ import (
     "strings"
     "fmt"
     "errors"
-    "encoding/json"
     . ".."
 );
 
@@ -87,27 +86,17 @@ func(sr *ResourceSQL) Delete(id string) error {
     return err;
 }
 
-func(sr *ResourceSQL) Create(resource_str string, raw []byte, verify ResourceCreateVerifyFunc) (Ider, RecordCreatedStatus, error) {
-    v := reflect.New(sr.Type).Interface();
-    rp := NewRecordParserSimple(v);
-    err := json.Unmarshal(raw, rp);
-    //rp := RecordParserSimpleData{Output:v};
-    //err := rp.UnmarshalJSON([]byte("{\"user_id\":123,\"id\":\"1234\",\"type\":\"post\"}"));
-    if(err != nil) {
-        return nil, StatusFailed, err;
+
+func(sr *ResourceSQL) ParseJSON(raw []byte) (Ider, *string, *string, *OutputLinkageSet, error) {
+    return ParseJSONHelper(raw, sr.Type);
+}
+
+func(sr *ResourceSQL) Create(resource_str string, ider Ider, id *string) (RecordCreatedStatus, error) {
+    if(id != nil) {
+        return StatusFailed, errors.New("ResourceSQL does not support specifying an ID for Create() requests."); // TODO: it should
     }
-    if(rp.Data.Id != nil) {
-        return nil, StatusFailed, errors.New("ResourceSQL does not support specifying an ID for Create() requests."); // TODO: it should
-    }
-    if(rp.Data.Type != resource_str) {
-        return nil, StatusFailed, errors.New(fmt.Sprintf("This is resource \"%s\" but the new object includes type:\"%s\"", resource_str, rp.Data.Type));
-    }
-    ider := v.(Ider);
-    if err = verify(ider, rp.Linkages()); err != nil {
-        return nil, StatusFailed, errors.New(fmt.Sprintf("The linkage verification function returned an error: %s\n", err));
-    }
-    err = meddler.Insert(sr.DB, sr.Table, ider)
-    return ider, StatusCreated, err;
+    err := meddler.Insert(sr.DB, sr.Table, ider)
+    return StatusCreated, err;
 }
 
 func (sr *ResourceSQL) ConvertInterfaceSliceToIderSlice(src interface{}) []Ider {

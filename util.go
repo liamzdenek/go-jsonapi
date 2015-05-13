@@ -1,6 +1,6 @@
 package jsonapi;
 
-import "reflect";
+import ("reflect";"encoding/json");
 
 func Check(e error) {
     if e != nil {
@@ -19,4 +19,17 @@ func GetField(field string, i interface{}) interface{} {
 
 func SetField(field string, i interface{}, v interface{}) {
     reflect.Indirect(reflect.ValueOf(i)).FieldByName(field).Set(reflect.ValueOf(v));
+}
+
+func ParseJSONHelper(raw []byte, t reflect.Type) (Ider, *string, *string, *OutputLinkageSet, error) {
+    v := reflect.New(t).Interface();
+    rp := NewRecordParserSimple(v);
+    err := json.Unmarshal(raw, rp);
+    if(err != nil) {
+        return nil, nil, nil, nil, err;
+    }
+    if(rp.Data.Linkages == nil) {
+        rp.Data.Linkages = &OutputLinkageSet{};
+    }
+    return v.(Ider), rp.Data.Id, &rp.Data.Type, rp.Linkages(), nil;
 }

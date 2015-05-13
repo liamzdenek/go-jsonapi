@@ -73,10 +73,11 @@ func(a *API) CatchResponses(w http.ResponseWriter, req *http.Request) {
             re := NewResponderOutput(r);
             re.Respond(a,w,req);
         case error:
+            fmt.Printf("Panic(error) is deprecated as it is always ambiguous. You probably intend to use panic(NewResponderError()) instead\n");
             re := NewResponderError(r);
             re.Respond(a,w,req);
         case string:
-            fmt.Printf("Panic(string) is deprecated as it is always ambiguous. You probably intend to use panic(NewResponderError()) instead");
+            fmt.Printf("Panic(string) is deprecated as it is always ambiguous. You probably intend to use panic(NewResponderError()) instead\n");
             re := NewResponderError(errors.New(r));
             re.Respond(a,w,req);
         default:

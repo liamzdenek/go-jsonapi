@@ -33,10 +33,11 @@ type RecordParserSimpleAttributes struct {
 
 func (rp *RecordParserSimpleAttributes) UnmarshalJSON(data []byte) error {
     raw := map[string]interface{}{};
+
     err := json.Unmarshal(data, &raw);
     if(err != nil) {
         return err;
     }
-    NatureObject(raw, rp.Output);
-    return nil;
+    err = NatureObject(raw, rp.Output);
+    return err;
 }

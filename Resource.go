@@ -1,7 +1,5 @@
 package jsonapi;
 
-type ResourceCreateVerifyFunc func(Ider, *OutputLinkageSet) error;
-
 type Resource interface {
     FindOne(id string) (Ider, error)
     FindMany(ids []string) ([]Ider, error)
@@ -10,6 +8,7 @@ type Resource interface {
     // does not easily support this right now
     //FindManyByFieldWithManyValues(field string, []value string) ([]Ider, error)
     Delete(id string) error
-    Create(resource_str string, raw []byte, verify ResourceCreateVerifyFunc) (ider Ider, status RecordCreatedStatus, err error)
+    ParseJSON(raw []byte) (ider Ider, id *string, rtype *string, links *OutputLinkageSet, err error)
+    Create(resource_str string, ider Ider, id *string) (status RecordCreatedStatus, err error)
     //Update(resource_str, id string, ) error
 }

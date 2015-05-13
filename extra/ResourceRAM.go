@@ -3,9 +3,7 @@ package jsonapie;
 import (
     "reflect"
     "strings"
-    "fmt"
     "errors"
-    "encoding/json"
     . ".."
 );
 
@@ -62,25 +60,16 @@ func(rr *ResourceRAM) Delete(id string) error {
     return nil;
 }
 
-func(rr *ResourceRAM) Create(resource_str string, raw []byte, verify ResourceCreateVerifyFunc) (Ider, RecordCreatedStatus, error) {
-    v := reflect.New(rr.Type).Interface();
-    rp := NewRecordParserSimple(v);
-    err := json.Unmarshal(raw, rp);
-    if(err != nil) {
-        return nil, StatusFailed, err;
-    }
-    if(rp.Data.Id == nil) {
-        return nil, StatusFailed, errors.New("ResourceRAM requires specifying an ID for Create() requests."); // TODO: it should
-    }
-    if(rp.Data.Type != resource_str) {
-        return nil, StatusFailed, errors.New(fmt.Sprintf("This is resource \"%s\" but the new object includes type:\"%s\"", resource_str, rp.Data.Type));
-    }
-    ider := v.(Ider);
-    if err = verify(ider, rp.Linkages()); err != nil {
-        return nil, StatusFailed, errors.New(fmt.Sprintf("The linkage verification function returned an error: %s\n", err));
+func(rr *ResourceRAM) ParseJSON(raw []byte) (Ider, *string, *string, *OutputLinkageSet, error) {
+    return ParseJSONHelper(raw, rr.Type);
+}
+
+func(rr *ResourceRAM) Create(resource_str string, ider Ider, id *string) (RecordCreatedStatus, error) {
+    if(id == nil) {
+        return StatusFailed, errors.New("ResourceRAM requires specifying an ID for Create() requests."); // TODO: it should
     }
     rr.Storage[ider.Id()] = ider;
-    return ider, StatusCreated, nil;
+    return StatusCreated, nil;
 }
 
 func (rr *ResourceRAM) GetTableFieldFromStructField(structstr string) (string, error) {

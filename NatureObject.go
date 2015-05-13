@@ -1,12 +1,13 @@
 package jsonapi;
 
-import ("reflect";"strings";);
+import ("reflect";"strings";"fmt";"errors");
 
 type Naturer interface {
     Nature() interface{}
 }
 
-func NatureObject(data map[string]interface{}, res interface{}) {
+func NatureObject(data map[string]interface{}, res interface{}) error {
+    //TODO: this function should catch panics
     for {
         if d, found := res.(Naturer); found {
             res = d.Nature();
@@ -42,10 +43,16 @@ func NatureObject(data map[string]interface{}, res interface{}) {
                 }
             }
         }
-        //fmt.Printf("Setting field %v = %v\n", t.Field(i).Name, data[tag[0]]);
-        v.Field(i).Set(
-            reflect.ValueOf(data[tag[0]]).Convert(t.Field(i).Type),
-        );
+        val := reflect.ValueOf(data[tag[0]]);
+        target_type := t.Field(i).Type;
+        if(!val.IsValid()) {
+            return errors.New(fmt.Sprintf("Value received for field '%s' is not valid... did you forget to provide it?", tag[0]));
+        }
+        if(!val.Type().ConvertibleTo(target_type)) {
+            return errors.New(fmt.Sprintf("Value retrieved for field '%s' is not ConvertibleTo Type '%s'", tag[0], target_type.String()));
+        }
+        v.Field(i).Set(val.Convert(target_type));
         delete(data, tag[0]);
     }
+    return nil;
 }
