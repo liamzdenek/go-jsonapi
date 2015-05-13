@@ -20,42 +20,6 @@ func(s *Session) Id() string {
     return s.ID;
 }
 
-/*func(s *Session) SetId(id string) error {
-    s.ID = id;
-    return nil;
-}*/
-type SessionResource struct{
-}
-
-func NewSessionResource() *SessionResource {
-    return &SessionResource{}
-}
-
-func(sr *SessionResource) FindMany(ids []string) ([]Ider, error) {
-    return []Ider{
-        &Session{ID:"123",Created:time.Now(),UserId:1},
-        &Session{ID:"124",Created:time.Now(),UserId:2},
-        &Session{ID:"125",Created:time.Now(),UserId:3},
-    }, nil;
-    return nil, nil;
-}
-
-func(sr *SessionResource) FindOne(id string) (Ider, error) {
-    return &Session{ID:"123",Created:time.Now(),UserId:1}, nil;
-}
-
-func(sr *SessionResource) FindManyByField(field string, value string) ([]Ider, error) {
-    panic(NewResponderErrorOperationNotSupported("Session does not support FindManyByField"));
-}
-
-func(sr *SessionResource) Delete(id string) error {
-    panic(NewResponderErrorOperationNotSupported("Session does not support Delete"));
-}
-
-func(sr *SessionResource) Create(resource_str string, raw []byte, verify ResourceCreateVerifyFunc) (Ider, RecordCreatedStatus, error) {
-    panic(NewResponderErrorOperationNotSupported("Session does not support Create"));
-}
-
 type User struct{
     ID int `meddler:"id,pk"`
     Name string `meddler:"name" json:"name"`
@@ -107,7 +71,7 @@ func main() {
     resource_user := NewResourceSQL(db, "users", &User{}) // database, table name, raw struct to unwrap into
     resource_post := NewResourceSQL(db, "posts", &Post{})
     resource_comment := NewResourceSQL(db, "comments", &Comment{})
-    resource_session := NewSessionResource()
+    resource_session := NewResourceRAM(&Session{});
 
     // api.MountResource informs the api of the provided resource, and makes the resource
     // available to requests using the string given as the first parameter.
