@@ -13,7 +13,7 @@ import (
 type Session struct{
     ID string
     UserId int `json:"user_id"`
-    Created time.Time `json:"created,omitempty"`
+    Created *time.Time `json:"created,omitempty"`
 }
 
 func(s *Session) Id() string {
@@ -74,8 +74,9 @@ func main() {
     resource_session := NewResourceRAM(&Session{});
 
     // load up some test data to the session since it is entirely in RAM
-    resource_session.Push("1", &Session{ID: "1", UserId: 1, Created:time.Now()});
-    resource_session.Push("2", &Session{ID: "2", UserId: 2, Created:time.Now()});
+    now := time.Now();
+    resource_session.Push("1", &Session{ID: "1", UserId: 1, Created:&now});
+    resource_session.Push("2", &Session{ID: "2", UserId: 2, Created:&now});
 
     // api.MountResource informs the api of the provided resource, and makes the resource
     // available to requests using the string given as the first parameter.

@@ -1,6 +1,6 @@
 package jsonapi;
 
-import ("reflect";"strings";"fmt";"errors");
+import ("reflect";"strings";"fmt";"errors";"encoding";);
 
 type Naturer interface {
     Nature() interface{}
@@ -48,11 +48,35 @@ func NatureObject(data map[string]interface{}, res interface{}) error {
         if(!val.IsValid()) {
             return errors.New(fmt.Sprintf("Value received for field '%s' is not valid... did you forget to provide it?", tag[0]));
         }
-        if(!val.Type().ConvertibleTo(target_type)) {
-            return errors.New(fmt.Sprintf("Value retrieved for field '%s' is not ConvertibleTo Type '%s'", tag[0], target_type.String()));
+
+        if(val.Type().ConvertibleTo(target_type)) {
+            v.Field(i).Set(val.Convert(target_type));
+            delete(data, tag[0]);
+            continue;
         }
-        v.Field(i).Set(val.Convert(target_type));
-        delete(data, tag[0]);
+
+        if(v.Field(i).IsNil()) {
+            fmt.Printf("FIELD: %s -- TYPE: %s\n", v.Field(i).Interface(), v.Field(i).Type());
+            n := reflect.New(v.Field(i).Type().Elem());
+            v.Field(i).Set(n);
+        }
+        ov := val.Interface();
+        nv := v.Field(i).Interface();
+
+        fmt.Printf("testing if Is a string - %s %v\n", tag[0], ov);
+        if str, ok := ov.(string); ok {
+            fmt.Printf("Is a string\n");
+            if unm, ok := nv.(encoding.TextUnmarshaler); ok {
+                err := unm.UnmarshalText([]byte(str));
+                if(err != nil) {
+                    return errors.New(fmt.Sprintf("Value received for field '%s' is not", tag[0]));
+                }
+                delete(data, tag[0]);
+                continue;
+            }
+        }
+
+        return errors.New(fmt.Sprintf("Value retrieved for field '%s' is not ConvertibleTo Type '%s'", tag[0], target_type.String()));
     }
     return nil;
 }

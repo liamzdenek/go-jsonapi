@@ -255,6 +255,8 @@ func(rr *RequestResolver) HandlerCreate(a *API, w http.ResponseWriter, r *http.R
             Reply(NewResponderRecordCreate(resource_str, nil, StatusFailed, err));
         }
     }
+    // trigger the pre-creates so the linkages have a chance to modify
+    // the id object before it's inserted
     for _,linkage := range linkages.Linkages {
         rel := a.RM.GetRelationship(resource_str, linkage.LinkName)
         err := rel.B.PreCreate(ider,linkage);
