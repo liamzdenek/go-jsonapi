@@ -91,7 +91,7 @@ func(sr *ResourceSQL) ParseJSON(raw []byte) (Ider, *string, *string, *OutputLink
     return ParseJSONHelper(raw, sr.Type);
 }
 
-func(sr *ResourceSQL) Create(resource_str string, ider Ider, id *string) (RecordCreatedStatus, error) {
+func(sr *ResourceSQL) Create(ctx ContextId, resource_str string, ider Ider, id *string) (RecordCreatedStatus, error) {
     if(id != nil) {
         return StatusFailed, errors.New("ResourceSQL does not support specifying an ID for Create() requests."); // TODO: it should
     }

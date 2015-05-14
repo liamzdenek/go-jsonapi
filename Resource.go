@@ -9,6 +9,6 @@ type Resource interface {
     //FindManyByFieldWithManyValues(field string, []value string) ([]Ider, error)
     Delete(id string) error
     ParseJSON(raw []byte) (ider Ider, id *string, rtype *string, links *OutputLinkageSet, err error)
-    Create(resource_str string, ider Ider, id *string) (status RecordCreatedStatus, err error)
+    Create(ctx ContextId, resource_str string, ider Ider, id *string) (status RecordCreatedStatus, err error)
     //Update(resource_str, id string, ) error
 }

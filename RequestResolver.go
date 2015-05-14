@@ -211,6 +211,7 @@ func(rr *RequestResolver) HandlerDelete(a *API, w http.ResponseWriter, r *http.R
  * * POST /:resource
  */
 func(rr *RequestResolver) HandlerCreate(a *API, w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+    ctx := a.GetNewContextId();
     resource_str := ps.ByName("resource");
     resource := a.RM.GetResource(resource_str);
 
@@ -271,7 +272,7 @@ func(rr *RequestResolver) HandlerCreate(a *API, w http.ResponseWriter, r *http.R
         }
     }
 
-    createdStatus, err := resource.R.Create(resource_str,ider,id);
+    createdStatus, err := resource.R.Create(ctx,resource_str,ider,id);
     if(err == nil && ider != nil && createdStatus & StatusCreated != 0) {
         for _,linkage := range linkages.Linkages {
             rel := a.RM.GetRelationship(resource_str, linkage.LinkName)

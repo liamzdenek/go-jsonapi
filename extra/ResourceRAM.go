@@ -65,11 +65,11 @@ func(rr *ResourceRAM) ParseJSON(raw []byte) (Ider, *string, *string, *OutputLink
     return ParseJSONHelper(raw, rr.Type);
 }
 
-func(rr *ResourceRAM) Create(resource_str string, ider Ider, id *string) (RecordCreatedStatus, error) {
+func(rr *ResourceRAM) Create(ctx ContextId, resource_str string, ider Ider, id *string) (RecordCreatedStatus, error) {
     if(id == nil) {
         return StatusFailed, errors.New("ResourceRAM requires specifying an ID for Create() requests."); // TODO: it should
     }
-    fmt.Printf("Setting %s = %#v\n", GetId(ider), ider);
+    fmt.Printf("Setting %d %s = %#v\n", ctx, GetId(ider), ider);
     rr.Storage[GetId(ider)] = ider;
     return StatusCreated, nil;
 }

@@ -7,6 +7,7 @@ type API struct{
     BaseURIPath string
     RM *ResourceManager
     RR *RequestResolver
+    ContextIdChan chan ContextId
 }
 
 func NewAPI() *API {
@@ -15,8 +16,17 @@ func NewAPI() *API {
         RM: NewResourceManager(),
         RR: NewRequestResolver(),
         BaseURIPath: "/",
+        ContextIdChan: make(chan ContextId),
     };
     api.InitRouter();
+
+    go func() {
+        i := 0;
+        for {
+            api.ContextIdChan <- ContextId(i);
+            i++;
+        }
+    }();
     return api;
 }
 
@@ -59,7 +69,7 @@ func (a *API) InitRouter() {
 
 // so the API can be mounted as a http handler
 func(a *API) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-    defer a.CatchResponses(w,r);
+    //defer a.CatchResponses(w,r);
     a.Router.ServeHTTP(w, r);
 }
 
@@ -112,4 +122,8 @@ func(a *API) Wrap(child func(a *API, w http.ResponseWriter, r *http.Request, par
     return func(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
         child(a,w,r,params);
     }
+}
+
+func (a *API) GetNewContextId() ContextId {
+    return <-a.ContextIdChan;
 }

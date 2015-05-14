@@ -14,6 +14,9 @@ func GetId(ider Ider) string {
     if str, ok := val.(string); ok {
         return str;
     }
+    if id, ok := val.(int); ok {
+        return fmt.Sprintf("%d", id);
+    }
     if str, ok := val.(fmt.Stringer); ok {
         return str.String();
     }
