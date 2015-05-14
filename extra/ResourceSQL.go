@@ -31,6 +31,11 @@ func NewResourceSQL(db *sql.DB, table string, t Ider) *ResourceSQL {
     }
 }
 
+func(sr *ResourceSQL) CastContext(ctx Context) ContextResourceSQL {
+    // TODO: proper error handling
+    return ctx.(ContextResourceSQL);
+}
+
 func(sr *ResourceSQL) FindOne(id string) (Ider, error) {
     v := reflect.New(sr.Type).Interface();
     err := meddler.QueryRow(sr.DB, v, "SELECT * FROM "+sr.Table+" WHERE id=?", id);
@@ -91,11 +96,17 @@ func(sr *ResourceSQL) ParseJSON(raw []byte) (Ider, *string, *string, *OutputLink
     return ParseJSONHelper(raw, sr.Type);
 }
 
-func(sr *ResourceSQL) Create(ctx ContextId, resource_str string, ider Ider, id *string) (RecordCreatedStatus, error) {
+func(sr *ResourceSQL) Create(ctx Context, resource_str string, ider Ider, id *string) (RecordCreatedStatus, error) {
+    sqlctx := sr.CastContext(ctx);
+    fmt.Printf("CREATE GOT CONTEXT: %#v\n", sqlctx);
     if(id != nil) {
         return StatusFailed, errors.New("ResourceSQL does not support specifying an ID for Create() requests."); // TODO: it should
     }
-    err := meddler.Insert(sr.DB, sr.Table, ider)
+    tx, err := sqlctx.GetSQLTransaction(sr.DB)
+    if err != nil {
+        return StatusFailed, err;
+    }
+    err = meddler.Insert(tx, sr.Table, ider)
     return StatusCreated, err;
 }
 

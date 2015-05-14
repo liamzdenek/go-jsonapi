@@ -45,7 +45,6 @@ func(l *RelationshipBehaviorFromFieldToId) VerifyLinks(ider Ider, linkages *Outp
     return nil;
 }
 func(l *RelationshipBehaviorFromFieldToId) PreCreate(ider Ider, linkages *OutputLinkage) error {
-    fmt.Printf("Links: %#v\n", linkages);
     if(len(linkages.Links) == 0 || linkages.Links[0] == nil) {
         return errors.New("RelationshipBehaviorFromFieldToId requires id to be provided for new records");
     }

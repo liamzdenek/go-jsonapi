@@ -40,7 +40,9 @@ func main() {
         panic(err);
     }
 
-    api := NewAPI();
+    ctxf := NewContextFactorySimple();
+
+    api := NewAPI(ctxf);
 
     // initialize our authentication scheme. The authenticator is where you put code to
     // permit or refuse access to certain resources or linkages based on whatever rules

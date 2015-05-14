@@ -211,7 +211,7 @@ func(rr *RequestResolver) HandlerDelete(a *API, w http.ResponseWriter, r *http.R
  * * POST /:resource
  */
 func(rr *RequestResolver) HandlerCreate(a *API, w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-    ctx := a.GetNewContextId();
+    ctx := a.GetNewContext();
     resource_str := ps.ByName("resource");
     resource := a.RM.GetResource(resource_str);
 
@@ -228,19 +228,19 @@ func(rr *RequestResolver) HandlerCreate(a *API, w http.ResponseWriter, r *http.R
 
     ider,id,rtype,linkages,err := resource.R.ParseJSON(body);
     if err != nil {
-        Reply(NewResponderRecordCreate(resource_str, nil, StatusFailed, errors.New(fmt.Sprintf("ParseJSON threw error: %s", err))));
+        Reply(NewResponderRecordCreate(ctx, resource_str, nil, StatusFailed, errors.New(fmt.Sprintf("ParseJSON threw error: %s", err))));
     }
 
     if(ider == nil) {
-        Reply(NewResponderRecordCreate(resource_str, nil, StatusFailed, errors.New("No error was thrown but ParseJSON did not return a valid object")));
+        Reply(NewResponderRecordCreate(ctx, resource_str, nil, StatusFailed, errors.New("No error was thrown but ParseJSON did not return a valid object")));
     }
     if(rtype != nil && *rtype != resource_str) {
-        Reply(NewResponderRecordCreate(resource_str, nil, StatusFailed, errors.New(fmt.Sprintf("This is resource \"%s\" but the new object includes type:\"%s\"", resource_str, rtype))));
+        Reply(NewResponderRecordCreate(ctx, resource_str, nil, StatusFailed, errors.New(fmt.Sprintf("This is resource \"%s\" but the new object includes type:\"%s\"", resource_str, rtype))));
     }
     if(id != nil && *id != "") {
         err = SetId(ider, *id);
         if(err != nil) {
-            Reply(NewResponderRecordCreate(resource_str, nil, StatusFailed, errors.New(fmt.Sprintf("SetId failed:\"%s\"", err))));
+            Reply(NewResponderRecordCreate(ctx, resource_str, nil, StatusFailed, errors.New(fmt.Sprintf("SetId failed:\"%s\"", err))));
         }
     }
 
@@ -259,7 +259,7 @@ func(rr *RequestResolver) HandlerCreate(a *API, w http.ResponseWriter, r *http.R
         rel.A.Authenticate("relationship.Create."+rel.SrcR+"."+rel.Name+"."+rel.DstR, "", r);
         err := rel.B.VerifyLinks(ider,linkage);
         if err != nil {
-            Reply(NewResponderRecordCreate(resource_str, nil, StatusFailed, err));
+            Reply(NewResponderRecordCreate(ctx,resource_str, nil, StatusFailed, err));
         }
     }
     // trigger the pre-creates so the linkages have a chance to modify
@@ -268,7 +268,7 @@ func(rr *RequestResolver) HandlerCreate(a *API, w http.ResponseWriter, r *http.R
         rel := a.RM.GetRelationship(resource_str, linkage.LinkName)
         err := rel.B.PreCreate(ider,linkage);
         if err != nil {
-            Reply(NewResponderRecordCreate(resource_str, nil, StatusFailed, err));
+            Reply(NewResponderRecordCreate(ctx,resource_str, nil, StatusFailed, err));
         }
     }
 
@@ -278,11 +278,11 @@ func(rr *RequestResolver) HandlerCreate(a *API, w http.ResponseWriter, r *http.R
             rel := a.RM.GetRelationship(resource_str, linkage.LinkName)
             err = rel.B.PostCreate(ider,linkage);
             if err != nil {
-                Reply(NewResponderRecordCreate(resource_str, nil, StatusFailed, err));
+                Reply(NewResponderRecordCreate(ctx,resource_str, nil, StatusFailed, err));
             }
         }
     }
-    Reply(NewResponderRecordCreate(resource_str, ider, createdStatus, err));
+    Reply(NewResponderRecordCreate(ctx,resource_str, ider, createdStatus, err));
 }
 
 func(rr *RequestResolver) HandlerUpdate(a *API, w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
