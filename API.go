@@ -8,7 +8,6 @@ type API struct{
     RM *ResourceManager
     RR *RequestResolver
     ContextFactory ContextFactory
-    WorkerPool *WorkerPool
 }
 
 func NewAPI(ctxm ContextFactory) *API {
@@ -18,7 +17,6 @@ func NewAPI(ctxm ContextFactory) *API {
         RR: NewRequestResolver(),
         BaseURIPath: "/",
         ContextFactory: ctxm,
-        WorkerPool: NewWorkerPool(),
     };
     api.InitRouter();
     return api;

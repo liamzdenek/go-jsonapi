@@ -48,7 +48,7 @@ func(rmr *ResourceManagerRelationship) ResolveIder(r *http.Request, lb IderRelat
             Type: rmr.DstR,
             Id: GetId(link),
         });
-        //fmt.Printf("\nShouldFetch %v ShouldInclude %v\n\n", shouldFetch, shouldInclude);
+        fmt.Printf("\nShouldFetch %v ShouldInclude %v -- %s %#v\n\n", shouldFetch, shouldInclude, rmr.Name, include);
         if(shouldFetch) {
             roi := NewLinkerDefault(rmr.API, dstRmr, link, r, include.GetChild(rmr.Name));
             included = append(included, NewRecordWrapper(link,rmr.DstR, roi, shouldInclude));

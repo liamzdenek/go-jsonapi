@@ -1,6 +1,6 @@
 package jsonapi;
 
-import ("reflect";"encoding/json");
+import ("reflect";"encoding/json";);
 
 func Check(e error) {
     if e != nil {
@@ -14,6 +14,13 @@ func Reply(a interface{}) {
 }
 
 func GetField(field string, i interface{}) interface{} {
+    for {
+        if n,ok := i.(Denaturer); ok {
+            i = n.Denature();
+        } else {
+            break;
+        }
+    }
     return reflect.Indirect(reflect.ValueOf(i)).FieldByName(field).Interface();
 }
 

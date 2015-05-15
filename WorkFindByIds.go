@@ -5,12 +5,12 @@ import("fmt";"net/http")
 type WorkFindByIds struct {
     Resource string
     Ids []string
-    Output chan chan []Ider
+    Output chan chan []IderTyper
 }
 
 func NewWorkFindByIds(resource string, ids []string) *WorkFindByIds {
     return &WorkFindByIds{
-        Output: make(chan chan []Ider),
+        Output: make(chan chan []IderTyper),
         Ids: ids,
         Resource: resource,
     }
@@ -44,9 +44,13 @@ func(w *WorkFindByIds) Work(a *API, r *http.Request) {
         // TODO: is this the right error?
         panic(NewResponderError(err));
     }
+    res := []IderTyper{};
+    for _,ider := range data {
+        res = append(res, NewIderTyperWrapper(ider,w.Resource));
+    }
     go func() {
         for out := range w.Output {
-            out <- data;
+            out <- res;
         }
     }();
 }
@@ -56,8 +60,8 @@ func(w *WorkFindByIds) Cleanup(a *API, r *http.Request) {
     close(w.Output);
 }
 
-func(w *WorkFindByIds) GetResult() []Ider {
-    r := make(chan []Ider);
+func(w *WorkFindByIds) GetResult() []IderTyper {
+    r := make(chan []IderTyper);
     defer close(r);
     w.Output <- r;
     return <-r;

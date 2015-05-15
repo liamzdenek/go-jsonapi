@@ -16,17 +16,18 @@ func NewRequestResolver() *RequestResolver {
  */
 
 func(rr *RequestResolver) HandlerFindResourceById(a *API, w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-    wctx := a.WorkerPool.NewWorkContext(a,r);
-    defer close(wctx);
+    ii := NewIncludeInstructionsFromRequest(r);
+    wctx := NewWorkerContext(a,r);
+    //defer close(wctx);
     //output := NewOutput(r);
     work := NewWorkFindByIds(
         ps.ByName("resource"),
         strings.Split(ps.ByName("id"),","),
     );
-    wctx <- work;
-    attacher := NewWorkAttachIncluded(work);
-    wctx <- attacher;
-    fmt.Printf("RESULT: %#v\n", work.GetResult());
+    PushWork(wctx, work);
+    attacher := NewWorkAttachIncluded(wctx, work, ii);
+    PushWork(wctx, attacher);
+    Reply(attacher.GetResult());
     //output.Data = NewOutputDataResources(true, work.GetResult());
     /*ii := NewIncludeInstructionsFromRequest(r);
     output := NewOutput(r);
