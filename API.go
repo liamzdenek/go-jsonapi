@@ -63,8 +63,10 @@ func (a *API) InitRouter() {
 
 // so the API can be mounted as a http handler
 func(a *API) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+    //fmt.Printf("BEGIN GOROUTINES: %d\n", runtime.NumGoroutine());
     defer a.CatchResponses(w,r);
     a.Router.ServeHTTP(w, r);
+    //fmt.Printf("BEGIN GOROUTINES: %d\n", runtime.NumGoroutine());
 }
 
 func(a *API) CatchResponses(w http.ResponseWriter, req *http.Request) {

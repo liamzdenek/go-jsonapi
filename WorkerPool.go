@@ -43,8 +43,10 @@ func(wp *WorkerPool) NewWorkContext(a *API, r *http.Request) chan Worker {
             select {
             case worker, ok := <-res:
                 if(!ok) {
-                    // chan closed
-                    break OUTER;
+                    break OUTER; // chan closed
+                }
+                if(has_paniced) {
+                    continue;
                 }
                 defer worker.Cleanup(a,r);
                 wp.Queue <- InternalWorkerWrapper{
@@ -55,9 +57,10 @@ func(wp *WorkerPool) NewWorkContext(a *API, r *http.Request) chan Worker {
                 }
             case caught := <-panics:
                 has_paniced = true;
-                fmt.Printf("CAUGHT PANIC: %v\n", caught);
+                fmt.Printf("CAUGHT PANIC: %#v\n", caught);
             }
         }
+        fmt.Printf("CONTEXT CLEANUP\n");
     }()
     return res;
 }

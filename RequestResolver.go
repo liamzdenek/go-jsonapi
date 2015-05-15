@@ -19,11 +19,13 @@ func(rr *RequestResolver) HandlerFindResourceById(a *API, w http.ResponseWriter,
     wctx := a.WorkerPool.NewWorkContext(a,r);
     defer close(wctx);
     //output := NewOutput(r);
-    work := NewWorkFindOne(
+    work := NewWorkFindByIds(
         ps.ByName("resource"),
-        ps.ByName("id"),
+        strings.Split(ps.ByName("id"),","),
     );
     wctx <- work;
+    attacher := NewWorkAttachIncluded(work);
+    wctx <- attacher;
     fmt.Printf("RESULT: %#v\n", work.GetResult());
     //output.Data = NewOutputDataResources(true, work.GetResult());
     /*ii := NewIncludeInstructionsFromRequest(r);
@@ -54,35 +56,6 @@ func(rr *RequestResolver) HandlerFindResourceById(a *API, w http.ResponseWriter,
     Reply(output);*/
 }
 
-func(rr *RequestResolver) FindOne(a *API, r *http.Request, resource_str, id_str string) (Ider, *ResourceManagerResource) {
-    resource := a.RM.GetResource(resource_str);
-
-    if(resource == nil) {
-        panic(NewResponderErrorResourceDoesNotExist(resource_str));
-    }
-
-    resource.A.Authenticate("resource.FindOne."+resource_str, id_str, r);
-
-    data, err := resource.R.FindOne(id_str);
-    Check(err);
-    return data, resource;
-}
-
-func(rr *RequestResolver) FindMany(a *API, r *http.Request, resource_str string, ids []string) ([]Ider, *ResourceManagerResource) {
-    resource := a.RM.GetResource(resource_str);
-
-    if(resource == nil) {
-        panic(NewResponderErrorResourceDoesNotExist(resource_str));
-    }
-
-    id_str := strings.Join(ids, ",");
-
-    resource.A.Authenticate("resource.FindMany."+resource_str, id_str, r);
-
-    data, err := resource.R.FindMany(ids);
-    Check(err);
-    return data,resource;
-}
 
 /************************************************
  *
@@ -94,6 +67,7 @@ func(rr *RequestResolver) FindMany(a *API, r *http.Request, resource_str string,
  */
 
 func(rr *RequestResolver) HandlerFindLinksByResourceId(a *API, w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+    /*
     ii := NewIncludeInstructionsFromRequest(r);
     fmt.Printf("II: %#v\n",ii);
     output := NewOutput(r);
@@ -144,6 +118,7 @@ func(rr *RequestResolver) HandlerFindLinksByResourceId(a *API, w http.ResponseWr
     fmt.Printf("\nREPLYING\n\n");
 
     Reply(output);
+    */
 }
 
 /************************************************
@@ -159,6 +134,7 @@ func(rr *RequestResolver) HandlerFindLinksByResourceId(a *API, w http.ResponseWr
  */
 
 func(rr *RequestResolver) HandlerFindLinkByNameAndResourceId(a *API, w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+    /*
     ii := NewIncludeInstructionsFromRequest(r);
     output := NewOutput(r);
     ids := strings.Split(ps.ByName("id"),",");
@@ -184,6 +160,7 @@ func(rr *RequestResolver) HandlerFindLinkByNameAndResourceId(a *API, w http.Resp
     output.Included = NewOutputIncluded(include);
     output.Data = NewOutputDataLinkage(true, link);
     Reply(output);
+    */
 }
 
 /************************************************
