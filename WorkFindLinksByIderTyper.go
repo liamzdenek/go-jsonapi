@@ -11,6 +11,7 @@ type WorkFindLinksByIderTyper struct {
     IderTyper IderTyper
     II *IncludeInstructions
     Output chan chan *WorkFindLinksByIderTyperResult
+    Result *WorkFindLinksByIderTyperResult
 }
 
 func NewWorkFindLinksByIderTyper(idertyper IderTyper, ii *IncludeInstructions) *WorkFindLinksByIderTyper {
@@ -30,13 +31,16 @@ func (w *WorkFindLinksByIderTyper) Work(a *API, r *http.Request) {
         w.II,
     );
     included := []Record{}
-    res := &WorkFindLinksByIderTyperResult{
+    w.Result = &WorkFindLinksByIderTyperResult{
         Links: linker.Link(&included),
         Included: &included,
     }
+}
+
+func(w *WorkFindLinksByIderTyper) ResponseWorker(has_paniced bool) {
     go func() {
         for r := range w.Output {
-            r <- res;
+            r <- w.Result;
         }
     }()
 }

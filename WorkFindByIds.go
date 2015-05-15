@@ -6,6 +6,7 @@ type WorkFindByIds struct {
     Resource string
     Ids []string
     Output chan chan []IderTyper
+    Result []IderTyper
 }
 
 func NewWorkFindByIds(resource string, ids []string) *WorkFindByIds {
@@ -49,9 +50,13 @@ func(w *WorkFindByIds) Work(a *API, r *http.Request) {
     for _,ider := range data {
         res = append(res, NewIderTyperWrapper(ider,w.Resource));
     }
+    w.Result = res;
+}
+
+func(w *WorkFindByIds) ResponseWorker(has_paniced bool) {
     go func() {
         for out := range w.Output {
-            out <- res;
+            out <- w.Result;
         }
     }();
 }

@@ -18,13 +18,18 @@ func(w *WorkReplyer) Work(a *API, r *http.Request) {
     fmt.Printf("Waiting for final result\n");
     res := w.WorkerOutput.GetResult();
     fmt.Printf("FINAL RESULT: %#v\n", res);
+    Reply(res)
+}
+
+func(w *WorkReplyer) ResponseWorker(has_paniced bool) {
     go func() {
         for req := range w.Output {
             req <- true;
         }
     }();
-    Reply(res)
 }
+
+
 func(w *WorkReplyer) Cleanup(a *API, r *http.Request) {
     defer close(w.Output);
 }

@@ -7,6 +7,7 @@ type WorkAttachIncluded struct {
     Parent WorkerResultIderTypers
     II *IncludeInstructions
     Output chan chan *Output
+    ActualOutput *Output
 }
 
 func NewWorkAttachIncluded(ctx *WorkerContext, parent WorkerResultIderTypers, ii *IncludeInstructions) *WorkAttachIncluded {
@@ -55,12 +56,18 @@ func (w *WorkAttachIncluded) Work(a *API, r *http.Request) {
         }
     }
     res := &Output{};
+    fmt.Printf("DATA: %#v\n", data);
     // TODO: repalce const true with actual calculation for single
-    res.Data = NewOutputDataResources(true, data);
+    res.Data = NewOutputDataResources(false, data);
     res.Included = NewOutputIncluded(&included);
+
+    w.ActualOutput = res;
+}
+
+func (w *WorkAttachIncluded) ResponseWorker(has_paniced bool) {
     go func() {
         for req := range w.Output {
-            req <- res;
+            req <- w.ActualOutput;
         }
     }();
 }

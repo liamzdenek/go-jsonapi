@@ -1,6 +1,6 @@
 package jsonapi;
 
-import ("net/http";"strings";"fmt"
+import ("net/http";"strings";
 );
 
 type IncludeInstructions struct {
@@ -42,7 +42,7 @@ func(ii *IncludeInstructions) ShouldFetch(rel string) bool {
 }
 
 func(ii *IncludeInstructions) ShouldInclude(inst string) bool {
-    fmt.Printf("Should include: %v %s\n", ii, inst);
+    //fmt.Printf("Should include: %v %s\n", ii, inst);
     for _,included := range ii.Include {
         if(included == inst) {
             return true;
