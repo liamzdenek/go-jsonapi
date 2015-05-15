@@ -20,17 +20,16 @@ func NewWorkAttachIncluded(ctx *WorkerContext, parent WorkerResultIderTypers, ii
 }
 
 func (w *WorkAttachIncluded) Work(a *API, r *http.Request) {
-    fmt.Printf("GETTING PARENT RESULT\n");
-    todo := w.Parent.GetResult();
-    fmt.Printf("PARENT: %#v\n", todo);
+    result := w.Parent.GetResult();
+    queue := result.Result;
     data := []*OutputDatum{};
     included := []Record{};
     first := true
     for {
-        ttodo := todo;
-        todo = []IderTyper{}
+        tqueue := queue;
+        queue = []IderTyper{}
         d := map[IderTyper]*WorkFindLinksByIderTyper{};
-        for _, idertyper := range ttodo {
+        for _, idertyper := range tqueue {
             work := NewWorkFindLinksByIderTyper(idertyper,w.II);
             PushWork(w.Context, work);
             d[idertyper] = work;
@@ -44,7 +43,7 @@ func (w *WorkAttachIncluded) Work(a *API, r *http.Request) {
                 });
             }
             for _, record := range *result.Included {
-                todo = append(todo, record);
+                queue = append(queue, record);
                 fmt.Printf("GOT RECORD: %#v\n", record);
                 if(record.Include()) {
                     included = append(included, record)
@@ -52,14 +51,13 @@ func (w *WorkAttachIncluded) Work(a *API, r *http.Request) {
             }
         }
         first = false;
-        if len(todo) == 0 {
+        if len(queue) == 0 {
             break;
         }
     }
     res := &Output{};
     fmt.Printf("DATA: %#v\n", data);
-    // TODO: repalce const true with actual calculation for single
-    res.Data = NewOutputDataResources(false, data);
+    res.Data = NewOutputDataResources(result.IsSingle, data);
     res.Included = NewOutputIncluded(&included);
 
     w.ActualOutput = res;

@@ -5,13 +5,18 @@ import("fmt";"net/http")
 type WorkFindByIds struct {
     Resource string
     Ids []string
-    Output chan chan []IderTyper
+    Output chan chan WorkFindByIdsResult
+    Result WorkFindByIdsResult
+}
+
+type WorkFindByIdsResult struct {
     Result []IderTyper
+    IsSingle bool
 }
 
 func NewWorkFindByIds(resource string, ids []string) *WorkFindByIds {
     return &WorkFindByIds{
-        Output: make(chan chan []IderTyper),
+        Output: make(chan chan WorkFindByIdsResult),
         Ids: ids,
         Resource: resource,
     }
@@ -50,7 +55,10 @@ func(w *WorkFindByIds) Work(a *API, r *http.Request) {
     for _,ider := range data {
         res = append(res, NewIderTyperWrapper(ider,w.Resource));
     }
-    w.Result = res;
+    w.Result = WorkFindByIdsResult{
+        Result: res,
+        IsSingle: len(w.Ids) == 1,
+    }
 }
 
 func(w *WorkFindByIds) ResponseWorker(has_paniced bool) {
@@ -66,8 +74,8 @@ func(w *WorkFindByIds) Cleanup(a *API, r *http.Request) {
     close(w.Output);
 }
 
-func(w *WorkFindByIds) GetResult() []IderTyper {
-    r := make(chan []IderTyper);
+func(w *WorkFindByIds) GetResult() WorkFindByIdsResult {
+    r := make(chan WorkFindByIdsResult);
     defer close(r);
     w.Output <- r;
     return <-r;

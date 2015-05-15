@@ -30,7 +30,6 @@ func(rr *RequestResolver) HandlerFindResourceById(a *API, w http.ResponseWriter,
     PushWork(wctx, replyer);
     fmt.Printf("Main Waiting\n");
     replyer.Wait();
-    //Reply(attacher.GetResult());
 }
 
 
