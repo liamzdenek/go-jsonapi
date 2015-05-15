@@ -16,7 +16,17 @@ func NewRequestResolver() *RequestResolver {
  */
 
 func(rr *RequestResolver) HandlerFindResourceById(a *API, w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-    ii := NewIncludeInstructionsFromRequest(r);
+    wctx := a.WorkerPool.NewWorkContext(a,r);
+    defer close(wctx);
+    //output := NewOutput(r);
+    work := NewWorkFindOne(
+        ps.ByName("resource"),
+        ps.ByName("id"),
+    );
+    wctx <- work;
+    fmt.Printf("RESULT: %#v\n", work.GetResult());
+    //output.Data = NewOutputDataResources(true, work.GetResult());
+    /*ii := NewIncludeInstructionsFromRequest(r);
     output := NewOutput(r);
     ids := strings.Split(ps.ByName("id"),",");
     res := []Ider{};
@@ -41,7 +51,7 @@ func(rr *RequestResolver) HandlerFindResourceById(a *API, w http.ResponseWriter,
     }
     fmt.Printf("Data: %#v\n", data);
     output.Data = NewOutputDataResources(isSingle, data);
-    Reply(output);
+    Reply(output);*/
 }
 
 func(rr *RequestResolver) FindOne(a *API, r *http.Request, resource_str, id_str string) (Ider, *ResourceManagerResource) {
