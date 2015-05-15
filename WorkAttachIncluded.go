@@ -51,6 +51,7 @@ func (w *WorkAttachIncluded) Work(a *API, r *http.Request) {
                 }
             }
         }
+        first = false;
         if len(todo) == 0 {
             break;
         }
