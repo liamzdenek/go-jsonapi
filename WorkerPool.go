@@ -43,24 +43,11 @@ func NewWorkerContext(a *API, r *http.Request) *WorkerContext {
     }()
     return res;
 }
-/*
-func StartWorker(input chan InternalWorkerWrapper) {
-    go func() {
-        //fmt.Printf("WORKER RUNNING\n");
-        for work := range input {
-            //fmt.Printf("WORKER GOT WORK: %#v\n", work);
-            work.Work();
-            //fmt.Printf("WORK DONE: %#v\n", work);
-        }
-    }();
-}*/
+
+func(w *WorkerContext) Cleanup() {
+    close(w.Context);
+}
+
 func PushWork(wctx *WorkerContext, w Worker) {
     wctx.Context <- w;
-    /*wctx.WorkerPool.StartWorker();
-    wctx.WorkerPool.StartWorker();
-    fmt.Printf("STARTED EXTRA WORKER\n");
-    wctx.Context <- w;
-    fmt.Printf("NEW WORK DISPATCHED\n");*/
-    // TODO: terminate the started goroutine
-    //wctx.Context <-
 }

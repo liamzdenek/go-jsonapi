@@ -18,8 +18,7 @@ func NewRequestResolver() *RequestResolver {
 func(rr *RequestResolver) HandlerFindResourceById(a *API, w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
     ii := NewIncludeInstructionsFromRequest(r);
     wctx := NewWorkerContext(a,r);
-    //defer close(wctx);
-    //output := NewOutput(r);
+    defer wctx.Cleanup();
     work := NewWorkFindByIds(
         ps.ByName("resource"),
         strings.Split(ps.ByName("id"),","),
@@ -28,33 +27,6 @@ func(rr *RequestResolver) HandlerFindResourceById(a *API, w http.ResponseWriter,
     attacher := NewWorkAttachIncluded(wctx, work, ii);
     PushWork(wctx, attacher);
     Reply(attacher.GetResult());
-    //output.Data = NewOutputDataResources(true, work.GetResult());
-    /*ii := NewIncludeInstructionsFromRequest(r);
-    output := NewOutput(r);
-    ids := strings.Split(ps.ByName("id"),",");
-    res := []Ider{};
-    var rmr *ResourceManagerResource;
-    resource_str := ps.ByName("resource");
-    isSingle := len(ids) == 1;
-    if !isSingle {
-        res, rmr = rr.FindMany(a,r,resource_str,ids);
-    } else {
-        var tres Ider;
-        tres, rmr = rr.FindOne(a,r,resource_str,ids[0]);
-        if(tres != nil) {
-            res = []Ider{tres}
-        }
-    }
-    data := []*OutputDatum{};
-    for _, ider := range res {
-        roi := NewLinkerDefault(a, rmr, ider, r, ii);
-        data = append(data, &OutputDatum{
-            Datum: NewRecordWrapper(ider, rmr.Name, roi, true),
-        });
-    }
-    fmt.Printf("Data: %#v\n", data);
-    output.Data = NewOutputDataResources(isSingle, data);
-    Reply(output);*/
 }
 
 
