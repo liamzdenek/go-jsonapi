@@ -44,6 +44,7 @@ func(w *WorkFindByIds) Work(a *API, r *http.Request) {
         // TODO: is this the right error?
         panic(NewResponderError(err));
     }
+    fmt.Printf("GOT DATA: %#v\n", data);
     res := []IderTyper{};
     for _,ider := range data {
         res = append(res, NewIderTyperWrapper(ider,w.Resource));

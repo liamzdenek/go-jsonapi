@@ -6,38 +6,27 @@ type WorkerContext struct {
     Context chan Worker
 }
 
-func NewWorkerContext(a *API, r *http.Request) *WorkerContext {
+func NewWorkerContext(a *API, r *http.Request, w http.ResponseWriter) *WorkerContext {
     res := &WorkerContext{
         Context: make(chan Worker),
     };
     go func() {
-        panics := make(chan interface{})
-        defer close(panics);
         has_paniced := false;
-        OUTER: for {
-            select {
-            case worker, ok := <-res.Context:
-                if(!ok) {
-                    break OUTER; // chan closed
-                }
-                if(has_paniced) {
-                    continue;
-                }
-                defer worker.Cleanup(a,r);
-                go func() {
-                    defer func() {
-                        if r := recover(); r != nil {
-                            fmt.Printf("PANICS: %#v\n", r);
-                            panics <- r;
-                        }
-                    }();
-                    worker.Work(a,r);
+        for worker := range res.Context {
+            tworker := worker; // range will reuse the same worker object since it is not a pointer... we do not want it to overwrite the last one before the go func() has a chance to start -- removing this could create inconsistent behavior
+            fmt.Printf("OUTER WORKER %#v\n", tworker);
+            defer tworker.Cleanup(a,r);
+            go func() {
+                defer func() {
+                    if raw := recover(); !has_paniced && raw != nil {
+                        fmt.Printf("PANIC: %#v\n", raw);
+                        has_paniced = true;
+                        a.CatchResponses(w,r,raw);
+                    }
                 }();
-            case caught := <-panics:
-                has_paniced = true;
-                fmt.Printf("CAUGHT PANIC: %#v\n", caught);
-                fmt.Printf("CAUGHT PANIC: %s\n", caught);
-            }
+                fmt.Printf("INNER WORKER: %#v\n", tworker);
+                tworker.Work(a,r);
+            }();
         }
         fmt.Printf("CONTEXT CLEANUP\n");
     }()

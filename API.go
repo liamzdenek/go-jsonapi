@@ -61,38 +61,36 @@ func (a *API) InitRouter() {
 
 // so the API can be mounted as a http handler
 func(a *API) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-    //fmt.Printf("BEGIN GOROUTINES: %d\n", runtime.NumGoroutine());
-    defer a.CatchResponses(w,r);
     a.Router.ServeHTTP(w, r);
-    //fmt.Printf("BEGIN GOROUTINES: %d\n", runtime.NumGoroutine());
 }
 
-func(a *API) CatchResponses(w http.ResponseWriter, req *http.Request) {
-    if raw := recover(); raw != nil {
-        switch r := raw.(type) {
-        case Responder:
-            r.Respond(a,w,req);
-        case *Output:
-            fmt.Printf("Responder output\n");
-            re := NewResponderOutput(r);
-            re.Respond(a,w,req);
-        case error:
-            fmt.Printf("Panic(error) is deprecated as it is always ambiguous. You probably intend to use panic(NewResponderError()) instead\n");
-            re := NewResponderError(r);
-            re.Respond(a,w,req);
-        case string:
-            fmt.Printf("Panic(string) is deprecated as it is always ambiguous. You probably intend to use panic(NewResponderError()) instead\n");
-            re := NewResponderError(errors.New(r));
-            re.Respond(a,w,req);
-        default:
-            w.Write([]byte(fmt.Sprintf("Internal error handling request. Improper object sent to response method: %#v\n", r)));
-        }
+func(a *API) CatchResponses(w http.ResponseWriter, req *http.Request, raw interface{}) {
+    fmt.Printf("Caught panic: %#v\n", raw);
+    switch r := raw.(type) {
+    case Responder:
+        fmt.Printf("Respnding\n");
+        r.Respond(a,w,req);
+    case *Output:
+        fmt.Printf("Responder output\n");
+        re := NewResponderOutput(r);
+        re.Respond(a,w,req);
+    case error:
+        fmt.Printf("Panic(error) is deprecated as it is always ambiguous. You probably intend to use panic(NewResponderError()) instead\n");
+        re := NewResponderError(r);
+        re.Respond(a,w,req);
+    case string:
+        fmt.Printf("Panic(string) is deprecated as it is always ambiguous. You probably intend to use panic(NewResponderError()) instead\n");
+        re := NewResponderError(errors.New(r));
+        re.Respond(a,w,req);
+    default:
+        w.Write([]byte(fmt.Sprintf("Internal error handling request. Improper object sent to response method: %#v\n", r)));
     }
 }
 
 func(a *API) Send(obj interface{}, w http.ResponseWriter) {
     str, err := json.Marshal(obj);
     Check(err);
+    fmt.Printf("WRITING: %s\n", str);
     w.Write(str);
 }
 

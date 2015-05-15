@@ -17,7 +17,7 @@ func NewRequestResolver() *RequestResolver {
 
 func(rr *RequestResolver) HandlerFindResourceById(a *API, w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
     ii := NewIncludeInstructionsFromRequest(r);
-    wctx := NewWorkerContext(a,r);
+    wctx := NewWorkerContext(a,r,w);
     defer wctx.Cleanup();
     work := NewWorkFindByIds(
         ps.ByName("resource"),
@@ -26,7 +26,11 @@ func(rr *RequestResolver) HandlerFindResourceById(a *API, w http.ResponseWriter,
     PushWork(wctx, work);
     attacher := NewWorkAttachIncluded(wctx, work, ii);
     PushWork(wctx, attacher);
-    Reply(attacher.GetResult());
+    replyer := NewWorkReplyer(attacher);
+    PushWork(wctx, replyer);
+    fmt.Printf("Main Waiting\n");
+    replyer.Wait();
+    //Reply(attacher.GetResult());
 }
 
 
@@ -40,6 +44,18 @@ func(rr *RequestResolver) HandlerFindResourceById(a *API, w http.ResponseWriter,
  */
 
 func(rr *RequestResolver) HandlerFindLinksByResourceId(a *API, w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+    //ii := NewIncludeInstructionsFromRequest(r);
+    wctx := NewWorkerContext(a,r,w);
+    defer wctx.Cleanup();
+    work := NewWorkFindByIds(
+        ps.ByName("resource"),
+        strings.Split(ps.ByName("id"),","),
+    );
+    PushWork(wctx, work);
+    //attacher := NewWorkAttachIncluded(wctx, work, ii);
+    //PushWork(wctx, attacher);
+    //Reply(attacher.GetResult());
+
     /*
     ii := NewIncludeInstructionsFromRequest(r);
     fmt.Printf("II: %#v\n",ii);

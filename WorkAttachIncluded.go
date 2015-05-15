@@ -19,6 +19,7 @@ func NewWorkAttachIncluded(ctx *WorkerContext, parent WorkerResultIderTypers, ii
 }
 
 func (w *WorkAttachIncluded) Work(a *API, r *http.Request) {
+    fmt.Printf("GETTING PARENT RESULT\n");
     todo := w.Parent.GetResult();
     fmt.Printf("PARENT: %#v\n", todo);
     data := []*OutputDatum{};
@@ -65,6 +66,7 @@ func (w *WorkAttachIncluded) Work(a *API, r *http.Request) {
 }
 
 func (w *WorkAttachIncluded) Cleanup(a *API, r *http.Request) {
+    fmt.Printf("WorkAttachIncluded.Cleanup\n");
     close(w.Output);
 }
 
