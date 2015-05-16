@@ -8,14 +8,24 @@ type TaskAttachIncluded struct {
     II *IncludeInstructions
     Output chan chan *Output
     ActualOutput *Output
+    OutputType OutputType
 }
 
-func NewTaskAttachIncluded(ctx *TaskContext, parent TaskResultIderTypers, ii *IncludeInstructions) *TaskAttachIncluded {
+
+type OutputType int;
+
+const (
+    OutputTypeResources OutputType = iota;
+    OutputTypeLinkages
+);
+
+func NewTaskAttachIncluded(ctx *TaskContext, parent TaskResultIderTypers, ii *IncludeInstructions, outputtype OutputType) *TaskAttachIncluded {
     return &TaskAttachIncluded{
         Context: ctx,
         Parent: parent,
         II: ii,
         Output: make(chan chan *Output),
+        OutputType: outputtype,
     }
 }
 
@@ -23,6 +33,7 @@ func (w *TaskAttachIncluded) Work(a *API, r *http.Request) {
     result := w.Parent.GetResult();
     queue := result.Result;
     data := []*OutputDatum{};
+    linkage := OutputLinkage{};
     included := []Record{};
     first := true
     for {
@@ -36,11 +47,18 @@ func (w *TaskAttachIncluded) Work(a *API, r *http.Request) {
         }
         for idertyper, work := range d {
             result := work.GetResult();
-            fmt.Printf("RESULT: %#v\n",result);
             if(first) {
-                data = append(data, &OutputDatum{
-                    Datum: NewRecordWrapper(idertyper, idertyper.Type(),NewLinkerStatic(result.Links), true),
-                });
+                if w.OutputType == OutputTypeResources {
+                    data = append(data, &OutputDatum{
+                        Datum: NewRecordWrapper(idertyper, idertyper.Type(),NewLinkerStatic(result.Links), true),
+                    });
+                } else {
+                    for _, links := range result.Links.Linkages {
+                        for _, link := range links.Links {
+                            linkage.Links = append(linkage.Links, link);
+                        }
+                    }
+                }
             }
             for _, record := range *result.Included {
                 queue = append(queue, record);
@@ -57,7 +75,12 @@ func (w *TaskAttachIncluded) Work(a *API, r *http.Request) {
     }
     res := &Output{};
     fmt.Printf("DATA: %#v\n", data);
-    res.Data = NewOutputDataResources(result.IsSingle, data);
+    if w.OutputType == OutputTypeResources {
+        res.Data = NewOutputDataResources(result.IsSingle, data);
+    } else {
+        fmt.Printf("\nLINKAGE: %#v\n\n", linkage);
+        res.Data = NewOutputDataLinkage(result.IsSingle, &linkage);
+    }
     res.Included = NewOutputIncluded(&included);
 
     w.ActualOutput = res;

@@ -23,7 +23,7 @@ func(rr *RequestResolver) HandlerFindResourceById(a *API, w http.ResponseWriter,
         ps.ByName("resource"),
         strings.Split(ps.ByName("id"),","),
     );
-    attacher := NewTaskAttachIncluded(wctx, work, ii);
+    attacher := NewTaskAttachIncluded(wctx, work, ii, OutputTypeResources);
     replyer := NewTaskReplyer(attacher);
     wctx.Push(work, attacher, replyer);
     fmt.Printf("Main Waiting\n");
@@ -49,7 +49,7 @@ func(rr *RequestResolver) HandlerFindLinksByResourceId(a *API, w http.ResponseWr
         strings.Split(ps.ByName("id"),","),
     );
     single := NewTaskSingleLinkResolver(wctx, primary, ps.ByName("linkname"));
-    attacher := NewTaskAttachIncluded(wctx, single, ii);
+    attacher := NewTaskAttachIncluded(wctx, single, ii, OutputTypeResources);
     replyer := NewTaskReplyer(attacher);
     wctx.Push(primary, single, attacher, replyer);
     fmt.Printf("Main Waiting\n");
@@ -76,42 +76,11 @@ func(rr *RequestResolver) HandlerFindLinkByNameAndResourceId(a *API, w http.Resp
         ps.ByName("resource"),
         strings.Split(ps.ByName("id"),","),
     );
-    wctx.Push(primary);
-    single := NewTaskSingleLinkResolver(wctx, primary, ps.ByName("linkname"));
-    wctx.Push(single);
-    attacher := NewTaskAttachIncluded(wctx, single, ii);
-    wctx.Push(attacher);
+    attacher := NewTaskAttachIncluded(wctx, primary, ii, OutputTypeLinkages);
     replyer := NewTaskReplyer(attacher);
-    wctx.Push(replyer);
+    wctx.Push(primary, attacher, replyer);
     fmt.Printf("Main Waiting\n");
     replyer.Wait();
-    /*
-    ii := NewIncludeInstructionsFromRequest(r);
-    output := NewOutput(r);
-    ids := strings.Split(ps.ByName("id"),",");
-    resource_str := ps.ByName("resource");
-    var ider Ider;
-    var rmr *ResourceManagerResource;
-    if len(ids) > 1 {
-        panic(NewResponderError(errors.New("/:resource/:id/links/:linkname does not support a list of links")));
-    } else {
-        ider, rmr = rr.FindOne(a,r,resource_str,ids[0]);
-    }
-    roi := NewLinkerDefault(a, rmr, ider, r, ii);
-    roi.Limit = []string{ps.ByName(":linkname")}
-    wrapper := NewRecordWrapper(ider, rmr.Name, roi, true);
-
-    include := &[]Record{};
-    linkages := wrapper.Link(include);
-    var link *OutputLinkage;
-    if(linkages.Linkages != nil && len(linkages.Linkages) > 0) {
-        link = linkages.Linkages[0];
-    }
-
-    output.Included = NewOutputIncluded(include);
-    output.Data = NewOutputDataLinkage(true, link);
-    Reply(output);
-    */
 }
 
 /************************************************
