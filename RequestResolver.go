@@ -93,7 +93,14 @@ func(rr *RequestResolver) CentralSearchRouter(a *API, w http.ResponseWriter, r *
  * * DELETE /user/1,2,3
  */
 
+ // TODO: make DeleteIds a Task
+ // TODO: needs a diferent response when it does not exist per spec
 func(rr *RequestResolver) HandlerDelete(a *API, w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+    defer func() {
+        if raw := recover(); raw != nil {
+            a.CatchResponses(w,r,raw);
+        }
+    }()
     ids := strings.Split(ps.ByName("id"),",");
     isSingle := len(ids) == 1;
     if(!isSingle) {
@@ -119,6 +126,11 @@ func(rr *RequestResolver) HandlerDelete(a *API, w http.ResponseWriter, r *http.R
  * * POST /:resource
  */
 func(rr *RequestResolver) HandlerCreate(a *API, w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+    defer func() {
+        if raw := recover(); raw != nil {
+            a.CatchResponses(w,r,raw);
+        }
+    }()
     ctx := a.GetNewContext();
     resource_str := ps.ByName("resource");
     resource := a.RM.GetResource(resource_str);
