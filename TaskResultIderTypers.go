@@ -1,6 +1,7 @@
 package jsonapi;
 
 type TaskResultIderTypers interface{
+    Task
     GetResult() *TaskFindByIdsResult
 }
 

@@ -9,6 +9,7 @@ type TaskAttachIncluded struct {
     Output chan chan *Output
     ActualOutput *Output
     OutputType OutputType
+    Linkname string
 }
 
 
@@ -19,13 +20,14 @@ const (
     OutputTypeLinkages
 );
 
-func NewTaskAttachIncluded(ctx *TaskContext, parent TaskResultIderTypers, ii *IncludeInstructions, outputtype OutputType) *TaskAttachIncluded {
+func NewTaskAttachIncluded(ctx *TaskContext, parent TaskResultIderTypers, ii *IncludeInstructions, outputtype OutputType, linkname string) *TaskAttachIncluded {
     return &TaskAttachIncluded{
         Context: ctx,
         Parent: parent,
         II: ii,
         Output: make(chan chan *Output),
         OutputType: outputtype,
+        Linkname: linkname,
     }
 }
 
@@ -54,8 +56,10 @@ func (w *TaskAttachIncluded) Work(a *API, r *http.Request) {
                     });
                 } else {
                     for _, links := range result.Links.Linkages {
-                        for _, link := range links.Links {
-                            linkage.Links = append(linkage.Links, link);
+                        if(links.LinkName == w.Linkname) {
+                            for _, link := range links.Links {
+                                linkage.Links = append(linkage.Links, link);
+                            }
                         }
                     }
                 }

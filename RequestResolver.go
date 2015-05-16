@@ -16,44 +16,31 @@ func NewRequestResolver() *RequestResolver {
  */
 
 func(rr *RequestResolver) HandlerFindResourceById(a *API, w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-    ii := NewIncludeInstructionsFromRequest(r);
-    wctx := NewTaskContext(a,r,w);
-    defer wctx.Cleanup();
-    work := NewTaskFindByIds(
+    rr.CentralSearchRouter(a,w,r,
         ps.ByName("resource"),
-        strings.Split(ps.ByName("id"),","),
+        ps.ByName("id"),
+        []string{},
+        OutputTypeResources, "",
     );
-    attacher := NewTaskAttachIncluded(wctx, work, ii, OutputTypeResources);
-    replyer := NewTaskReplyer(attacher);
-    wctx.Push(work, attacher, replyer);
-    fmt.Printf("Main Waiting\n");
-    replyer.Wait();
 }
 
 
 /************************************************
  *
- * HandlerFindLinksByResourceId  is the entrypoint for /:resource/:id/links requests, primarily:
- * * /user/1/links
+ * HandlerFindLinksByResourceId  is the entrypoint for /:resource/:id/:linkname requests, primarily:
+ * * /user/1/posts
  *
  * this handler does not support requests for multiple IDs (maybe it could?):
- * * /user/1,2,3/links
+ * * /user/1,2,3/posts
  */
 
 func(rr *RequestResolver) HandlerFindLinksByResourceId(a *API, w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-    ii := NewIncludeInstructionsFromRequest(r);
-    wctx := NewTaskContext(a,r,w);
-    defer wctx.Cleanup();
-    primary := NewTaskFindByIds(
+    rr.CentralSearchRouter(a,w,r,
         ps.ByName("resource"),
-        strings.Split(ps.ByName("id"),","),
+        ps.ByName("id"),
+        []string{ps.ByName("linkname")},
+        OutputTypeResources, "",
     );
-    single := NewTaskSingleLinkResolver(wctx, primary, ps.ByName("linkname"));
-    attacher := NewTaskAttachIncluded(wctx, single, ii, OutputTypeResources);
-    replyer := NewTaskReplyer(attacher);
-    wctx.Push(primary, single, attacher, replyer);
-    fmt.Printf("Main Waiting\n");
-    replyer.Wait();
 }
 
 /************************************************
@@ -65,20 +52,34 @@ func(rr *RequestResolver) HandlerFindLinksByResourceId(a *API, w http.ResponseWr
  * this handler does not support requests for multiple IDs:
  * * /user/1,2,3/links/posts
  *
- * requests with :linkname = "links" will 404
+ * requests with :linkname != "links" will 404
  */
 
 func(rr *RequestResolver) HandlerFindLinkByNameAndResourceId(a *API, w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+    rr.CentralSearchRouter(a,w,r,
+        ps.ByName("resource"),
+        ps.ByName("id"),
+        []string{},
+        OutputTypeLinkages,
+        ps.ByName("secondlinkname"),
+    );
+}
+
+func(rr *RequestResolver) CentralSearchRouter(a *API, w http.ResponseWriter, r *http.Request, resourcestr, idstr string, preroute []string, outputtype OutputType, linkname string) {
     ii := NewIncludeInstructionsFromRequest(r);
     wctx := NewTaskContext(a,r,w);
     defer wctx.Cleanup();
-    primary := NewTaskFindByIds(
-        ps.ByName("resource"),
-        strings.Split(ps.ByName("id"),","),
+    var work TaskResultIderTypers = NewTaskFindByIds(
+        resourcestr,
+        strings.Split(idstr,","),
     );
-    attacher := NewTaskAttachIncluded(wctx, primary, ii, OutputTypeLinkages);
+    for _,pre := range preroute {
+        wctx.Push(work);
+        work = NewTaskSingleLinkResolver(wctx, work, pre);
+    }
+    attacher := NewTaskAttachIncluded(wctx, work, ii, outputtype, linkname);
     replyer := NewTaskReplyer(attacher);
-    wctx.Push(primary, attacher, replyer);
+    wctx.Push(work, attacher, replyer);
     fmt.Printf("Main Waiting\n");
     replyer.Wait();
 }
