@@ -2,13 +2,13 @@ package jsonapi;
 
 import ("net/http";);
 
-type WorkerContext struct {
-    Context chan Worker
+type TaskContext struct {
+    Context chan Task
 }
 
-func NewWorkerContext(a *API, r *http.Request, w http.ResponseWriter) *WorkerContext {
-    res := &WorkerContext{
-        Context: make(chan Worker),
+func NewTaskContext(a *API, r *http.Request, w http.ResponseWriter) *TaskContext {
+    res := &TaskContext{
+        Context: make(chan Task),
     };
     go func() {
         has_paniced := false;
@@ -34,10 +34,10 @@ func NewWorkerContext(a *API, r *http.Request, w http.ResponseWriter) *WorkerCon
     return res;
 }
 
-func(w *WorkerContext) Cleanup() {
+func(w *TaskContext) Cleanup() {
     close(w.Context);
 }
 
-func PushWork(wctx *WorkerContext, w Worker) {
-    wctx.Context <- w;
+func(w *TaskContext) Push(t Task) {
+    w.Context <- t;
 }

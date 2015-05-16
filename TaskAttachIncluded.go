@@ -2,16 +2,16 @@ package jsonapi;
 
 import("net/http";"fmt");
 
-type WorkAttachIncluded struct {
-    Context *WorkerContext
-    Parent WorkerResultIderTypers
+type TaskAttachIncluded struct {
+    Context *TaskContext
+    Parent TaskResultIderTypers
     II *IncludeInstructions
     Output chan chan *Output
     ActualOutput *Output
 }
 
-func NewWorkAttachIncluded(ctx *WorkerContext, parent WorkerResultIderTypers, ii *IncludeInstructions) *WorkAttachIncluded {
-    return &WorkAttachIncluded{
+func NewTaskAttachIncluded(ctx *TaskContext, parent TaskResultIderTypers, ii *IncludeInstructions) *TaskAttachIncluded {
+    return &TaskAttachIncluded{
         Context: ctx,
         Parent: parent,
         II: ii,
@@ -19,7 +19,7 @@ func NewWorkAttachIncluded(ctx *WorkerContext, parent WorkerResultIderTypers, ii
     }
 }
 
-func (w *WorkAttachIncluded) Work(a *API, r *http.Request) {
+func (w *TaskAttachIncluded) Work(a *API, r *http.Request) {
     result := w.Parent.GetResult();
     queue := result.Result;
     data := []*OutputDatum{};
@@ -31,7 +31,7 @@ func (w *WorkAttachIncluded) Work(a *API, r *http.Request) {
         d := map[IderTyper]*WorkFindLinksByIderTyper{};
         for _, idertyper := range tqueue {
             work := NewWorkFindLinksByIderTyper(idertyper,w.II);
-            PushWork(w.Context, work);
+            w.Context.Push(work);
             d[idertyper] = work;
         }
         for idertyper, work := range d {
@@ -63,7 +63,7 @@ func (w *WorkAttachIncluded) Work(a *API, r *http.Request) {
     w.ActualOutput = res;
 }
 
-func (w *WorkAttachIncluded) ResponseWorker(has_paniced bool) {
+func (w *TaskAttachIncluded) ResponseWorker(has_paniced bool) {
     go func() {
         for req := range w.Output {
             req <- w.ActualOutput;
@@ -71,12 +71,12 @@ func (w *WorkAttachIncluded) ResponseWorker(has_paniced bool) {
     }();
 }
 
-func (w *WorkAttachIncluded) Cleanup(a *API, r *http.Request) {
-    fmt.Printf("WorkAttachIncluded.Cleanup\n");
+func (w *TaskAttachIncluded) Cleanup(a *API, r *http.Request) {
+    fmt.Printf("TaskAttachIncluded.Cleanup\n");
     close(w.Output);
 }
 
-func (w *WorkAttachIncluded) GetResult() *Output {
+func (w *TaskAttachIncluded) GetResult() *Output {
     r := make(chan *Output);
     defer close(r);
     w.Output <- r;

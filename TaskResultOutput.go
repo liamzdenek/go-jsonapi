@@ -1,5 +1,5 @@
 package jsonapi;
 
-type WorkerOutput interface {
+type TaskResultOutput interface {
     GetResult() *Output
 }

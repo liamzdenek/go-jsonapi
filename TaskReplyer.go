@@ -2,26 +2,26 @@ package jsonapi;
 
 import ("net/http";"fmt");
 
-type WorkReplyer struct {
-    WorkerOutput WorkerOutput
+type TaskReplyer struct {
+    TaskResultOutput TaskResultOutput
     Output chan chan bool
 }
 
-func NewWorkReplyer(wo WorkerOutput) *WorkReplyer {
-    return &WorkReplyer{
-        WorkerOutput: wo,
+func NewTaskReplyer(wo TaskResultOutput) *TaskReplyer {
+    return &TaskReplyer{
+        TaskResultOutput: wo,
         Output: make(chan chan bool),
     }
 }
 
-func(w *WorkReplyer) Work(a *API, r *http.Request) {
+func(w *TaskReplyer) Work(a *API, r *http.Request) {
     fmt.Printf("Waiting for final result\n");
-    res := w.WorkerOutput.GetResult();
+    res := w.TaskResultOutput.GetResult();
     fmt.Printf("FINAL RESULT: %#v\n", res);
     Reply(res)
 }
 
-func(w *WorkReplyer) ResponseWorker(has_paniced bool) {
+func(w *TaskReplyer) ResponseWorker(has_paniced bool) {
     go func() {
         for req := range w.Output {
             req <- true;
@@ -30,11 +30,11 @@ func(w *WorkReplyer) ResponseWorker(has_paniced bool) {
 }
 
 
-func(w *WorkReplyer) Cleanup(a *API, r *http.Request) {
+func(w *TaskReplyer) Cleanup(a *API, r *http.Request) {
     defer close(w.Output);
 }
 
-func (w *WorkReplyer) Wait() {
+func (w *TaskReplyer) Wait() {
     r := make(chan bool);
     defer close(r);
     w.Output <- r;

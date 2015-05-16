@@ -2,27 +2,22 @@ package jsonapi;
 
 import("fmt";"net/http")
 
-type WorkFindByIds struct {
+type TaskFindByIds struct {
     Resource string
     Ids []string
-    Output chan chan WorkFindByIdsResult
-    Result WorkFindByIdsResult
+    Output chan chan TaskFindByIdsResult
+    Result TaskFindByIdsResult
 }
 
-type WorkFindByIdsResult struct {
-    Result []IderTyper
-    IsSingle bool
-}
-
-func NewWorkFindByIds(resource string, ids []string) *WorkFindByIds {
-    return &WorkFindByIds{
-        Output: make(chan chan WorkFindByIdsResult),
+func NewTaskFindByIds(resource string, ids []string) *TaskFindByIds {
+    return &TaskFindByIds{
+        Output: make(chan chan TaskFindByIdsResult),
         Ids: ids,
         Resource: resource,
     }
 }
 
-func(w *WorkFindByIds) Work(a *API, r *http.Request) {
+func(w *TaskFindByIds) Work(a *API, r *http.Request) {
     resource := a.RM.GetResource(w.Resource);
 
     if(resource == nil) {
@@ -55,13 +50,13 @@ func(w *WorkFindByIds) Work(a *API, r *http.Request) {
     for _,ider := range data {
         res = append(res, NewIderTyperWrapper(ider,w.Resource));
     }
-    w.Result = WorkFindByIdsResult{
+    w.Result = TaskFindByIdsResult{
         Result: res,
         IsSingle: len(w.Ids) == 1,
     }
 }
 
-func(w *WorkFindByIds) ResponseWorker(has_paniced bool) {
+func(w *TaskFindByIds) ResponseWorker(has_paniced bool) {
     go func() {
         for out := range w.Output {
             out <- w.Result;
@@ -69,13 +64,13 @@ func(w *WorkFindByIds) ResponseWorker(has_paniced bool) {
     }();
 }
 
-func(w *WorkFindByIds) Cleanup(a *API, r *http.Request) {
+func(w *TaskFindByIds) Cleanup(a *API, r *http.Request) {
     fmt.Printf("INSIDE CLEANUP\n");
     close(w.Output);
 }
 
-func(w *WorkFindByIds) GetResult() WorkFindByIdsResult {
-    r := make(chan WorkFindByIdsResult);
+func(w *TaskFindByIds) GetResult() TaskFindByIdsResult {
+    r := make(chan TaskFindByIdsResult);
     defer close(r);
     w.Output <- r;
     return <-r;

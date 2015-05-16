@@ -17,17 +17,17 @@ func NewRequestResolver() *RequestResolver {
 
 func(rr *RequestResolver) HandlerFindResourceById(a *API, w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
     ii := NewIncludeInstructionsFromRequest(r);
-    wctx := NewWorkerContext(a,r,w);
+    wctx := NewTaskContext(a,r,w);
     defer wctx.Cleanup();
-    work := NewWorkFindByIds(
+    work := NewTaskFindByIds(
         ps.ByName("resource"),
         strings.Split(ps.ByName("id"),","),
     );
-    PushWork(wctx, work);
-    attacher := NewWorkAttachIncluded(wctx, work, ii);
-    PushWork(wctx, attacher);
-    replyer := NewWorkReplyer(attacher);
-    PushWork(wctx, replyer);
+    wctx.Push(work);
+    attacher := NewTaskAttachIncluded(wctx, work, ii);
+    wctx.Push(attacher);
+    replyer := NewTaskReplyer(attacher);
+    wctx.Push(replyer);
     fmt.Printf("Main Waiting\n");
     replyer.Wait();
 }
@@ -43,18 +43,22 @@ func(rr *RequestResolver) HandlerFindResourceById(a *API, w http.ResponseWriter,
  */
 
 func(rr *RequestResolver) HandlerFindLinksByResourceId(a *API, w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-    //ii := NewIncludeInstructionsFromRequest(r);
-    wctx := NewWorkerContext(a,r,w);
+    ii := NewIncludeInstructionsFromRequest(r);
+    wctx := NewTaskContext(a,r,w);
     defer wctx.Cleanup();
-    work := NewWorkFindByIds(
+    primary := NewTaskFindByIds(
         ps.ByName("resource"),
         strings.Split(ps.ByName("id"),","),
     );
-    PushWork(wctx, work);
-    //attacher := NewWorkAttachIncluded(wctx, work, ii);
-    //PushWork(wctx, attacher);
-    //Reply(attacher.GetResult());
-
+    wctx.Push(primary);
+    single := NewTaskSingleLinkResolver(wctx, primary, ps.ByName("linkname"));
+    wctx.Push(single);
+    attacher := NewTaskAttachIncluded(wctx, single, ii);
+    wctx.Push(attacher);
+    replyer := NewTaskReplyer(attacher);
+    wctx.Push(replyer);
+    fmt.Printf("Main Waiting\n");
+    replyer.Wait();
     /*
     ii := NewIncludeInstructionsFromRequest(r);
     fmt.Printf("II: %#v\n",ii);
