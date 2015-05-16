@@ -5,13 +5,13 @@ import("fmt";"net/http")
 type TaskFindByIds struct {
     Resource string
     Ids []string
-    Output chan chan TaskFindByIdsResult
-    Result TaskFindByIdsResult
+    Output chan chan *TaskFindByIdsResult
+    Result *TaskFindByIdsResult
 }
 
 func NewTaskFindByIds(resource string, ids []string) *TaskFindByIds {
     return &TaskFindByIds{
-        Output: make(chan chan TaskFindByIdsResult),
+        Output: make(chan chan *TaskFindByIdsResult),
         Ids: ids,
         Resource: resource,
     }
@@ -50,7 +50,7 @@ func(w *TaskFindByIds) Work(a *API, r *http.Request) {
     for _,ider := range data {
         res = append(res, NewIderTyperWrapper(ider,w.Resource));
     }
-    w.Result = TaskFindByIdsResult{
+    w.Result = &TaskFindByIdsResult{
         Result: res,
         IsSingle: len(w.Ids) == 1,
     }
@@ -69,8 +69,8 @@ func(w *TaskFindByIds) Cleanup(a *API, r *http.Request) {
     close(w.Output);
 }
 
-func(w *TaskFindByIds) GetResult() TaskFindByIdsResult {
-    r := make(chan TaskFindByIdsResult);
+func(w *TaskFindByIds) GetResult() *TaskFindByIdsResult {
+    r := make(chan *TaskFindByIdsResult);
     defer close(r);
     w.Output <- r;
     return <-r;

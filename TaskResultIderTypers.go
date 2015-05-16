@@ -1,7 +1,7 @@
 package jsonapi;
 
 type TaskResultIderTypers interface{
-    GetResult() TaskFindByIdsResult
+    GetResult() *TaskFindByIdsResult
 }
 
 type TaskFindByIdsResult struct {

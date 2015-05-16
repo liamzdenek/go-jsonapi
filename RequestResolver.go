@@ -59,58 +59,6 @@ func(rr *RequestResolver) HandlerFindLinksByResourceId(a *API, w http.ResponseWr
     wctx.Push(replyer);
     fmt.Printf("Main Waiting\n");
     replyer.Wait();
-    /*
-    ii := NewIncludeInstructionsFromRequest(r);
-    fmt.Printf("II: %#v\n",ii);
-    output := NewOutput(r);
-    ids := strings.Split(ps.ByName("id"),",");
-    resource_str := ps.ByName("resource");
-    var ider Ider;
-    var rmr *ResourceManagerResource;
-    if len(ids) > 1 {
-        //res, rmr = rr.FindMany(a,r,ps,ids);
-        // TODO: fix this maybe?
-        panic(NewResponderErrorOperationNotSupported("/:resource/:id/links does not support a list of links"));
-    } else {
-        ider, rmr = rr.FindOne(a,r,resource_str,ids[0]);
-    }
-    tii := NewIncludeInstructionsEmpty();
-    tii.Push([]string{ps.ByName("linkname")});
-    roi := NewLinkerDefault(a, rmr, ider, r, tii);
-    wrapper := NewRecordWrapper(ider, rmr.Name, roi, true);
-
-    include := &[]Record{};
-    linkset := wrapper.Link(include);
-
-    if(len(linkset.Linkages) == 0) {
-        panic(NewResponderErrorRelationshipDoesNotExist(ps.ByName("linkname")));
-    }
-
-    linkage := linkset.Linkages[0];
-
-    if(len(linkage.Links) == 0) {
-        // TODO: this
-        output.Data.Data = nil;
-        Reply(output);
-    }
-    if(len(linkage.Links) == 1) {
-        lider, lrmr := rr.FindOne(a,r,linkage.Links[0].Type,linkage.Links[0].Id);
-        
-        // TODO: properly chain final argument here for includes
-        lroi := NewLinkerDefault(a, lrmr, lider, r, ii);
-        output.Data = NewOutputDataResources(true, []*OutputDatum{
-            &OutputDatum{
-                Datum: NewRecordWrapper(lider, lrmr.Name, lroi, true),
-            },
-        });
-    } else {
-        // TODO: it should
-        panic(NewResponderError(errors.New("This request does not support one to many linkages")));
-    }
-    fmt.Printf("\nREPLYING\n\n");
-
-    Reply(output);
-    */
 }
 
 /************************************************
