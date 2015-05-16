@@ -38,6 +38,8 @@ func(w *TaskContext) Cleanup() {
     close(w.Context);
 }
 
-func(w *TaskContext) Push(t Task) {
-    w.Context <- t;
+func(w *TaskContext) Push(t_list ...Task) {
+    for _,t := range t_list {
+        w.Context <- t;
+    }
 }

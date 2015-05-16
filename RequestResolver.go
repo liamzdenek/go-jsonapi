@@ -23,11 +23,9 @@ func(rr *RequestResolver) HandlerFindResourceById(a *API, w http.ResponseWriter,
         ps.ByName("resource"),
         strings.Split(ps.ByName("id"),","),
     );
-    wctx.Push(work);
     attacher := NewTaskAttachIncluded(wctx, work, ii);
-    wctx.Push(attacher);
     replyer := NewTaskReplyer(attacher);
-    wctx.Push(replyer);
+    wctx.Push(work, attacher, replyer);
     fmt.Printf("Main Waiting\n");
     replyer.Wait();
 }
@@ -50,6 +48,34 @@ func(rr *RequestResolver) HandlerFindLinksByResourceId(a *API, w http.ResponseWr
         ps.ByName("resource"),
         strings.Split(ps.ByName("id"),","),
     );
+    single := NewTaskSingleLinkResolver(wctx, primary, ps.ByName("linkname"));
+    attacher := NewTaskAttachIncluded(wctx, single, ii);
+    replyer := NewTaskReplyer(attacher);
+    wctx.Push(primary, single, attacher, replyer);
+    fmt.Printf("Main Waiting\n");
+    replyer.Wait();
+}
+
+/************************************************
+ *
+ * HandlerFindLinkByLinkNameAndResourceId is the entrypoint for
+ * /:resource/:id/links/:secondlinkname requests, primarily:
+ * * /user/1/links/posts
+ *
+ * this handler does not support requests for multiple IDs:
+ * * /user/1,2,3/links/posts
+ *
+ * requests with :linkname = "links" will 404
+ */
+
+func(rr *RequestResolver) HandlerFindLinkByNameAndResourceId(a *API, w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+    ii := NewIncludeInstructionsFromRequest(r);
+    wctx := NewTaskContext(a,r,w);
+    defer wctx.Cleanup();
+    primary := NewTaskFindByIds(
+        ps.ByName("resource"),
+        strings.Split(ps.ByName("id"),","),
+    );
     wctx.Push(primary);
     single := NewTaskSingleLinkResolver(wctx, primary, ps.ByName("linkname"));
     wctx.Push(single);
@@ -59,21 +85,6 @@ func(rr *RequestResolver) HandlerFindLinksByResourceId(a *API, w http.ResponseWr
     wctx.Push(replyer);
     fmt.Printf("Main Waiting\n");
     replyer.Wait();
-}
-
-/************************************************
- *
- * HandlerFindLinkByLinkNameAndResourceId is the entrypoint for
- * /:resource/:id/:linkname requests, primarily:
- * * /user/1/posts
- *
- * this handler does not support requests for multiple IDs:
- * * /user/1,2,3/posts
- *
- * requests with :linkname = "links" will 404
- */
-
-func(rr *RequestResolver) HandlerFindLinkByNameAndResourceId(a *API, w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
     /*
     ii := NewIncludeInstructionsFromRequest(r);
     output := NewOutput(r);
