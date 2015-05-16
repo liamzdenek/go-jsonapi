@@ -76,6 +76,7 @@ func(rr *RequestResolver) CentralSearchRouter(a *API, w http.ResponseWriter, r *
     for _,pre := range preroute {
         wctx.Push(work);
         work = NewTaskSingleLinkResolver(wctx, work, pre);
+        //ii = ii.GetChild(pre);
     }
     attacher := NewTaskAttachIncluded(wctx, work, ii, outputtype, linkname);
     replyer := NewTaskReplyer(attacher);
@@ -96,29 +97,14 @@ func(rr *RequestResolver) CentralSearchRouter(a *API, w http.ResponseWriter, r *
  // TODO: make DeleteIds a Task
  // TODO: needs a diferent response when it does not exist per spec
 func(rr *RequestResolver) HandlerDelete(a *API, w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-    defer func() {
-        if raw := recover(); raw != nil {
-            a.CatchResponses(w,r,raw);
-        }
-    }()
-    ids := strings.Split(ps.ByName("id"),",");
-    isSingle := len(ids) == 1;
-    if(!isSingle) {
-        panic(NewResponderError(errors.New("This request does not support more than one id")));
-    }
-
-    resource_str := ps.ByName("resource");
-    resource := a.RM.GetResource(resource_str);
-
-    if(resource == nil) {
-        panic(NewResponderErrorResourceDoesNotExist(resource_str));
-    }
-
-    resource.A.Authenticate("resource.Delete."+resource_str, ids[0], r);
-
-    err := resource.R.Delete(ids[0]);
-    Check(err);
-    Reply(NewResponderResourceSuccessfullyDeleted());
+    wctx := NewTaskContext(a,r,w);
+    defer wctx.Cleanup();
+    deleter := NewTaskDelete(
+        ps.ByName("resource"),
+        ps.ByName("id"),
+    );
+    wctx.Push(deleter);
+    deleter.Wait();
 }
 /************************************************
  *
@@ -126,12 +112,16 @@ func(rr *RequestResolver) HandlerDelete(a *API, w http.ResponseWriter, r *http.R
  * * POST /:resource
  */
 func(rr *RequestResolver) HandlerCreate(a *API, w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-    defer func() {
-        if raw := recover(); raw != nil {
-            a.CatchResponses(w,r,raw);
-        }
-    }()
-    ctx := a.GetNewContext();
+    wctx := NewTaskContext(a,r,w);
+    defer wctx.Cleanup();
+    deleter := NewTaskDelete(
+        ps.ByName("resource"),
+        ps.ByName("id"),
+    );
+    wctx.Push(deleter);
+    deleter.Wait();
+
+    return;
     resource_str := ps.ByName("resource");
     resource := a.RM.GetResource(resource_str);
 

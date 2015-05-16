@@ -65,7 +65,6 @@ func(w *TaskFindByIds) ResponseWorker(has_paniced bool) {
 }
 
 func(w *TaskFindByIds) Cleanup(a *API, r *http.Request) {
-    fmt.Printf("INSIDE CLEANUP\n");
     close(w.Output);
 }
 

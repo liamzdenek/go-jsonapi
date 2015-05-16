@@ -8,7 +8,7 @@ type TaskContext struct {
 
 func NewTaskContext(a *API, r *http.Request, w http.ResponseWriter) *TaskContext {
     res := &TaskContext{
-        Context: make(chan Task),
+        Context: make(chan Task, 10), // the buffer is to prevent some context switching when a lot of tasks are pushed at once
     };
     go func() {
         has_paniced := false;
