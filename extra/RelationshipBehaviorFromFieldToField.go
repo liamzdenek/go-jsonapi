@@ -19,6 +19,7 @@ func NewRelationshipBehaviorFromFieldToField(srcFieldName, dstFieldName string, 
     }
 }
 
+func(l *RelationshipBehaviorFromFieldToField) IsSingle() (bool) { return false; }
 func(l *RelationshipBehaviorFromFieldToField) LinkIder(srcR, dstR *ResourceManagerResource, src Ider) (dst []Ider) {
     ids := l.FromFieldToId.LinkId(srcR, dstR, src);
     //dstrmr := rmr.RM.GetResource(rmr.DstR);

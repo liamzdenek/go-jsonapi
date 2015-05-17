@@ -18,6 +18,7 @@ func NewRelationshipBehaviorFromFieldToId(srcFieldName string, required Relation
         SrcFieldName: srcFieldName,
     }
 }
+func(l *RelationshipBehaviorFromFieldToId) IsSingle() (bool) { return true; }
 
 func(l *RelationshipBehaviorFromFieldToId) LinkId(srcR, dstR *ResourceManagerResource, src Ider) (ids []string) {
     v := reflect.ValueOf(GetField(l.SrcFieldName, src));

@@ -19,12 +19,15 @@ func NewTaskSingleLinkResolver(ctx *TaskContext, t TaskResultRecords, linkname s
     }
 }
 
+// TODO: make the parent_name in this function passed as an arg to NewTaskSingleLinkResolver instead of determining it from the result, as the current setup could create inconsistent behavior and is inherently incompatible with multi-type resources
 func(t *TaskSingleLinkResolver) Work(ctx *TaskContext, a *API, r *http.Request) {
     result := t.Parent.GetResult();
     ii := NewIncludeInstructionsEmpty();
     ii.Push([]string{t.Linkname});
     data := []Record{};
+    parent_name := "";
     for _, res := range result.Result {
+        parent_name = res.Type();
         work := NewWorkFindLinksByRecord(res,ii);
         t.Context.Push(work);
         fmt.Printf("WORKRES: %#v\n", work.GetResult().Included);
@@ -32,9 +35,14 @@ func(t *TaskSingleLinkResolver) Work(ctx *TaskContext, a *API, r *http.Request) 
             data = append(data, inc);
         }
     }
+    isSingle := false;
+    rel := a.RM.GetRelationship(parent_name, t.Linkname);
+    if(rel != nil) {
+        isSingle = rel.B.IsSingle()
+    }
     t.Result = &TaskResultRecordData{
         Result: data,
-        IsSingle: false, // TODO: fix this to get this data from the relationship
+        IsSingle: isSingle,
     };
 }
 

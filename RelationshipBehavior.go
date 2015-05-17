@@ -10,6 +10,7 @@ const (
 // RelationshipBehavior is a "base interface"
 // children: IdRelationshipBehavior or a HasIdRelationshipBehavior
 type RelationshipBehavior interface {
+    IsSingle() bool
     VerifyLinks(ider Ider, linkages *OutputLinkage) error
     PreCreate(ider Ider, linkages *OutputLinkage) error
     PostCreate(ider Ider, linkages *OutputLinkage) error
