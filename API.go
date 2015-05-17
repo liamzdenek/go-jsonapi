@@ -1,6 +1,6 @@
 package jsonapi;
 
-import ("github.com/julienschmidt/httprouter";"net/http";"fmt";"encoding/json";"errors");
+import ("github.com/julienschmidt/httprouter";"net/http";"fmt";"encoding/json";"errors";"log";"os");
 
 type API struct{
     Router *httprouter.Router
@@ -8,6 +8,7 @@ type API struct{
     RM *ResourceManager
     RR *RequestResolver
     ContextFactory ContextFactory
+    Logger *log.Logger
 }
 
 func NewAPI(ctxm ContextFactory) *API {
@@ -17,8 +18,10 @@ func NewAPI(ctxm ContextFactory) *API {
         RR: NewRequestResolver(),
         BaseURIPath: "/",
         ContextFactory: ctxm,
+        Logger: log.New(os.Stdout,"",log.LstdFlags | log.Lshortfile),
     };
     api.InitRouter();
+    api.Logger.Printf("Initialized");
     return api;
 }
 

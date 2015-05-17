@@ -1,6 +1,6 @@
 package jsonapi;
 
-import ("net/http";"fmt");
+import ("net/http";);
 
 type TaskReplyer struct {
     TaskResultOutput TaskResultOutput
@@ -15,9 +15,9 @@ func NewTaskReplyer(wo TaskResultOutput) *TaskReplyer {
 }
 
 func(w *TaskReplyer) Work(ctx *TaskContext, a *API, r *http.Request) {
-    fmt.Printf("Waiting for final result\n");
+    //fmt.Printf("Waiting for final result\n");
     res := w.TaskResultOutput.GetResult();
-    fmt.Printf("FINAL RESULT: %#v\n", res);
+    //fmt.Printf("FINAL RESULT: %#v\n", res);
     Reply(res)
 }
 

@@ -28,6 +28,7 @@ func NewResourceRAM(t Ider) *ResourceRAM {
 }
 
 func(rr *ResourceRAM) Push(id string, ider Ider) {
+    SetId(ider, id);
     rr.Storage[id] = ider;
 }
 

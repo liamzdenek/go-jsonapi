@@ -63,6 +63,7 @@ func main() {
     now := time.Now();
     resource_session.Push("1", &Session{ID: "1", UserId: 1, Created:&now});
     resource_session.Push("2", &Session{ID: "2", UserId: 2, Created:&now});
+    resource_session.Push("3", &Session{ID: "3", UserId: 17, Created:&now});
 
     // api.MountResource informs the api of the provided resource, and makes the resource
     // available to requests using the string given as the first parameter.

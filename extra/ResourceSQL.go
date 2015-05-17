@@ -82,7 +82,7 @@ func(sr *ResourceSQL) FindManyByField(field string, value string) ([]Ider, error
         q,
         value,
     );
-    fmt.Printf("RES: %#v\n", vs);
+    //fmt.Printf("RES: %#v\n", vs);
     return sr.ConvertInterfaceSliceToIderSlice(vs), err;
 }
 

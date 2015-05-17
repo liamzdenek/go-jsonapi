@@ -2,7 +2,7 @@ package jsonapi;
 
 type Record interface {
     Ider
-    Linker
     Typer
+    Data() *WorkFindLinksByRecordResult
     Include() bool
 }

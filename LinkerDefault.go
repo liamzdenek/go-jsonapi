@@ -33,9 +33,7 @@ func(loi LinkerDefault) Link(included *[]Record) (*OutputLinkageSet) {
         link, new_included := rel.Resolve(loi.Ider, loi.Request, shouldFetch, loi.Context,  loi.Include);
         link.LinkName = linkname;
         res.Linkages = append(res.Linkages, link);
-        if(shouldFetch) {
-            *included = append(*included, new_included...);
-        }
+        *included = append(*included, new_included...);
     }
     return res;
 }

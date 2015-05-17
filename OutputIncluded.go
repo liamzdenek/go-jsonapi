@@ -1,6 +1,6 @@
 package jsonapi;
 
-import("encoding/json";);
+import("encoding/json";"fmt");
 
 type OutputIncluded struct {
     Included *[]Record
@@ -13,37 +13,15 @@ func NewOutputIncluded(included *[]Record) *OutputIncluded {
 }
 
 func(o OutputIncluded) MarshalJSON() ([]byte, error) {
-    res := []*OutputDatum{};
-    todo_list := *o.Included
-    var inc Record
-    for {
-        if(len(todo_list) >= 1) {
-            inc = todo_list[0]
-        } else {
-            break;
-        }
-        d := &OutputDatum{Datum:inc};
-        d.Prepare(&todo_list);
-        if(inc.Include()) {
-            //fmt.Printf("DATUM INCLUDED\n");
-            res = append(res,d);
-        }
-        if(len(todo_list) >= 1) {
-            todo_list = todo_list[1:];
-        }
-    }
     // TODO: the ideal way is to use this as a real-time cache
-    deduplicate := map[string]bool{};
-    realres := []*OutputDatum{};
-    for _,datum := range res {
-        s := datum.Datum.Type()+"_"+GetId(datum.Datum);
-        if deduplicate[s] {
-            continue;
-        }
-        deduplicate[s] = true;
-        realres = append(realres, datum);
+    res := []OutputDatum{}
+    for _, incl := range *o.Included {
+        fmt.Printf("INCLUDE ONE: %#v\n", incl);
+        d := OutputDatum{Datum:incl};
+        d.Prepare();
+        res = append(res,d);
     }
-    return json.Marshal(realres);
+    return json.Marshal(res);
     //return json.Marshal(o.Included);
 }
 /*

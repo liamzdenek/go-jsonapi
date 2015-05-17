@@ -32,43 +32,80 @@ func NewTaskAttachIncluded(ctx *TaskContext, parent TaskResultRecords, ii *Inclu
 }
 
 func (w *TaskAttachIncluded) Work(ctx *TaskContext, a *API, r *http.Request) {
-    result := w.Parent.GetResult();
+    parent := w.Parent.GetResult();
+    output_primary := []Record{};
+    output_included := []Record{};
+    queue := []Record{};
+    queue = append(queue, parent.Result...);
+    primary_count := len(queue);
+    for {
+        if len(queue) == 0 {
+            break;
+        }
+        var next Record;
+        next, queue = queue[0], queue[1:];
+        result := next.Data();
+        
+        if(primary_count > 0) {
+            primary_count--;
+            a.Logger.Printf("Pushing To Primary: %#v\n", next);
+            output_primary = append(output_primary, next);
+        } else if(next.Include()) {
+            a.Logger.Printf("Pushing To Included: %#v\n", next);
+            output_included = append(output_included, next);
+        }
+
+        for _,included := range *result.Included {
+            a.Logger.Printf("Pushing To Queue: %#v\n", included);
+            queue = append(queue, included);
+        }
+    }
+
+    res := NewOutput(r);
+    res.Data = NewOutputDataResources(parent.IsSingle, output_primary);
+    res.Included.Included = &output_included;
+    w.ActualOutput = res;
+
+    //panic("TODO: FIX DIS");
+    /*
     queue := result.Result;
     data := []*OutputDatum{};
     linkage := OutputLinkage{};
     included := []Record{};
     first := true
     for {
+
         tqueue := queue;
         queue = []Record{}
         d := map[Record]*WorkFindLinksByRecord{};
-        for _, idertyper := range tqueue {
-            work := NewWorkFindLinksByRecord(idertyper,w.II);
+        for _, record := range tqueue {
+            work := NewWorkFindLinksByRecord(record,w.II);
             w.Context.Push(work);
-            d[idertyper] = work;
+            d[record] = work;
         }
-        for idertyper, work := range d {
+        for record, work := range d {
             result := work.GetResult();
+            a.Logger.Printf("ATTACH INCLUDED GOT RESULT: %#v %#v %s %s\n\n", result.Links, result.Included, record.Type(), GetId(record));
             if(first) {
-                if w.OutputType == OutputTypeResources {
+                //if w.OutputType == OutputTypeResources {
                     data = append(data, &OutputDatum{
-                        Datum: NewRecordWrapper(idertyper, idertyper.Type(), ctx, "TODO", w.II),
+                        Datum: record,
                     });
-                } else {
-                    for _, links := range result.Links.Linkages {
-                        if(links.LinkName == w.Linkname) {
-                            for _, link := range links.Links {
-                                linkage.Links = append(linkage.Links, link);
-                            }
-                        }
-                    }
-                }
+                //} else {
+                //    for _, links := range result.Links.Linkages {
+                //        if(links.LinkName == w.Linkname) {
+                //            for _, link := range links.Links {
+                //                linkage.Links = append(linkage.Links, link);
+                //            }
+                //        }
+                //    }
+                //}
             }
-            for _, record := range *result.Included {
-                queue = append(queue, record);
-                fmt.Printf("GOT RECORD: %#v\n", record);
-                if(record.Include()) {
-                    included = append(included, record)
+            for _, crecord := range *result.Included {
+                a.Logger.Printf("INCLUDING RECORD: %#v\n", crecord);
+                queue = append(queue, crecord);
+                if(crecord.Include()) {
+                    included = append(included, crecord)
                 }
             }
         }
@@ -78,16 +115,16 @@ func (w *TaskAttachIncluded) Work(ctx *TaskContext, a *API, r *http.Request) {
         }
     }
     res := &Output{};
-    fmt.Printf("DATA: %#v\n", data);
+    fmt.Printf("ACTUAL OUTPUT: %#v\n", data);
     if w.OutputType == OutputTypeResources {
         res.Data = NewOutputDataResources(result.IsSingle, data);
     } else {
-        fmt.Printf("\nLINKAGE: %#v\n\n", linkage);
         res.Data = NewOutputDataLinkage(result.IsSingle, &linkage);
     }
     res.Included = NewOutputIncluded(&included);
-
+    
     w.ActualOutput = res;
+    */
 }
 
 func (w *TaskAttachIncluded) ResponseWorker(has_paniced bool) {

@@ -12,6 +12,9 @@ type TaskFindByIds struct {
 }
 
 func NewTaskFindByIds(resource string, ids []string, ii *IncludeInstructions, vln string) *TaskFindByIds {
+    if vln == "" {
+        panic("NewTaskFindByIds must not be provided with ViaLinkName == \"\"");
+    }
     return &TaskFindByIds{
         Output: make(chan chan *TaskResultRecordData),
         Ids: ids,
@@ -51,7 +54,7 @@ func(w *TaskFindByIds) Work(wctx *TaskContext, a *API, r *http.Request) {
         // TODO: is this the right error?
         panic(NewResponderError(err));
     }
-    fmt.Printf("GOT DATA: %#v\n", data);
+    //fmt.Printf("GOT DATA: %#v\n", data);
     res := []Record{};
     for _,ider := range data {
         res = append(res, NewRecordWrapper(

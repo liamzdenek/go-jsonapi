@@ -26,38 +26,33 @@ func(rmr *ResourceManagerRelationship) ResolveId(r *http.Request, lb IdRelations
             Id: id,
         });
     }
+    fmt.Printf("SHOULD FETCH LINK: %s %b\n\n", rmr.Name, include.ShouldFetch(rmr.Name));
     if(include.ShouldFetch(rmr.Name)) {
         linkdata, err := resource.R.FindMany(ids);
         Check(err);
         for _, link := range linkdata {
             fmt.Printf("Passing thru child include: %#v\n\n\n", include);
-            included = append(included, NewRecordWrapper(link,rmr.DstR,ctx, rmr.Name, include));
+            included = append(included, NewRecordWrapper(link,rmr.DstR,ctx, rmr.Name, include/*.GetChild(rmr.Name)*/));
         }
     }
     return res, included;
 }
 
 func(rmr *ResourceManagerRelationship) ResolveIder(r *http.Request, lb IderRelationshipBehavior, src Ider, ctx *TaskContext, include *IncludeInstructions) (*OutputLinkage, []Record) {
-    panic("GOTTA FIX THIS");
-    /*
     res := &OutputLinkage{}
     included := []Record{};
     dstRmr := rmr.RM.GetResource(rmr.DstR);
     links := lb.LinkIder(rmr.RM.GetResource(rmr.SrcR), dstRmr, src);
-    shouldInclude := include.ShouldInclude(rmr.Name);
     for _, link := range links {
         res.Links = append(res.Links, &OutputLink{
             Type: rmr.DstR,
             Id: GetId(link),
         });
-        fmt.Printf("\nShouldFetch %v ShouldInclude %v -- %s %#v\n\n", shouldFetch, shouldInclude, rmr.Name, include);
-        if(shouldFetch) {
-            roi := NewLinkerDefault(rmr.API, dstRmr, link, r, include.GetChild(rmr.Name));
-            included = append(included, NewRecordWrapper(link,rmr.DstR, roi, nil, shouldInclude));
-        }
+        included = append(included,
+            NewRecordWrapper(link,rmr.DstR, ctx, rmr.Name, include/*.GetChild(rmr.Name)*/),
+        );
     }
     return res, included;
-    */
 }
 
 func(rmr *ResourceManagerRelationship) Resolve(src Ider, r *http.Request, shouldFetch bool, ctx *TaskContext, include *IncludeInstructions) (*OutputLinkage, []Record) {

@@ -80,7 +80,7 @@ func(rr *RequestResolver) CentralSearchRouter(a *API, w http.ResponseWriter, r *
         resourcestr,
         strings.Split(idstr,","),
         ii,
-        "",
+        "root",
     );
     for _,pre := range preroute {
         wctx.Push(work);

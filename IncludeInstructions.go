@@ -10,7 +10,9 @@ type IncludeInstructions struct {
 }
 
 func NewIncludeInstructionsFromRequest(r *http.Request) *IncludeInstructions {
-    return NewIncludeInstructions(r.URL.Query().Get("include"));
+    e := NewIncludeInstructionsEmpty();
+    e.Children["root"] = NewIncludeInstructions(r.URL.Query().Get("include"));
+    return e;
 }
 
 func NewIncludeInstructionsEmpty() *IncludeInstructions {

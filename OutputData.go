@@ -20,12 +20,18 @@ const (
     OneToManyLinkage
 );
 
-func NewOutputDataResources(isSingle bool, data []*OutputDatum) *OutputData {
+func NewOutputDataResources(isSingle bool, data []Record) *OutputData {
+    wrapped := []*OutputDatum{};
+    for _, datum := range data {
+        wrapped = append(wrapped, &OutputDatum{
+            Datum: datum,
+        });
+    }
     t := ManyResources;
     if(isSingle) {
         t = SingleResource;
     }
-    return &OutputData{Data: data, Target: t};
+    return &OutputData{Data: wrapped, Target: t};
 }
 
 func NewOutputDataRelationship(links *OutputLinkageSet) *OutputData {
@@ -48,10 +54,7 @@ func(o *OutputData) Prepare() {
             o.Data = append(o.Data[:i],o.Data[i+1:]...);
             continue;
         }
-        if(o.Included == nil) {
-            panic(NewResponderError(errors.New("Cannot send response, OutputData Included is nil ptr")));
-        }
-        datum.Prepare(o.Included);
+        datum.Prepare();
     }
 }
 
@@ -93,7 +96,7 @@ type OutputDatum struct { // data[i]
     res map[string]interface{}
 }
 
-func (o *OutputDatum) Prepare(included *[]Record) {
+func (o *OutputDatum) Prepare() {
     fmt.Printf("Denatre object: %#v\n", o.Datum);
     res := DenatureObject(o.Datum);
     delete(res, "ID");
@@ -101,11 +104,9 @@ func (o *OutputDatum) Prepare(included *[]Record) {
     delete(res, "iD");
     res = map[string]interface{}{"attributes":res};
     res["id"] = GetId(o.Datum);
-    if(included != nil) {
-        links := o.Datum.Link(included);
-        if(len(links.Linkages) > 0) {
-            res["links"] = links
-        }
+    links := o.Datum.Data().Links;
+    if(len(links.Linkages) > 0) {
+        res["links"] = links
     }
     res["type"] = o.Datum.Type();
     o.res = res;

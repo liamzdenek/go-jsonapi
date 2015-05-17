@@ -19,6 +19,9 @@ func NewRecordWrapper(i Ider, t string, ctx *TaskContext, vln string, ii *Includ
     if ctx == nil {
         panic("NewRecordWrapper must not be provided with TaskContext == nil");
     }
+    if vln == "" {
+        panic("NewRecordWrapper must not be provided with ViaLinkName == \"\"");
+    }
     res := &RecordWrapper{
         Ider: i,
         Type_: t,
@@ -26,7 +29,7 @@ func NewRecordWrapper(i Ider, t string, ctx *TaskContext, vln string, ii *Includ
         ViaLinkName: vln,
         II: ii,
     };
-    work := NewWorkFindLinksByRecord(res,ii);
+    work := NewWorkFindLinksByRecord(res,ii.GetChild(res.ViaLinkName));
     res.Context.Push(work);
     res.Work = work;
     return res;
@@ -37,11 +40,11 @@ func(w *RecordWrapper) Id() string {
 }
 
 func(w *RecordWrapper) SetId(s string) error {
-    panic("TODO: This");
+    return SetId(w.Ider, s);
 }
 
-func(w *RecordWrapper) Link(included *[]Record) *OutputLinkageSet {
-    return w.Work.GetResult().Links;
+func(w *RecordWrapper) Data() *WorkFindLinksByRecordResult {
+    return w.Work.GetResult();
 }
 
 func(w *RecordWrapper) Type() string {
