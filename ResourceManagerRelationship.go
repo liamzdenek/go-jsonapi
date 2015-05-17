@@ -16,7 +16,9 @@ type ResourceManagerRelationship struct {
 
 func(rmr *ResourceManagerRelationship) ResolveId(r *http.Request, lb IdRelationshipBehavior, src Ider, ctx *TaskContext, include *IncludeInstructions) (*OutputLinkage, []Record) {
     resource := rmr.RM.GetResource(rmr.DstR);
-    res := &OutputLinkage{}
+    res := &OutputLinkage{
+        IsSingle: lb.IsSingle(),
+    }
     included := []Record{};
     dstRmr := rmr.RM.GetResource(rmr.DstR);
     ids := lb.LinkId(rmr.RM.GetResource(rmr.SrcR), dstRmr, src);
@@ -39,7 +41,9 @@ func(rmr *ResourceManagerRelationship) ResolveId(r *http.Request, lb IdRelations
 }
 
 func(rmr *ResourceManagerRelationship) ResolveIder(r *http.Request, lb IderRelationshipBehavior, src Ider, ctx *TaskContext, include *IncludeInstructions) (*OutputLinkage, []Record) {
-    res := &OutputLinkage{}
+    res := &OutputLinkage{
+        IsSingle: lb.IsSingle(),
+    }
     included := []Record{};
     dstRmr := rmr.RM.GetResource(rmr.DstR);
     links := lb.LinkIder(rmr.RM.GetResource(rmr.SrcR), dstRmr, src);
