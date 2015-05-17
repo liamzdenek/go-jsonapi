@@ -7,17 +7,21 @@ type TaskFindByIds struct {
     Ids []string
     Output chan chan *TaskResultRecordData
     Result *TaskResultRecordData
+    II *IncludeInstructions
+    ViaLinkName string
 }
 
-func NewTaskFindByIds(resource string, ids []string) *TaskFindByIds {
+func NewTaskFindByIds(resource string, ids []string, ii *IncludeInstructions, vln string) *TaskFindByIds {
     return &TaskFindByIds{
         Output: make(chan chan *TaskResultRecordData),
         Ids: ids,
         Resource: resource,
+        II: ii,
+        ViaLinkName: vln,
     }
 }
 
-func(w *TaskFindByIds) Work(a *API, r *http.Request) {
+func(w *TaskFindByIds) Work(wctx *TaskContext, a *API, r *http.Request) {
     resource := a.RM.GetResource(w.Resource);
 
     if(resource == nil) {
@@ -50,7 +54,13 @@ func(w *TaskFindByIds) Work(a *API, r *http.Request) {
     fmt.Printf("GOT DATA: %#v\n", data);
     res := []Record{};
     for _,ider := range data {
-        res = append(res, NewRecordWrapper(ider,w.Resource,NewLinkerStatic(nil), true));
+        res = append(res, NewRecordWrapper(
+            ider,
+            w.Resource,
+            wctx,
+            w.ViaLinkName,
+            w.II,
+        ));
     }
     w.Result = &TaskResultRecordData{
         Result: res,
@@ -67,6 +77,7 @@ func(w *TaskFindByIds) ResponseWorker(has_paniced bool) {
 }
 
 func(w *TaskFindByIds) Cleanup(a *API, r *http.Request) {
+    fmt.Printf("TASKFINDBYIDS CLEANUP\n");
     close(w.Output);
 }
 

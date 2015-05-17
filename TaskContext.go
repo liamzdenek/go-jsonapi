@@ -14,7 +14,6 @@ func NewTaskContext(a *API, r *http.Request, w http.ResponseWriter) *TaskContext
         has_paniced := false;
         for worker := range res.Context {
             tworker := worker; // range will reuse the same worker object since it is not a pointer... we do not want it to overwrite the last one before the go func() has a chance to start -- removing this could create inconsistent behavior
-            //fmt.Printf("OUTER WORKER %#v\n", tworker);
             defer tworker.Cleanup(a,r);
             go func() {
                 defer func() {
@@ -30,11 +29,9 @@ func NewTaskContext(a *API, r *http.Request, w http.ResponseWriter) *TaskContext
                     }
                     tworker.ResponseWorker(has_paniced);
                 }();
-                //fmt.Printf("INNER WORKER: %#v\n", tworker);
-                tworker.Work(a,r);
+                tworker.Work(res,a,r);
             }();
         }
-        //fmt.Printf("CONTEXT CLEANUP\n");
     }()
     return res;
 }

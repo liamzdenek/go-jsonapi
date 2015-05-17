@@ -1,6 +1,8 @@
 package jsonapi;
 
-import ("net/http";"fmt";"errors");
+import ("net/http";
+"fmt";
+"errors");
 
 type ResourceManagerRelationship struct {
     RM *ResourceManager
@@ -12,7 +14,7 @@ type ResourceManagerRelationship struct {
     API *API
 }
 
-func(rmr *ResourceManagerRelationship) ResolveId(r *http.Request, lb IdRelationshipBehavior, src Ider, shouldFetch bool, include *IncludeInstructions) (*OutputLinkage, []Record) {
+func(rmr *ResourceManagerRelationship) ResolveId(r *http.Request, lb IdRelationshipBehavior, src Ider, ctx *TaskContext, include *IncludeInstructions) (*OutputLinkage, []Record) {
     resource := rmr.RM.GetResource(rmr.DstR);
     res := &OutputLinkage{}
     included := []Record{};
@@ -24,20 +26,20 @@ func(rmr *ResourceManagerRelationship) ResolveId(r *http.Request, lb IdRelations
             Id: id,
         });
     }
-    if(shouldFetch) {
+    if(include.ShouldFetch(rmr.Name)) {
         linkdata, err := resource.R.FindMany(ids);
         Check(err);
-        shouldInclude := include.ShouldInclude(rmr.Name);
         for _, link := range linkdata {
             fmt.Printf("Passing thru child include: %#v\n\n\n", include);
-            roi := NewLinkerDefault(rmr.API, dstRmr, link, r, include.GetChild(rmr.Name));
-            included = append(included, NewRecordWrapper(link,rmr.DstR,roi, shouldInclude));
+            included = append(included, NewRecordWrapper(link,rmr.DstR,ctx, rmr.Name, include));
         }
     }
     return res, included;
 }
 
-func(rmr *ResourceManagerRelationship) ResolveIder(r *http.Request, lb IderRelationshipBehavior, src Ider, shouldFetch bool, include *IncludeInstructions) (*OutputLinkage, []Record) {
+func(rmr *ResourceManagerRelationship) ResolveIder(r *http.Request, lb IderRelationshipBehavior, src Ider, ctx *TaskContext, include *IncludeInstructions) (*OutputLinkage, []Record) {
+    panic("GOTTA FIX THIS");
+    /*
     res := &OutputLinkage{}
     included := []Record{};
     dstRmr := rmr.RM.GetResource(rmr.DstR);
@@ -51,27 +53,28 @@ func(rmr *ResourceManagerRelationship) ResolveIder(r *http.Request, lb IderRelat
         fmt.Printf("\nShouldFetch %v ShouldInclude %v -- %s %#v\n\n", shouldFetch, shouldInclude, rmr.Name, include);
         if(shouldFetch) {
             roi := NewLinkerDefault(rmr.API, dstRmr, link, r, include.GetChild(rmr.Name));
-            included = append(included, NewRecordWrapper(link,rmr.DstR, roi, shouldInclude));
+            included = append(included, NewRecordWrapper(link,rmr.DstR, roi, nil, shouldInclude));
         }
     }
     return res, included;
+    */
 }
 
-func(rmr *ResourceManagerRelationship) Resolve(src Ider, r *http.Request, shouldFetch bool, include *IncludeInstructions) (*OutputLinkage, []Record) {
+func(rmr *ResourceManagerRelationship) Resolve(src Ider, r *http.Request, shouldFetch bool, ctx *TaskContext, include *IncludeInstructions) (*OutputLinkage, []Record) {
     // TODO: make this authentication request captured here... a failure at a relationship should merely exclude that relationship
     rmr.A.Authenticate("relationship.FindAll."+rmr.SrcR+"."+rmr.Name+"."+rmr.DstR, GetId(src), r);
     // if we want included and it satisfies IderRelationshipBehavior, we 
     // should always prefer that over IdRelationshipBehavior
     if(shouldFetch) {
         if lb, found := rmr.B.(IderRelationshipBehavior); found {
-            return rmr.ResolveIder(r, lb, src, shouldFetch, include);
+            return rmr.ResolveIder(r, lb, src, ctx, include);
         }
     }
     switch lb := rmr.B.(type) {
         case IdRelationshipBehavior:
-            return rmr.ResolveId(r, lb, src, shouldFetch, include);
+            return rmr.ResolveId(r, lb, src, ctx, include);
         case IderRelationshipBehavior:
-            return rmr.ResolveIder(r, lb, src, shouldFetch, include);
+            return rmr.ResolveIder(r, lb, src, ctx, include);
         default:
             panic(NewResponderError(errors.New("Attempted to resolve a linkage behavior that is neither an Id or Ider LinkageBehavior.. This should never happen")));
     }

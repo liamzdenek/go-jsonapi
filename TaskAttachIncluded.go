@@ -31,7 +31,7 @@ func NewTaskAttachIncluded(ctx *TaskContext, parent TaskResultRecords, ii *Inclu
     }
 }
 
-func (w *TaskAttachIncluded) Work(a *API, r *http.Request) {
+func (w *TaskAttachIncluded) Work(ctx *TaskContext, a *API, r *http.Request) {
     result := w.Parent.GetResult();
     queue := result.Result;
     data := []*OutputDatum{};
@@ -52,7 +52,7 @@ func (w *TaskAttachIncluded) Work(a *API, r *http.Request) {
             if(first) {
                 if w.OutputType == OutputTypeResources {
                     data = append(data, &OutputDatum{
-                        Datum: NewRecordWrapper(idertyper, idertyper.Type(),NewLinkerStatic(result.Links), true),
+                        Datum: NewRecordWrapper(idertyper, idertyper.Type(), ctx, "TODO", w.II),
                     });
                 } else {
                     for _, links := range result.Links.Linkages {

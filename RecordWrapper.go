@@ -3,20 +3,33 @@ package jsonapi;
 type RecordWrapper struct {
     Ider Ider
     Type_ string
-    Linker Linker
-    Show bool
+    Context *TaskContext
+    Work *WorkFindLinksByRecord
+    II *IncludeInstructions
+    ViaLinkName string
 }
 
-func NewRecordWrapper(i Ider, t string, l Linker, show bool) *RecordWrapper {
+func NewRecordWrapper(i Ider, t string, ctx *TaskContext, vln string, ii *IncludeInstructions) *RecordWrapper {
     if i == nil {
         panic("NewRecordWrapper must not be provided with an Ider == nil");
     }
-    return &RecordWrapper{
+    if ii == nil {
+        panic("NewRecordWrapper must not be provided with IncludeInstructions == nil")
+    }
+    if ctx == nil {
+        panic("NewRecordWrapper must not be provided with TaskContext == nil");
+    }
+    res := &RecordWrapper{
         Ider: i,
         Type_: t,
-        Linker: l,
-        Show: show,
-    }
+        Context: ctx,
+        ViaLinkName: vln,
+        II: ii,
+    };
+    work := NewWorkFindLinksByRecord(res,ii);
+    res.Context.Push(work);
+    res.Work = work;
+    return res;
 }
 
 func(w *RecordWrapper) Id() string {
@@ -28,7 +41,7 @@ func(w *RecordWrapper) SetId(s string) error {
 }
 
 func(w *RecordWrapper) Link(included *[]Record) *OutputLinkageSet {
-    return w.Linker.Link(included);
+    return w.Work.GetResult().Links;
 }
 
 func(w *RecordWrapper) Type() string {
@@ -36,7 +49,7 @@ func(w *RecordWrapper) Type() string {
 }
 
 func(w *RecordWrapper) Include() bool {
-    return w.Show;
+    return w.ViaLinkName == "" || w.II.ShouldInclude(w.ViaLinkName); // TODO chain this into shouldInclude w.II
 }
 
 func(w RecordWrapper) Denature() interface{} {

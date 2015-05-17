@@ -79,6 +79,8 @@ func(rr *RequestResolver) CentralSearchRouter(a *API, w http.ResponseWriter, r *
     var work TaskResultRecords = NewTaskFindByIds(
         resourcestr,
         strings.Split(idstr,","),
+        ii,
+        "",
     );
     for _,pre := range preroute {
         wctx.Push(work);

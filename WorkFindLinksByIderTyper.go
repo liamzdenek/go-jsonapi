@@ -22,20 +22,24 @@ func NewWorkFindLinksByRecord(idertyper Record, ii *IncludeInstructions) *WorkFi
     }
 }
 
-func (w *WorkFindLinksByRecord) Work(a *API, r *http.Request) {
-    fmt.Printf("GOT RECORD TO FIND LINKS: %#v\n", w.Record);
+func (w *WorkFindLinksByRecord) Work(wctx *TaskContext, a *API, r *http.Request) {
+    fmt.Printf("GOT RECORD TO FIND LINKS: %#v\n", w.Record.Link);
+    
     linker := NewLinkerDefault(
         a,
         a.RM.GetResource(w.Record.Type()),
         w.Record,
+        wctx,
         r,
         w.II,
     );
+    
     included := []Record{}
     w.Result = &WorkFindLinksByRecordResult{
         Links: linker.Link(&included),
         Included: &included,
     }
+    fmt.Printf("GOT RECORD LINKS: %#v\n", w.Result);
 }
 
 func(w *WorkFindLinksByRecord) ResponseWorker(has_paniced bool) {
@@ -51,8 +55,11 @@ func (w *WorkFindLinksByRecord) Cleanup(a *API, r *http.Request) {
 }
 
 func(w *WorkFindLinksByRecord) GetResult() *WorkFindLinksByRecordResult  {
+    fmt.Printf("GETTING RESULT FROM THIS: %#v\n", w);
     r := make(chan *WorkFindLinksByRecordResult);
     defer close(r);
     w.Output <- r;
-    return <-r;
+    res := <-r;
+    fmt.Printf("GOT RESULT FROM THIS: %#v\n", w);
+    return res;
 }

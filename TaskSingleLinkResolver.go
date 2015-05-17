@@ -19,7 +19,7 @@ func NewTaskSingleLinkResolver(ctx *TaskContext, t TaskResultRecords, linkname s
     }
 }
 
-func(t *TaskSingleLinkResolver) Work(a *API, r *http.Request) {
+func(t *TaskSingleLinkResolver) Work(ctx *TaskContext, a *API, r *http.Request) {
     result := t.Parent.GetResult();
     ii := NewIncludeInstructionsEmpty();
     ii.Push([]string{t.Linkname});

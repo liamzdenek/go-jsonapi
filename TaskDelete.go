@@ -16,7 +16,7 @@ func NewTaskDelete(resource, id string) *TaskDelete {
     }
 }
 
-func(t *TaskDelete) Work(a *API, r *http.Request) {
+func(t *TaskDelete) Work(wctx *TaskContext, a *API, r *http.Request) {
     ids := strings.Split(t.Id,",");
     isSingle := len(ids) == 1;
     if(!isSingle) {
