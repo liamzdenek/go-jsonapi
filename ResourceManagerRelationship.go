@@ -32,7 +32,7 @@ func(rmr *ResourceManagerRelationship) ResolveId(r *http.Request, lb IdRelations
         Check(err);
         for _, link := range linkdata {
             fmt.Printf("Passing thru child include: %#v\n\n\n", include);
-            included = append(included, NewRecordWrapper(link,rmr.DstR,ctx, rmr.Name, include/*.GetChild(rmr.Name)*/));
+            included = append(included, NewRecordWrapper(link,rmr.DstR,ctx, rmr.Name, include));
         }
     }
     return res, included;
@@ -49,7 +49,7 @@ func(rmr *ResourceManagerRelationship) ResolveIder(r *http.Request, lb IderRelat
             Id: GetId(link),
         });
         included = append(included,
-            NewRecordWrapper(link,rmr.DstR, ctx, rmr.Name, include/*.GetChild(rmr.Name)*/),
+            NewRecordWrapper(link,rmr.DstR, ctx, rmr.Name, include),
         );
     }
     return res, included;

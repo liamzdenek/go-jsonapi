@@ -35,6 +35,7 @@ func (w *TaskAttachIncluded) Work(ctx *TaskContext, a *API, r *http.Request) {
     parent := w.Parent.GetResult();
     output_primary := []Record{};
     output_included := []Record{};
+    output_linkage := OutputLinkage{};
     queue := []Record{};
     queue = append(queue, parent.Result...);
     primary_count := len(queue);
@@ -43,13 +44,20 @@ func (w *TaskAttachIncluded) Work(ctx *TaskContext, a *API, r *http.Request) {
             break;
         }
         var next Record;
-        next, queue = queue[0], queue[1:];
+        next, queue = queue[0], queue[1:]; // queue pop
         result := next.Data();
         
         if(primary_count > 0) {
             primary_count--;
             a.Logger.Printf("Pushing To Primary: %#v\n", next);
             output_primary = append(output_primary, next);
+            for _, links := range next.Data().Links.Linkages {
+                if(links.LinkName == w.Linkname) {
+                    for _, link := range links.Links {
+                        output_linkage.Links = append(output_linkage.Links, link);
+                    }
+                }
+            }
         } else if(next.Include()) {
             a.Logger.Printf("Pushing To Included: %#v\n", next);
             output_included = append(output_included, next);
@@ -62,69 +70,15 @@ func (w *TaskAttachIncluded) Work(ctx *TaskContext, a *API, r *http.Request) {
     }
 
     res := NewOutput(r);
-    res.Data = NewOutputDataResources(parent.IsSingle, output_primary);
+    if w.OutputType == OutputTypeResources {
+        a.Logger.Printf("Primary data is a resource");
+        res.Data = NewOutputDataResources(parent.IsSingle, output_primary);
+    } else {
+        a.Logger.Printf("Primary data is a linkage");
+        res.Data = NewOutputDataLinkage(parent.IsSingle, &output_linkage);
+    }
     res.Included.Included = &output_included;
     w.ActualOutput = res;
-
-    //panic("TODO: FIX DIS");
-    /*
-    queue := result.Result;
-    data := []*OutputDatum{};
-    linkage := OutputLinkage{};
-    included := []Record{};
-    first := true
-    for {
-
-        tqueue := queue;
-        queue = []Record{}
-        d := map[Record]*WorkFindLinksByRecord{};
-        for _, record := range tqueue {
-            work := NewWorkFindLinksByRecord(record,w.II);
-            w.Context.Push(work);
-            d[record] = work;
-        }
-        for record, work := range d {
-            result := work.GetResult();
-            a.Logger.Printf("ATTACH INCLUDED GOT RESULT: %#v %#v %s %s\n\n", result.Links, result.Included, record.Type(), GetId(record));
-            if(first) {
-                //if w.OutputType == OutputTypeResources {
-                    data = append(data, &OutputDatum{
-                        Datum: record,
-                    });
-                //} else {
-                //    for _, links := range result.Links.Linkages {
-                //        if(links.LinkName == w.Linkname) {
-                //            for _, link := range links.Links {
-                //                linkage.Links = append(linkage.Links, link);
-                //            }
-                //        }
-                //    }
-                //}
-            }
-            for _, crecord := range *result.Included {
-                a.Logger.Printf("INCLUDING RECORD: %#v\n", crecord);
-                queue = append(queue, crecord);
-                if(crecord.Include()) {
-                    included = append(included, crecord)
-                }
-            }
-        }
-        first = false;
-        if len(queue) == 0 {
-            break;
-        }
-    }
-    res := &Output{};
-    fmt.Printf("ACTUAL OUTPUT: %#v\n", data);
-    if w.OutputType == OutputTypeResources {
-        res.Data = NewOutputDataResources(result.IsSingle, data);
-    } else {
-        res.Data = NewOutputDataLinkage(result.IsSingle, &linkage);
-    }
-    res.Included = NewOutputIncluded(&included);
-    
-    w.ActualOutput = res;
-    */
 }
 
 func (w *TaskAttachIncluded) ResponseWorker(has_paniced bool) {

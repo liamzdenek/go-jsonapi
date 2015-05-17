@@ -35,15 +35,7 @@ func init() {
     }()
 }
 
-func TestRequestBasics(t *testing.T) {
-    tests := map[string]string{
-        "/source/1": `{"data":{"attributes":{"Target":"Potato"},"id":"1","links":{"rel":{"linkage":[{"type":"source","id":"Potato"}],"self":"http://localhost:3030/source/1/links/rel","related":"http://localhost:3030/source/1/rel"}},"type":"source"}}`,
-        
-        // TODO: data should not be an array in this request as FromFieldToId is OneToOne 
-        "/source/1/rel": `{"data":[{"attributes":{"Target":"1"},"id":"Potato","links":{"rel":{"linkage":[{"type":"source","id":"1"}],"self":"http://localhost:3030/source/Potato/links/rel","related":"http://localhost:3030/source/Potato/rel"}},"type":"source"}]}`,
-
-        "/source/1?include=rel":`{"data":{"attributes":{"Target":"Potato"},"id":"1","links":{"rel":{"linkage":[{"type":"source","id":"Potato"}],"self":"http://localhost:3030/source/1/links/rel","related":"http://localhost:3030/source/1/rel"}},"type":"source"},"included":[{"attributes":{"Target":"1"},"id":"Potato","links":{"rel":{"linkage":[{"type":"source","id":"1"}],"self":"http://localhost:3030/source/Potato/links/rel","related":"http://localhost:3030/source/Potato/rel"}},"type":"source"}]}`,
-    }
+func RunTests(t *testing.T, tests map[string]string) {
     for uri,output := range tests {
         resp, err := http.Get("http://localhost:3030"+uri);
         if err != nil {
@@ -56,4 +48,18 @@ func TestRequestBasics(t *testing.T) {
             t.Fatal();
         }
     }
+}
+
+func TestRequestBasics(t *testing.T) {
+    tests := map[string]string{
+        "/source/1": `{"data":{"attributes":{"Target":"Potato"},"id":"1","links":{"rel":{"linkage":[{"type":"source","id":"Potato"}],"self":"http://localhost:3030/source/1/links/rel","related":"http://localhost:3030/source/1/rel"}},"type":"source"}}`,
+        
+        // TODO: data should not be an array in this request as FromFieldToId is OneToOne 
+        "/source/1/rel": `{"data":[{"attributes":{"Target":"1"},"id":"Potato","links":{"rel":{"linkage":[{"type":"source","id":"1"}],"self":"http://localhost:3030/source/Potato/links/rel","related":"http://localhost:3030/source/Potato/rel"}},"type":"source"}]}`,
+
+        "/source/1?include=rel":`{"data":{"attributes":{"Target":"Potato"},"id":"1","links":{"rel":{"linkage":[{"type":"source","id":"Potato"}],"self":"http://localhost:3030/source/1/links/rel","related":"http://localhost:3030/source/1/rel"}},"type":"source"},"included":[{"attributes":{"Target":"1"},"id":"Potato","links":{"rel":{"linkage":[{"type":"source","id":"1"}],"self":"http://localhost:3030/source/Potato/links/rel","related":"http://localhost:3030/source/Potato/rel"}},"type":"source"}]}`,
+
+        "/source/1/links/rel": `{"data":{"type":"source","id":"Potato"}}`,
+    }
+    RunTests(t,tests);
 }
