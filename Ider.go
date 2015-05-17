@@ -7,6 +7,9 @@ type Ider interface{
 }
 
 func GetId(ider Ider) string {
+    if ider == nil {
+        panic("IDER provided to GetId CANNOT be nil");
+    }
     if manual, ok := ider.(IderManual); ok {
         return manual.Id();
     }

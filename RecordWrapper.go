@@ -8,6 +8,9 @@ type RecordWrapper struct {
 }
 
 func NewRecordWrapper(i Ider, t string, l Linker, show bool) *RecordWrapper {
+    if i == nil {
+        panic("NewRecordWrapper must not be provided with an Ider == nil");
+    }
     return &RecordWrapper{
         Ider: i,
         Type_: t,

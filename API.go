@@ -64,13 +64,16 @@ func(a *API) ServeHTTP(w http.ResponseWriter, r *http.Request) {
     a.Router.ServeHTTP(w, r);
 }
 
-func(a *API) CatchResponses(w http.ResponseWriter, req *http.Request, raw interface{}) {
+func(a *API) CatchResponses(w http.ResponseWriter, req *http.Request, raw interface{}) (was_handled bool, should_print_stack bool){
     fmt.Printf("Caught panic: %#v\n", raw);
+    should_print_stack = true;
     switch r := raw.(type) {
     case Responder:
+        should_print_stack = false;
         fmt.Printf("Respnding\n");
         r.Respond(a,w,req);
     case *Output:
+        should_print_stack = false;
         fmt.Printf("Responder output\n");
         re := NewResponderOutput(r);
         re.Respond(a,w,req);
@@ -84,7 +87,9 @@ func(a *API) CatchResponses(w http.ResponseWriter, req *http.Request, raw interf
         re.Respond(a,w,req);
     default:
         w.Write([]byte(fmt.Sprintf("Internal error handling request. Improper object sent to response method: %#v\n", r)));
+        return false, true;
     }
+    return true, should_print_stack;
 }
 
 func(a *API) Send(obj interface{}, w http.ResponseWriter) {

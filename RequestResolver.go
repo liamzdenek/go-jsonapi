@@ -1,6 +1,13 @@
 package jsonapi;
 
-import ("net/http";"strings";"github.com/julienschmidt/httprouter";"fmt";"errors";"io/ioutil");
+import (
+    "net/http";
+    "strings";
+    "github.com/julienschmidt/httprouter";
+    "fmt";
+    //"errors";
+    //"io/ioutil"
+);
 
 type RequestResolver struct{}
 
@@ -69,7 +76,7 @@ func(rr *RequestResolver) CentralSearchRouter(a *API, w http.ResponseWriter, r *
     ii := NewIncludeInstructionsFromRequest(r);
     wctx := NewTaskContext(a,r,w);
     defer wctx.Cleanup();
-    var work TaskResultIderTypers = NewTaskFindByIds(
+    var work TaskResultRecords = NewTaskFindByIds(
         resourcestr,
         strings.Split(idstr,","),
     );
@@ -122,6 +129,7 @@ func(rr *RequestResolver) HandlerCreate(a *API, w http.ResponseWriter, r *http.R
     deleter.Wait();
 
     return;
+    /*
     resource_str := ps.ByName("resource");
     resource := a.RM.GetResource(resource_str);
 
@@ -193,6 +201,7 @@ func(rr *RequestResolver) HandlerCreate(a *API, w http.ResponseWriter, r *http.R
         }
     }
     Reply(NewResponderRecordCreate(ctx,resource_str, ider, createdStatus, err));
+    */
 }
 
 func(rr *RequestResolver) HandlerUpdate(a *API, w http.ResponseWriter, r *http.Request, ps httprouter.Params) {

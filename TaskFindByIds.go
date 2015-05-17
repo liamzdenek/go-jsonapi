@@ -5,13 +5,13 @@ import("fmt";"net/http")
 type TaskFindByIds struct {
     Resource string
     Ids []string
-    Output chan chan *TaskFindByIdsResult
-    Result *TaskFindByIdsResult
+    Output chan chan *TaskResultRecordData
+    Result *TaskResultRecordData
 }
 
 func NewTaskFindByIds(resource string, ids []string) *TaskFindByIds {
     return &TaskFindByIds{
-        Output: make(chan chan *TaskFindByIdsResult),
+        Output: make(chan chan *TaskResultRecordData),
         Ids: ids,
         Resource: resource,
     }
@@ -37,7 +37,9 @@ func(w *TaskFindByIds) Work(a *API, r *http.Request) {
     } else if(len(w.Ids) == 1) {
         var ider Ider;
         ider, err = resource.R.FindOne(w.Ids[0]);
-        data = []Ider{ider}
+        if ider != nil {
+            data = []Ider{ider}
+        }
     } else {
         data, err = resource.R.FindMany(w.Ids);
     }
@@ -46,11 +48,11 @@ func(w *TaskFindByIds) Work(a *API, r *http.Request) {
         panic(NewResponderError(err));
     }
     fmt.Printf("GOT DATA: %#v\n", data);
-    res := []IderTyper{};
+    res := []Record{};
     for _,ider := range data {
-        res = append(res, NewIderTyperWrapper(ider,w.Resource));
+        res = append(res, NewRecordWrapper(ider,w.Resource,NewLinkerStatic(nil), true));
     }
-    w.Result = &TaskFindByIdsResult{
+    w.Result = &TaskResultRecordData{
         Result: res,
         IsSingle: len(w.Ids) == 1,
     }
@@ -68,8 +70,8 @@ func(w *TaskFindByIds) Cleanup(a *API, r *http.Request) {
     close(w.Output);
 }
 
-func(w *TaskFindByIds) GetResult() *TaskFindByIdsResult {
-    r := make(chan *TaskFindByIdsResult);
+func(w *TaskFindByIds) GetResult() *TaskResultRecordData {
+    r := make(chan *TaskResultRecordData);
     defer close(r);
     w.Output <- r;
     return <-r;

@@ -4,7 +4,7 @@ import("net/http";"fmt");
 
 type TaskAttachIncluded struct {
     Context *TaskContext
-    Parent TaskResultIderTypers
+    Parent TaskResultRecords
     II *IncludeInstructions
     Output chan chan *Output
     ActualOutput *Output
@@ -20,7 +20,7 @@ const (
     OutputTypeLinkages
 );
 
-func NewTaskAttachIncluded(ctx *TaskContext, parent TaskResultIderTypers, ii *IncludeInstructions, outputtype OutputType, linkname string) *TaskAttachIncluded {
+func NewTaskAttachIncluded(ctx *TaskContext, parent TaskResultRecords, ii *IncludeInstructions, outputtype OutputType, linkname string) *TaskAttachIncluded {
     return &TaskAttachIncluded{
         Context: ctx,
         Parent: parent,
@@ -40,10 +40,10 @@ func (w *TaskAttachIncluded) Work(a *API, r *http.Request) {
     first := true
     for {
         tqueue := queue;
-        queue = []IderTyper{}
-        d := map[IderTyper]*WorkFindLinksByIderTyper{};
+        queue = []Record{}
+        d := map[Record]*WorkFindLinksByRecord{};
         for _, idertyper := range tqueue {
-            work := NewWorkFindLinksByIderTyper(idertyper,w.II);
+            work := NewWorkFindLinksByRecord(idertyper,w.II);
             w.Context.Push(work);
             d[idertyper] = work;
         }

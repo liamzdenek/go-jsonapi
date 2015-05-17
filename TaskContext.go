@@ -1,6 +1,6 @@
 package jsonapi;
 
-import ("net/http";);
+import ("net/http";"runtime";"fmt");
 
 type TaskContext struct {
     Context chan Task
@@ -19,9 +19,14 @@ func NewTaskContext(a *API, r *http.Request, w http.ResponseWriter) *TaskContext
             go func() {
                 defer func() {
                     if raw := recover(); !has_paniced && raw != nil {
-                        //fmt.Printf("\nPANIC: %#v\n\n", raw);
                         has_paniced = true;
-                        a.CatchResponses(w,r,raw);
+                        _, should_print_stack := a.CatchResponses(w,r,raw);
+                        if(should_print_stack) {
+                            const size = 64 << 10
+                            buf := make([]byte, size)
+                            buf = buf[:runtime.Stack(buf, false)]
+                            fmt.Printf("jsonapi: panic %v\n%s", raw, buf);
+                        }
                     }
                     tworker.ResponseWorker(has_paniced);
                 }();

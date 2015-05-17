@@ -1,43 +1,44 @@
 package jsonapi;
 
-import("net/http";)
+import("net/http";"fmt")
 
-type WorkFindLinksByIderTyperResult struct {
+type WorkFindLinksByRecordResult struct {
     Links *OutputLinkageSet
     Included *[]Record
 }
 
-type WorkFindLinksByIderTyper struct {
-    IderTyper IderTyper
+type WorkFindLinksByRecord struct {
+    Record Record
     II *IncludeInstructions
-    Output chan chan *WorkFindLinksByIderTyperResult
-    Result *WorkFindLinksByIderTyperResult
+    Output chan chan *WorkFindLinksByRecordResult
+    Result *WorkFindLinksByRecordResult
 }
 
-func NewWorkFindLinksByIderTyper(idertyper IderTyper, ii *IncludeInstructions) *WorkFindLinksByIderTyper {
-    return &WorkFindLinksByIderTyper{
+func NewWorkFindLinksByRecord(idertyper Record, ii *IncludeInstructions) *WorkFindLinksByRecord {
+    return &WorkFindLinksByRecord{
         II: ii,
-        IderTyper: idertyper,
-        Output: make(chan chan *WorkFindLinksByIderTyperResult),
+        Record: idertyper,
+        Output: make(chan chan *WorkFindLinksByRecordResult),
     }
 }
 
-func (w *WorkFindLinksByIderTyper) Work(a *API, r *http.Request) {
+func (w *WorkFindLinksByRecord) Work(a *API, r *http.Request) {
+    fmt.Printf("GOT RECORD TO FIND LINKS: %#v\n", w.Record);
     linker := NewLinkerDefault(
         a,
-        a.RM.GetResource(w.IderTyper.Type()),
-        w.IderTyper,
+        a.RM.GetResource(w.Record.Type()),
+        w.Record,
         r,
         w.II,
     );
     included := []Record{}
-    w.Result = &WorkFindLinksByIderTyperResult{
+    w.Result = &WorkFindLinksByRecordResult{
         Links: linker.Link(&included),
         Included: &included,
     }
 }
 
-func(w *WorkFindLinksByIderTyper) ResponseWorker(has_paniced bool) {
+func(w *WorkFindLinksByRecord) ResponseWorker(has_paniced bool) {
     go func() {
         for r := range w.Output {
             r <- w.Result;
@@ -45,12 +46,12 @@ func(w *WorkFindLinksByIderTyper) ResponseWorker(has_paniced bool) {
     }()
 }
 
-func (w *WorkFindLinksByIderTyper) Cleanup(a *API, r *http.Request) {
+func (w *WorkFindLinksByRecord) Cleanup(a *API, r *http.Request) {
     close(w.Output);
 }
 
-func(w *WorkFindLinksByIderTyper) GetResult() *WorkFindLinksByIderTyperResult  {
-    r := make(chan *WorkFindLinksByIderTyperResult);
+func(w *WorkFindLinksByRecord) GetResult() *WorkFindLinksByRecordResult  {
+    r := make(chan *WorkFindLinksByRecordResult);
     defer close(r);
     w.Output <- r;
     return <-r;
