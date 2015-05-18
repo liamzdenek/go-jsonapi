@@ -42,14 +42,26 @@ func(sr *ResourceSQL) FindOne(id string) (Ider, error) {
     return v.(Ider), err;
 }
 
-func(sr *ResourceSQL) FindMany(ids []string) ([]Ider, error) {
+func(sr *ResourceSQL) FindMany(p *Paginator, ids []string) ([]Ider, error) {
     args := []interface{}{};
     for _, id := range ids {
         args = append(args, id);
     }
     vs := reflect.New(reflect.SliceOf(reflect.PtrTo(sr.Type))).Interface()
-    q := "SELECT * FROM "+sr.Table+" WHERE id IN(?"+strings.Repeat(",?", len(ids)-1)+")";
-    //fmt.Printf("Query: %#v\n", q);
+    offset_and_limit := "";
+    if p != nil {
+        offset_and_limit = fmt.Sprintf("LIMIT %d OFFSET %d",
+            (*p).MaxPerPage,
+            (*p).CurPage * (*p).MaxPerPage,
+        );
+    }
+    q := fmt.Sprintf(
+        "SELECT * FROM %s WHERE id IN(?"+strings.Repeat(",?", len(ids)-1)+") %s",
+        sr.Table,
+        offset_and_limit,
+    );
+
+    fmt.Printf("Query: %#v\n", q);
     //fmt.Printf("Args: %#v\n", args);
     err := meddler.QueryAll(
         sr.DB,

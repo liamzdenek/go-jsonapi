@@ -40,7 +40,7 @@ func(rr *ResourceRAM) FindOne(id string) (Ider, error) {
     return val.(Ider), nil;
 }
 
-func(rr *ResourceRAM) FindMany(ids []string) ([]Ider, error) {
+func(rr *ResourceRAM) FindMany(p *Paginator, ids []string) ([]Ider, error) {
     res := []Ider{};
     for _, id := range ids {
         val, err := rr.FindOne(id);

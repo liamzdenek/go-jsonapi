@@ -53,9 +53,9 @@ func RunTests(t *testing.T, tests map[string]string) {
 func TestRequestBasics(t *testing.T) {
     tests := map[string]string{
         "/source/1": `{"data":{"attributes":{"Target":"Potato"},"id":"1","links":{"rel":{"linkage":{"type":"source","id":"Potato"},"self":"http://localhost:3030/source/1/links/rel","related":"http://localhost:3030/source/1/rel"}},"type":"source"}}`,
-        
+
         "/source/1,Nonexistant": `{"data":[{"attributes":{"Target":"Potato"},"id":"1","links":{"rel":{"linkage":{"type":"source","id":"Potato"},"self":"http://localhost:3030/source/1/links/rel","related":"http://localhost:3030/source/1/rel"}},"type":"source"}]}`,
-        
+
         "/source/1,Potato": `{"data":[{"attributes":{"Target":"Potato"},"id":"1","links":{"rel":{"linkage":{"type":"source","id":"Potato"},"self":"http://localhost:3030/source/1/links/rel","related":"http://localhost:3030/source/1/rel"}},"type":"source"},{"attributes":{"Target":"1"},"id":"Potato","links":{"rel":{"linkage":{"type":"source","id":"1"},"self":"http://localhost:3030/source/Potato/links/rel","related":"http://localhost:3030/source/Potato/rel"}},"type":"source"}]}`,
 
         "/source/1/rel": `{"data":{"attributes":{"Target":"1"},"id":"Potato","links":{"rel":{"linkage":{"type":"source","id":"1"},"self":"http://localhost:3030/source/Potato/links/rel","related":"http://localhost:3030/source/Potato/rel"}},"type":"source"}}`,

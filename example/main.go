@@ -59,6 +59,8 @@ func main() {
     resource_comment := NewResourceSQL(db, "comments", &Comment{})
     resource_session := NewResourceRAM(&Session{});
 
+    resource_post_paginator := NewResourcePaginatorSimple(5, resource_post);
+
     // load up some test data to the session since it is entirely in RAM
     now := time.Now();
     resource_session.Push("1", &Session{ID: "1", UserId: 1, Created:&now});
@@ -78,7 +80,7 @@ func main() {
     //   * returns: 201 Created + Location header upon success
     // TODO: write real docs about how all of this works
     api.MountResource("user", resource_user, no_auth);
-    api.MountResource("post", resource_post, no_auth);
+    api.MountResource("post", resource_post_paginator, no_auth);
     api.MountResource("comment", resource_comment, no_auth);
     api.MountResource("session", resource_session, no_auth);
 

@@ -1,6 +1,6 @@
 package jsonapi;
 
-import("net/http";"fmt");
+import("net/http";"fmt";"strconv");
 
 type TaskAttachIncluded struct {
     Context *TaskContext
@@ -77,6 +77,42 @@ func (w *TaskAttachIncluded) Work(ctx *TaskContext, a *API, r *http.Request) {
         a.Logger.Printf("Primary data is a linkage");
         res.Data = NewOutputDataLinkage(parent.IsSingle, &output_linkage);
     }
+
+    a.Logger.Printf("PAGINATOR: %#v\n", parent.Paginator);
+
+    if parent.Paginator != nil && parent.Paginator.MaxPerPage != 0 {
+        q := r.URL.Query();
+        proto := r.URL.Scheme;
+        if proto == "" {
+            proto = "http";
+        }
+        base := proto+"://"+r.Host+r.URL.Path
+        
+        a.Logger.Printf("URL QUERY: %#v\n", base)
+        l := &OutputPaginator{}
+
+        q.Set("page", strconv.Itoa(parent.Paginator.CurPage));
+        l.Self = base+"?"+q.Encode();
+        q.Set("page", "0");
+        l.First = base+"?"+q.Encode();
+
+        if(parent.Paginator.CurPage > 1) {
+            q.Set("page", strconv.Itoa(parent.Paginator.CurPage-1));
+            l.Prev = base+"?"+q.Encode();
+        }
+
+        if(parent.Paginator.LastPage != 0) {
+            q.Set("page", strconv.Itoa(parent.Paginator.LastPage));
+            l.Last = base+"?"+q.Encode();
+        }
+
+        if(parent.Paginator.LastPage == 0 || parent.Paginator.CurPage < parent.Paginator.LastPage) {
+            q.Set("page", strconv.Itoa(parent.Paginator.CurPage+1));
+            l.Next = base+"?"+q.Encode();
+        }
+        res.Links = l
+    }
+
     res.Included.Included = &output_included;
     w.ActualOutput = res;
 }

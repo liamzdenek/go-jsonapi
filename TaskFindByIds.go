@@ -37,6 +37,7 @@ func(w *TaskFindByIds) Work(wctx *TaskContext, a *API, r *http.Request) {
     }
 
     data := []Ider{}
+    p := &Paginator{};
 
     var err error;
     if(len(w.Ids) == 0) {
@@ -48,7 +49,7 @@ func(w *TaskFindByIds) Work(wctx *TaskContext, a *API, r *http.Request) {
             data = []Ider{ider}
         }
     } else {
-        data, err = resource.R.FindMany(w.Ids);
+        data, err = resource.R.FindMany(p, w.Ids);
     }
     if err != nil {
         // TODO: is this the right error?
@@ -67,6 +68,7 @@ func(w *TaskFindByIds) Work(wctx *TaskContext, a *API, r *http.Request) {
     }
     w.Result = &TaskResultRecordData{
         Result: res,
+        Paginator: p,
         IsSingle: len(w.Ids) == 1,
     }
 }
