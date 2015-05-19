@@ -9,9 +9,10 @@ type TaskFindByIds struct {
     Result *TaskResultRecordData
     II *IncludeInstructions
     ViaLinkName string
+    Paginator *Paginator
 }
 
-func NewTaskFindByIds(resource string, ids []string, ii *IncludeInstructions, vln string) *TaskFindByIds {
+func NewTaskFindByIds(resource string, ids []string, ii *IncludeInstructions, vln string, Paginator *Paginator) *TaskFindByIds {
     if vln == "" {
         panic("NewTaskFindByIds must not be provided with ViaLinkName == \"\"");
     }
@@ -21,6 +22,7 @@ func NewTaskFindByIds(resource string, ids []string, ii *IncludeInstructions, vl
         Resource: resource,
         II: ii,
         ViaLinkName: vln,
+        Paginator: Paginator,
     }
 }
 
@@ -37,7 +39,6 @@ func(w *TaskFindByIds) Work(wctx *TaskContext, a *API, r *http.Request) {
     }
 
     data := []Ider{}
-    p := &Paginator{};
 
     var err error;
     if(len(w.Ids) == 0) {
@@ -49,7 +50,7 @@ func(w *TaskFindByIds) Work(wctx *TaskContext, a *API, r *http.Request) {
             data = []Ider{ider}
         }
     } else {
-        data, err = resource.R.FindMany(p, w.Ids);
+        data, err = resource.R.FindMany(w.Paginator, w.Ids);
     }
     if err != nil {
         // TODO: is this the right error?
@@ -68,7 +69,7 @@ func(w *TaskFindByIds) Work(wctx *TaskContext, a *API, r *http.Request) {
     }
     w.Result = &TaskResultRecordData{
         Result: res,
-        Paginator: p,
+        Paginator: w.Paginator,
         IsSingle: len(w.Ids) == 1,
     }
 }

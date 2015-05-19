@@ -81,6 +81,7 @@ func(rr *RequestResolver) CentralSearchRouter(a *API, w http.ResponseWriter, r *
         strings.Split(idstr,","),
         ii,
         "root",
+        NewPaginator(r),
     );
     for _,pre := range preroute {
         wctx.Push(work);
