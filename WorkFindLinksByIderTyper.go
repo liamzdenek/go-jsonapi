@@ -23,7 +23,7 @@ func NewWorkFindLinksByRecord(idertyper Record, ii *IncludeInstructions) *WorkFi
 }
 
 func (w *WorkFindLinksByRecord) Work(a *API, s Session, wctx *TaskContext, r *http.Request) {
-    //fmt.Printf("GOT RECORD TO FIND LINKS: %#v\n", w.Record.Link);
+    //a.Logger.Printf("GOT RECORD TO FIND LINKS: %#v\n", w.Record.Link);
     
     linker := NewLinkerDefault(
         a,
@@ -40,7 +40,7 @@ func (w *WorkFindLinksByRecord) Work(a *API, s Session, wctx *TaskContext, r *ht
         Links: linker.Link(included),
         Included: included,
     }
-    //fmt.Printf("GOT RECORD LINKS: %#v\n", w.Result);
+    //a.Logger.Printf("GOT RECORD LINKS: %#v\n", w.Result);
 }
 
 func(w *WorkFindLinksByRecord) ResponseWorker(has_paniced bool) {

@@ -1,6 +1,6 @@
 package jsonapi;
 
-import("fmt";"net/http")
+import("net/http")
 
 type TaskFindByIds struct {
     Resource string
@@ -56,7 +56,7 @@ func(w *TaskFindByIds) Work(a *API, s Session, wctx *TaskContext, r *http.Reques
         // TODO: is this the right error?
         panic(NewResponderError(err));
     }
-    //fmt.Printf("GOT DATA: %#v\n", data);
+    //a.Logger.Printf("GOT DATA: %#v\n", data);
     res := []Record{};
     for _,ider := range data {
         res = append(res, NewRecordWrapper(
@@ -83,7 +83,7 @@ func(w *TaskFindByIds) ResponseWorker(has_paniced bool) {
 }
 
 func(w *TaskFindByIds) Cleanup(a *API, r *http.Request) {
-    fmt.Printf("TASKFINDBYIDS CLEANUP\n");
+    a.Logger.Printf("TASKFINDBYIDS CLEANUP\n");
     close(w.Output);
 }
 

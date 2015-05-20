@@ -1,6 +1,6 @@
 package jsonapi;
 
-import("net/http";"fmt";);
+import("net/http";);
 
 type TaskAttachIncluded struct {
     Context *TaskContext
@@ -95,7 +95,7 @@ func (w *TaskAttachIncluded) ResponseWorker(has_paniced bool) {
 }
 
 func (w *TaskAttachIncluded) Cleanup(a *API, r *http.Request) {
-    fmt.Printf("TaskAttachIncluded.Cleanup\n");
+    a.Logger.Printf("TaskAttachIncluded.Cleanup\n");
     close(w.Output);
 }
 

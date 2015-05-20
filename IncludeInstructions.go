@@ -38,13 +38,13 @@ func(ii *IncludeInstructions) ShouldFetch(rel string) bool {
         return true;
     }
     _,ok := ii.Children[rel];
-    //fmt.Printf("\nSHOULD FETCH %s: %s %s %#v\n\n", rel, ok, val, ii.Instructions);
+    //a.Logger.Printf("\nSHOULD FETCH %s: %s %s %#v\n\n", rel, ok, val, ii.Instructions);
     // TODO: do better
     return ok
 }
 
 func(ii *IncludeInstructions) ShouldInclude(inst string) bool {
-    //fmt.Printf("Should include: %v %s\n", ii, inst);
+    //a.Logger.Printf("Should include: %v %s\n", ii, inst);
     for _,included := range ii.Include {
         if(included == inst) {
             return true;

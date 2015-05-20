@@ -71,7 +71,7 @@ func (o *Output) SetPaginator(p *Paginator) {
 func (o Output) MarshalJSON() ([]byte, error) {
     // A document MUST contain either primary data or an array of error objects.
     if(len(o.Errors) > 0) {
-        //fmt.Printf("ERrors: %v\n", o.Errors);
+        //a.Logger.Printf("ERrors: %v\n", o.Errors);
         es := []string{};
         for _,e := range o.Errors {
             es = append(es, e.Error());

@@ -33,6 +33,6 @@ func(o *OutputIncluded) Push(included ...Record) {
 
 func(o *OutputIncluded) ShouldBeVisible() bool {
     // TODO: the spec requires more complicated visibility logic than this
-    //fmt.Printf("Should be visible: %s\n", o.Included);
+    //a.Logger.Printf("Should be visible: %s\n", o.Included);
     return len(*o.Included) > 0
 }

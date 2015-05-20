@@ -1,7 +1,6 @@
 package jsonapi;
 
 import ("net/http";
-"fmt";
 "errors");
 
 type ResourceManagerRelationship struct {
@@ -28,12 +27,12 @@ func(rmr *ResourceManagerRelationship) ResolveId(a *API, s Session, r *http.Requ
             Id: id,
         });
     }
-    fmt.Printf("SHOULD FETCH LINK: %s %b\n\n", rmr.Name, include.ShouldFetch(rmr.Name));
+    a.Logger.Printf("SHOULD FETCH LINK: %s %b\n\n", rmr.Name, include.ShouldFetch(rmr.Name));
     if(include.ShouldFetch(rmr.Name)) {
         linkdata, err := resource.R.FindMany(a, s, nil, ids);
         Check(err);
         for _, link := range linkdata {
-            fmt.Printf("Passing thru child include: %#v\n\n\n", include);
+            a.Logger.Printf("Passing thru child include: %#v\n\n\n", include);
             included = append(included, NewRecordWrapper(link,rmr.DstR,tctx, rmr.Name, include));
         }
     }

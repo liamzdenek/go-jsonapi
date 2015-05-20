@@ -97,7 +97,7 @@ type OutputDatum struct { // data[i]
 }
 
 func (o *OutputDatum) Prepare() {
-    //fmt.Printf("Denatre object: %#v\n", o.Datum);
+    //a.Logger.Printf("Denatre object: %#v\n", o.Datum);
     res := DenatureObject(o.Datum);
     delete(res, "ID");
     delete(res, "Id");

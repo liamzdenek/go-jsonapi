@@ -4,7 +4,6 @@ import (
     "net/http";
     "strings";
     "github.com/julienschmidt/httprouter";
-    "fmt";
     //"errors";
     //"io/ioutil"
 );
@@ -91,7 +90,7 @@ func(rr *RequestResolver) CentralSearchRouter(a *API, w http.ResponseWriter, r *
     attacher := NewTaskAttachIncluded(wctx, work, ii, outputtype, linkname);
     replyer := NewTaskReplyer(attacher);
     wctx.Push(work, attacher, replyer);
-    fmt.Printf("Main Waiting\n");
+    a.Logger.Printf("Main Waiting\n");
     replyer.Wait();
 }
 
@@ -169,9 +168,9 @@ func(rr *RequestResolver) HandlerCreate(a *API, w http.ResponseWriter, r *http.R
     // rules of that relationship, eg, we don't want to let in
     // many linkages for a one to one relationship
     for _,linkage := range linkages.Linkages {
-        fmt.Printf("Linkage: %#v\n", linkage);
+        a.Logger.Printf("Linkage: %#v\n", linkage);
         rel := a.RM.GetRelationship(resource_str, linkage.LinkName)
-        fmt.Printf("REL: %s %s %#v\n", resource_str, linkage.LinkName, rel);
+        a.Logger.Printf("REL: %s %s %#v\n", resource_str, linkage.LinkName, rel);
         if(rel == nil) {
             // user attempted to speify a relationship that does not exist
             panic("TODO: This");

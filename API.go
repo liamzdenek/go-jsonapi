@@ -68,24 +68,24 @@ func(a *API) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func(a *API) CatchResponses(w http.ResponseWriter, req *http.Request, raw interface{}) (was_handled bool, should_print_stack bool){
-    fmt.Printf("Caught panic: %#v\n", raw);
+    a.Logger.Printf("Caught panic: %#v\n", raw);
     should_print_stack = true;
     switch r := raw.(type) {
     case Responder:
         should_print_stack = false;
-        fmt.Printf("Respnding\n");
+        a.Logger.Printf("Respnding\n");
         r.Respond(a,w,req);
     case *Output:
         should_print_stack = false;
-        fmt.Printf("Responder output\n");
+        a.Logger.Printf("Responder output\n");
         re := NewResponderOutput(r);
         re.Respond(a,w,req);
     case error:
-        fmt.Printf("Panic(error) is deprecated as it is always ambiguous. You probably intend to use panic(NewResponderError()) instead\n");
+        a.Logger.Printf("Panic(error) is deprecated as it is always ambiguous. You probably intend to use panic(NewResponderError()) instead\n");
         re := NewResponderError(r);
         re.Respond(a,w,req);
     case string:
-        fmt.Printf("Panic(string) is deprecated as it is always ambiguous. You probably intend to use panic(NewResponderError()) instead\n");
+        a.Logger.Printf("Panic(string) is deprecated as it is always ambiguous. You probably intend to use panic(NewResponderError()) instead\n");
         re := NewResponderError(errors.New(r));
         re.Respond(a,w,req);
     default:
@@ -98,7 +98,7 @@ func(a *API) CatchResponses(w http.ResponseWriter, req *http.Request, raw interf
 func(a *API) Send(obj interface{}, w http.ResponseWriter) {
     str, err := json.Marshal(obj);
     Check(err);
-    fmt.Printf("WRITING: %s\n", str);
+    a.Logger.Printf("WRITING: %s\n", str);
     w.Write(str);
 }
 

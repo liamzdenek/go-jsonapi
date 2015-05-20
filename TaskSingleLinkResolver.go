@@ -1,6 +1,6 @@
 package jsonapi;
 
-import ("net/http";"fmt");
+import ("net/http";);
 
 type TaskSingleLinkResolver struct {
     Context *TaskContext
@@ -30,7 +30,7 @@ func(t *TaskSingleLinkResolver) Work(a *API, s Session, ctx *TaskContext, r *htt
         parent_name = res.Type();
         work := NewWorkFindLinksByRecord(res,ii);
         t.Context.Push(work);
-        fmt.Printf("WORKRES: %#v\n", work.GetResult().Included);
+        a.Logger.Printf("WORKRES: %#v\n", work.GetResult().Included);
         for _, inc := range *work.GetResult().Included {
             data = append(data, inc);
         }
