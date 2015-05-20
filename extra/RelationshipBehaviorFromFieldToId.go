@@ -3,7 +3,6 @@ package jsonapie;
 import(
     "reflect"
     "strconv"
-    "fmt"
     "errors"
     . ".." // jsonapi
 );
@@ -42,8 +41,8 @@ func(l *RelationshipBehaviorFromFieldToId) LinkId(a *API, s Session, srcR, dstR 
     return ids;
 }
 
-func(l *RelationshipBehaviorFromFieldToId) VerifyLinks(ider Ider, linkages *OutputLinkage) error {
-    fmt.Printf("Verify links\n");
+func(l *RelationshipBehaviorFromFieldToId) VerifyLinks(a *API, s Session, ider Ider, linkages *OutputLinkage) error {
+    a.Logger.Printf("Verify links\n");
     isEmpty := linkages == nil || linkages.Links == nil || len(linkages.Links) == 0;
     if(isEmpty && l.Required == Required) {
         return errors.New("Linkage is empty but is required");
@@ -53,7 +52,7 @@ func(l *RelationshipBehaviorFromFieldToId) VerifyLinks(ider Ider, linkages *Outp
     }
     return nil;
 }
-func(l *RelationshipBehaviorFromFieldToId) PreCreate(ider Ider, linkages *OutputLinkage) error {
+func(l *RelationshipBehaviorFromFieldToId) PreCreate(a *API, s Session, ider Ider, linkages *OutputLinkage) error {
     if(len(linkages.Links) == 0 || linkages.Links[0] == nil) {
         return errors.New("RelationshipBehaviorFromFieldToId requires id to be provided for new records");
     }
@@ -62,10 +61,10 @@ func(l *RelationshipBehaviorFromFieldToId) PreCreate(ider Ider, linkages *Output
         return err;
     }
     SetField(l.SrcFieldName, ider, str);
-    fmt.Printf("Pre create\n");
+    a.Logger.Printf("Pre create\n");
     return nil;
 }
-func(l *RelationshipBehaviorFromFieldToId) PostCreate(ider Ider, linkages *OutputLinkage) error {
-    fmt.Printf("Post create\n");
+func(l *RelationshipBehaviorFromFieldToId) PostCreate(a *API, s Session, ider Ider, linkages *OutputLinkage) error {
+    a.Logger.Printf("Post create\n");
     return nil;
 }

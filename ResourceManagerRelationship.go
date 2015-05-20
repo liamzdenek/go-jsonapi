@@ -3,6 +3,7 @@ package jsonapi;
 import ("net/http";
 "errors");
 
+// TODO: make it unnecessary to pass API to this struct
 type ResourceManagerRelationship struct {
     RM *ResourceManager
     SrcR string
@@ -60,7 +61,7 @@ func(rmr *ResourceManagerRelationship) ResolveIder(a *API, s Session, r *http.Re
 
 func(rmr *ResourceManagerRelationship) Resolve(a *API, s Session, src Ider, r *http.Request, shouldFetch bool, tctx *TaskContext, include *IncludeInstructions) (*OutputLinkage, []Record) {
     // TODO: make this authentication request captured here... a failure at a relationship should merely exclude that relationship
-    rmr.A.Authenticate("relationship.FindAll."+rmr.SrcR+"."+rmr.Name+"."+rmr.DstR, GetId(src), r);
+    rmr.A.Authenticate(a, s, "relationship.FindAll."+rmr.SrcR+"."+rmr.Name+"."+rmr.DstR, GetId(src), r);
     // if we want included and it satisfies IderRelationshipBehavior, we 
     // should always prefer that over IdRelationshipBehavior
     if(shouldFetch) {

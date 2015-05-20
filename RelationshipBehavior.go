@@ -11,9 +11,9 @@ const (
 // children: IdRelationshipBehavior or a HasIdRelationshipBehavior
 type RelationshipBehavior interface {
     IsSingle() bool
-    VerifyLinks(ider Ider, linkages *OutputLinkage) error
-    PreCreate(ider Ider, linkages *OutputLinkage) error
-    PostCreate(ider Ider, linkages *OutputLinkage) error
+    VerifyLinks(a *API, s Session, ider Ider, linkages *OutputLinkage) error
+    PreCreate(a *API, s Session, ider Ider, linkages *OutputLinkage) error
+    PostCreate(a *API, s Session, ider Ider, linkages *OutputLinkage) error
 }
 
 type IdRelationshipBehavior interface{

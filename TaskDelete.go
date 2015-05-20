@@ -29,7 +29,7 @@ func(t *TaskDelete) Work(a *API, s Session, wctx *TaskContext, r *http.Request) 
         panic(NewResponderErrorResourceDoesNotExist(t.Resource));
     }
 
-    resource.A.Authenticate("resource.Delete."+t.Resource, ids[0], r);
+    resource.A.Authenticate(a,s,"resource.Delete."+t.Resource, ids[0], r);
 
     err := resource.R.Delete(a, s, ids[0]);
     Check(err);

@@ -126,6 +126,6 @@ func(a *API) Wrap(child func(a *API, w http.ResponseWriter, r *http.Request, par
 
 func (a *API) GetNewSession() Session {
     c := a.SessionFactory.NewSession();
-    c.Begin();
+    c.Begin(a);
     return c;
 }

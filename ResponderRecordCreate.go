@@ -22,12 +22,12 @@ func NewResponderRecordCreate(s Session, resource_str string, ider Ider, created
 
 func (rrc *ResponderRecordCreate) Respond(a *API, w http.ResponseWriter, r *http.Request) error {
     if rrc.Status & StatusFailed != 0 {
-        err := rrc.Session.Failure();
+        err := rrc.Session.Failure(a);
         if err != nil {
             rrc.Error = err;
         }
     } else {
-        err := rrc.Session.Success();
+        err := rrc.Session.Success(a);
         if err != nil {
             rrc.Error = err;
         }

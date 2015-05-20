@@ -1,7 +1,6 @@
 package jsonapie;
 
 import(
-    "fmt";
     . ".."
 );
 
@@ -36,19 +35,19 @@ func(l *RelationshipBehaviorFromFieldToField) LinkIder(a *API, s Session, srcR, 
     for _, id := range ids {
         newdst, err := dstR.R.FindManyByField(a, s, l.DstFieldName, id);
         if(err != nil) {
-            fmt.Printf("RelationshipBehaviorFromFieldToField got an error from FindManyByField for %s: %s", dstR.Name, err);
+            a.Logger.Printf("RelationshipBehaviorFromFieldToField got an error from FindManyByField for %s: %s", dstR.Name, err);
         }
         dst = append(dst, newdst...);
     }
     return dst;
 }
 
-func(l *RelationshipBehaviorFromFieldToField) VerifyLinks(ider Ider, linkages *OutputLinkage) error {
-    return l.FromFieldToId.VerifyLinks(ider,linkages);
+func(l *RelationshipBehaviorFromFieldToField) VerifyLinks(a *API, s Session, ider Ider, linkages *OutputLinkage) error {
+    return l.FromFieldToId.VerifyLinks(a,s,ider,linkages);
 }
-func(l *RelationshipBehaviorFromFieldToField) PreCreate(ider Ider, linkages *OutputLinkage) error {
-    return l.FromFieldToId.PreCreate(ider,linkages);
+func(l *RelationshipBehaviorFromFieldToField) PreCreate(a *API, s Session, ider Ider, linkages *OutputLinkage) error {
+    return l.FromFieldToId.PreCreate(a,s,ider,linkages);
 }
-func(l *RelationshipBehaviorFromFieldToField) PostCreate(ider Ider, linkages *OutputLinkage) error {
-    return l.FromFieldToId.PostCreate(ider,linkages);
+func(l *RelationshipBehaviorFromFieldToField) PostCreate(a *API, s Session, ider Ider, linkages *OutputLinkage) error {
+    return l.FromFieldToId.PostCreate(a,s,ider,linkages);
 }

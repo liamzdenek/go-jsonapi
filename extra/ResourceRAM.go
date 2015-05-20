@@ -4,7 +4,6 @@ import (
     "reflect"
     "strings"
     "errors"
-    "fmt"
     . ".."
 );
 
@@ -71,7 +70,7 @@ func(rr *ResourceRAM) Create(a *API, s Session, ider Ider, id *string) (RecordCr
         return StatusFailed, errors.New("ResourceRAM requires specifying an ID for Create() requests."); // TODO: it should
     }
     SetId(ider, *id);
-    fmt.Printf("Setting %s = %#v\n", GetId(ider), ider);
+    a.Logger.Printf("Setting %s = %#v\n", GetId(ider), ider);
     rr.Storage[GetId(ider)] = ider;
     return StatusCreated, nil;
 }

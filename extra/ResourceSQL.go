@@ -61,8 +61,8 @@ func(sr *ResourceSQL) FindMany(a *API, s Session, p *Paginator, ids []string) ([
         offset_and_limit,
     );
 
-    fmt.Printf("Query: %#v\n", q);
-    //fmt.Printf("Args: %#v\n", args);
+    a.Logger.Printf("Query: %#v\n", q);
+    //a.Logger.Printf("Args: %#v\n", args);
     err := meddler.QueryAll(
         sr.DB,
         vs,
@@ -87,14 +87,14 @@ func(sr *ResourceSQL) FindManyByField(a *API, s Session, field string, value str
     // better to be safe than sorry
     // dropping in ? instead of field does not work :/
     q := "SELECT * FROM "+sr.Table+" WHERE "+field+"=?";
-    fmt.Printf("Query: %#v %#v\n", q, value);
+    a.Logger.Printf("Query: %#v %#v\n", q, value);
     err = meddler.QueryAll(
         sr.DB,
         vs,
         q,
         value,
     );
-    //fmt.Printf("RES: %#v\n", vs);
+    //a.Logger.Printf("RES: %#v\n", vs);
     return sr.ConvertInterfaceSliceToIderSlice(vs), err;
 }
 
@@ -110,7 +110,7 @@ func(sr *ResourceSQL) ParseJSON(a *API, s Session, raw []byte) (Ider, *string, *
 
 func(sr *ResourceSQL) Create(a *API, s Session, ider Ider, id *string) (RecordCreatedStatus, error) {
     sqlctx := sr.CastSession(s);
-    fmt.Printf("CREATE GOT CONTEXT: %#v\n", sqlctx);
+    a.Logger.Printf("CREATE GOT CONTEXT: %#v\n", sqlctx);
     if(id != nil) {
         return StatusFailed, errors.New("ResourceSQL does not support specifying an ID for Create() requests."); // TODO: it should
     }

@@ -35,7 +35,7 @@ func(w *TaskFindByIds) Work(a *API, s Session, wctx *TaskContext, r *http.Reques
 
     // TODO: make this a loop over all the IDs
     for _, id := range w.Ids {
-        resource.A.Authenticate("resource.FindOne."+w.Resource, id, r);
+        resource.A.Authenticate(a,s,"resource.FindOne."+w.Resource, id, r);
     }
 
     data := []Ider{}

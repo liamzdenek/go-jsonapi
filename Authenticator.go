@@ -5,5 +5,5 @@ import (
 )
 
 type Authenticator interface {
-    Authenticate(permission, id string, r *http.Request)
+    Authenticate(a *API, s Session, permission, id string, r *http.Request)
 }
