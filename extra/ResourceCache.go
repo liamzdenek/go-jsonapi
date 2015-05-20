@@ -45,7 +45,7 @@ func(rc *ResourceCache) GenCacheKey(args ...string) (res string) {
     if len(r) == 0 {
         panic("Cache hash returned by HashFunc is not populating res");
     }
-    res = fmt.Sprintf("val: %X", r);
+    res = fmt.Sprintf("%X", r);
     return
 }
 
@@ -53,7 +53,7 @@ func(rc *ResourceCache) CacheFind(a *API, s Session, hkey string) (res *CacheRec
     r := Catch(func() {
         ider, err := rc.Cache.FindOne(a, s, hkey);
         Check(err);
-        fmt.Printf("CACHE OUTPUT: %v\n", ider);
+        a.Logger.Printf("CACHE OUTPUT: %v\n", ider);
         res = ider.(*CacheRecord);
     });
     if r != nil {
@@ -63,19 +63,19 @@ func(rc *ResourceCache) CacheFind(a *API, s Session, hkey string) (res *CacheRec
 }
 
 func(rc *ResourceCache) CacheCreate(a *API, s Session, hkey string, r *CacheRecord) {
-    fmt.Printf("PUTTING INTO CACHE: %s - %#v\n", hkey, r);
+    a.Logger.Printf("PUTTING INTO CACHE: %s - %#v\n", hkey, r);
     rc.Cache.Create(a,s,r,&hkey)
 }
 
 func(rc *ResourceCache) FindOne(a *API, s Session, id string) (Ider, error) {
     hkey := string(rc.GenCacheKey("FindOne", id));
-    fmt.Printf("CHECKING CACHE\n");
+    a.Logger.Printf("CHECKING CACHE\n");
     cacherecord, err := rc.CacheFind(a,s,hkey);
     if err == nil && cacherecord != nil {
-        fmt.Printf("CACHE SUCCESS %#v\n", cacherecord);
+        a.Logger.Printf("CACHE SUCCESS %#v\n", cacherecord);
         return cacherecord.Iders[0], nil;
     }
-    fmt.Printf("CACHE FAILURE -- %s\n", err);
+    a.Logger.Printf("CACHE FAILURE -- %s\n", err);
     ider, err := rc.Resource.FindOne(a,s,id);
     if err == nil && ider != nil {
         rc.CacheCreate(a,s,hkey, &CacheRecord{
