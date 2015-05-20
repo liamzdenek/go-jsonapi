@@ -1,0 +1,7 @@
+* Add the following Resources:
+  * ResourceCache
+  * ResourceRedis
+  * ResourceMemcached
+  * ResourceOauth2
+  * ResourceLogin ? dunno hw this fits with Oauth2 yet
+* make Context part of Session
