@@ -44,7 +44,6 @@ func (o *Output) SetPaginator(p *Paginator) {
         proto = "http";
     }
     base := proto+"://"+r.Host+r.URL.Path
-    
     l := &OutputPaginator{}
 
     q.Set("page", strconv.Itoa(p.CurPage));

@@ -9,8 +9,8 @@ type Paginator struct {
 }
 
 func NewPaginator(r *http.Request) *Paginator {
-    page, err := strconv.Atoi(r.URL.Query().Get("page"));
-    Check(err);
+    page, _ := strconv.Atoi(r.URL.Query().Get("page"));
+    // we do not care if the above line errors since we want the default value if it does, anyway
     return &Paginator{
         CurPage: page,
     }
