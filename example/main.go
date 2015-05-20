@@ -10,7 +10,7 @@ import (
     _ "github.com/go-sql-driver/mysql"
     "database/sql"
 );
-type Session struct{
+type UserSession struct{
     ID string `jsonapi:"id"`
     UserId int `json:"-"`
     Created *time.Time `json:"created,omitempty"`
@@ -40,9 +40,9 @@ func main() {
         panic(err);
     }
 
-    ctxf := NewContextFactorySimple();
+    sf := NewSessionFactorySimple();
 
-    api := NewAPI(ctxf);
+    api := NewAPI(sf);
 
     // initialize our authentication scheme. The authenticator is where you put code to
     // permit or refuse access to certain resources or linkages based on whatever rules
@@ -57,18 +57,18 @@ func main() {
     resource_user := NewResourceSQL(db, "users", &User{}) // database, table name, raw struct to unwrap into
     resource_post := NewResourceSQL(db, "posts", &Post{})
     resource_comment := NewResourceSQL(db, "comments", &Comment{})
-    resource_session := NewResourceRAM(&Session{});
+    resource_session := NewResourceRAM(&UserSession{});
 
     // load up some test data to the session since it is entirely in RAM
     now := time.Now();
-    resource_session.Push("1", &Session{ID: "1", UserId: 1, Created:&now});
-    resource_session.Push("2", &Session{ID: "2", UserId: 2, Created:&now});
-    resource_session.Push("3", &Session{ID: "3", UserId: 17, Created:&now});
+    resource_session.Push("1", &UserSession{ID: "1", UserId: 1, Created:&now});
+    resource_session.Push("2", &UserSession{ID: "2", UserId: 2, Created:&now});
+    resource_session.Push("3", &UserSession{ID: "3", UserId: 17, Created:&now});
 
     // Resources can be easily wrapped with common functionality,
     // such as caching, or pagination. These are designed
     // to chain easily (not shown below)
-    resource_comment_cache := NewResourceCache("posts", resource_comment, NewResourceRAM(&Comment{}))
+    resource_comment_cache := NewResourceCache("posts", resource_comment, NewResourceRAM(&CacheRecord{}))
     resource_post_paginator := NewResourcePaginatorSimple(5, resource_post);
 
     // api.MountResource informs the api of the provided resource, and makes the resource

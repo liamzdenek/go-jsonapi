@@ -6,7 +6,7 @@ type TaskContext struct {
     Context chan Task
 }
 
-func NewTaskContext(a *API, r *http.Request, w http.ResponseWriter) *TaskContext {
+func NewTaskContext(a *API, r *http.Request, w http.ResponseWriter, session Session) *TaskContext {
     res := &TaskContext{
         Context: make(chan Task, 10), // the buffer is to prevent some context switching when a lot of tasks are pushed at once
     };
@@ -29,7 +29,7 @@ func NewTaskContext(a *API, r *http.Request, w http.ResponseWriter) *TaskContext
                     }
                     tworker.ResponseWorker(has_paniced);
                 }();
-                tworker.Work(res,a,r);
+                tworker.Work(a,session,res,r);
             }();
         }
     }()

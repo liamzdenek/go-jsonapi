@@ -74,7 +74,7 @@ func(rr *RequestResolver) HandlerFindLinkByNameAndResourceId(a *API, w http.Resp
 
 func(rr *RequestResolver) CentralSearchRouter(a *API, w http.ResponseWriter, r *http.Request, resourcestr, idstr string, preroute []string, outputtype OutputType, linkname string) {
     ii := NewIncludeInstructionsFromRequest(r);
-    wctx := NewTaskContext(a,r,w);
+    wctx := NewTaskContext(a,r,w,a.GetNewSession());
     defer wctx.Cleanup();
     var work TaskResultRecords = NewTaskFindByIds(
         resourcestr,
@@ -104,10 +104,9 @@ func(rr *RequestResolver) CentralSearchRouter(a *API, w http.ResponseWriter, r *
  * * DELETE /user/1,2,3
  */
 
- // TODO: make DeleteIds a Task
  // TODO: needs a diferent response when it does not exist per spec
 func(rr *RequestResolver) HandlerDelete(a *API, w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-    wctx := NewTaskContext(a,r,w);
+    wctx := NewTaskContext(a,r,w,a.GetNewSession());
     defer wctx.Cleanup();
     deleter := NewTaskDelete(
         ps.ByName("resource"),
@@ -122,7 +121,7 @@ func(rr *RequestResolver) HandlerDelete(a *API, w http.ResponseWriter, r *http.R
  * * POST /:resource
  */
 func(rr *RequestResolver) HandlerCreate(a *API, w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-    wctx := NewTaskContext(a,r,w);
+    wctx := NewTaskContext(a,r,w,a.GetNewSession());
     defer wctx.Cleanup();
     deleter := NewTaskDelete(
         ps.ByName("resource"),

@@ -20,7 +20,7 @@ func NewTaskSingleLinkResolver(ctx *TaskContext, t TaskResultRecords, linkname s
 }
 
 // TODO: make the parent_name in this function passed as an arg to NewTaskSingleLinkResolver instead of determining it from the result, as the current setup could create inconsistent behavior and is inherently incompatible with multi-type resources
-func(t *TaskSingleLinkResolver) Work(ctx *TaskContext, a *API, r *http.Request) {
+func(t *TaskSingleLinkResolver) Work(a *API, s Session, ctx *TaskContext, r *http.Request) {
     result := t.Parent.GetResult();
     ii := NewIncludeInstructionsEmpty();
     ii.Push([]string{t.Linkname});

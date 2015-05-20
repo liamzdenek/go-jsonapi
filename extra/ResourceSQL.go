@@ -31,18 +31,18 @@ func NewResourceSQL(db *sql.DB, table string, t Ider) *ResourceSQL {
     }
 }
 
-func(sr *ResourceSQL) CastContext(ctx Context) ContextResourceSQL {
+func(sr *ResourceSQL) CastSession(s Session) SessionResourceSQL {
     // TODO: proper error handling
-    return ctx.(ContextResourceSQL);
+    return s.(SessionResourceSQL);
 }
 
-func(sr *ResourceSQL) FindOne(id string) (Ider, error) {
+func(sr *ResourceSQL) FindOne(a *API, s Session, id string) (Ider, error) {
     v := reflect.New(sr.Type).Interface();
     err := meddler.QueryRow(sr.DB, v, "SELECT * FROM "+sr.Table+" WHERE id=?", id);
     return v.(Ider), err;
 }
 
-func(sr *ResourceSQL) FindMany(p *Paginator, ids []string) ([]Ider, error) {
+func(sr *ResourceSQL) FindMany(a *API, s Session, p *Paginator, ids []string) ([]Ider, error) {
     args := []interface{}{};
     for _, id := range ids {
         args = append(args, id);
@@ -75,7 +75,7 @@ func(sr *ResourceSQL) FindMany(p *Paginator, ids []string) ([]Ider, error) {
     return sr.ConvertInterfaceSliceToIderSlice(vs), err
 }
 
-func(sr *ResourceSQL) FindManyByField(field string, value string) ([]Ider, error) {
+func(sr *ResourceSQL) FindManyByField(a *API, s Session, field string, value string) ([]Ider, error) {
     vs := reflect.New(reflect.SliceOf(reflect.PtrTo(sr.Type))).Interface();
     field, err := sr.GetTableFieldFromStructField(field);
     if(err != nil) {
@@ -98,18 +98,18 @@ func(sr *ResourceSQL) FindManyByField(field string, value string) ([]Ider, error
     return sr.ConvertInterfaceSliceToIderSlice(vs), err;
 }
 
-func(sr *ResourceSQL) Delete(id string) error {
+func(sr *ResourceSQL) Delete(a *API, s Session, id string) error {
     _, err := sr.DB.Exec("DELETE FROM "+sr.Table+" WHERE id=?", id);
     return err;
 }
 
 
-func(sr *ResourceSQL) ParseJSON(raw []byte) (Ider, *string, *string, *OutputLinkageSet, error) {
+func(sr *ResourceSQL) ParseJSON(a *API, s Session, raw []byte) (Ider, *string, *string, *OutputLinkageSet, error) {
     return ParseJSONHelper(raw, sr.Type);
 }
 
-func(sr *ResourceSQL) Create(ctx Context, resource_str string, ider Ider, id *string) (RecordCreatedStatus, error) {
-    sqlctx := sr.CastContext(ctx);
+func(sr *ResourceSQL) Create(a *API, s Session, ider Ider, id *string) (RecordCreatedStatus, error) {
+    sqlctx := sr.CastSession(s);
     fmt.Printf("CREATE GOT CONTEXT: %#v\n", sqlctx);
     if(id != nil) {
         return StatusFailed, errors.New("ResourceSQL does not support specifying an ID for Create() requests."); // TODO: it should

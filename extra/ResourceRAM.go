@@ -32,7 +32,7 @@ func(rr *ResourceRAM) Push(id string, ider Ider) {
     rr.Storage[id] = ider;
 }
 
-func(rr *ResourceRAM) FindOne(id string) (Ider, error) {
+func(rr *ResourceRAM) FindOne(a *API, s Session, id string) (Ider, error) {
     val, exists := rr.Storage[id];
     if(!exists) {
         return nil, nil;
@@ -40,10 +40,10 @@ func(rr *ResourceRAM) FindOne(id string) (Ider, error) {
     return val.(Ider), nil;
 }
 
-func(rr *ResourceRAM) FindMany(p *Paginator, ids []string) ([]Ider, error) {
+func(rr *ResourceRAM) FindMany(a *API, s Session, p *Paginator, ids []string) ([]Ider, error) {
     res := []Ider{};
     for _, id := range ids {
-        val, err := rr.FindOne(id);
+        val, err := rr.FindOne(a,s,id);
         if err == nil && val != nil {
             res = append(res, val);
         }
@@ -51,26 +51,27 @@ func(rr *ResourceRAM) FindMany(p *Paginator, ids []string) ([]Ider, error) {
     return res, nil
 }
 
-func(rr *ResourceRAM) FindManyByField(field string, value string) ([]Ider, error) {
+func(rr *ResourceRAM) FindManyByField(a *API, s Session, field string, value string) ([]Ider, error) {
     return nil, errors.New("ResourceRAM does not support FindManyByField -- you are probably using a linkage with a ResourceRAM as the target");
 }
 
-func(rr *ResourceRAM) Delete(id string) error {
+func(rr *ResourceRAM) Delete(a *API, s Session, id string) error {
     if _,exists := rr.Storage[id]; exists {
         delete(rr.Storage, id);
     }
     return nil;
 }
 
-func(rr *ResourceRAM) ParseJSON(raw []byte) (Ider, *string, *string, *OutputLinkageSet, error) {
+func(rr *ResourceRAM) ParseJSON(a *API, s Session, raw []byte) (Ider, *string, *string, *OutputLinkageSet, error) {
     return ParseJSONHelper(raw, rr.Type);
 }
 
-func(rr *ResourceRAM) Create(ctx Context, resource_str string, ider Ider, id *string) (RecordCreatedStatus, error) {
+func(rr *ResourceRAM) Create(a *API, s Session, ider Ider, id *string) (RecordCreatedStatus, error) {
     if(id == nil) {
         return StatusFailed, errors.New("ResourceRAM requires specifying an ID for Create() requests."); // TODO: it should
     }
-    fmt.Printf("Setting %d %s = %#v\n", ctx, GetId(ider), ider);
+    SetId(ider, *id);
+    fmt.Printf("Setting %s = %#v\n", GetId(ider), ider);
     rr.Storage[GetId(ider)] = ider;
     return StatusCreated, nil;
 }

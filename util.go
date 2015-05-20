@@ -40,3 +40,11 @@ func ParseJSONHelper(raw []byte, t reflect.Type) (Ider, *string, *string, *Outpu
     }
     return v.(Ider), rp.Data.Id, &rp.Data.Type, rp.Linkages(), nil;
 }
+
+func Catch(f func()) (r interface{}) {
+    defer func() {
+        r = recover();
+    }();
+    f();
+    return
+}

@@ -31,7 +31,7 @@ func NewTaskAttachIncluded(ctx *TaskContext, parent TaskResultRecords, ii *Inclu
     }
 }
 
-func (w *TaskAttachIncluded) Work(ctx *TaskContext, a *API, r *http.Request) {
+func (w *TaskAttachIncluded) Work(a *API, s Session, ctx *TaskContext, r *http.Request) {
     parent := w.Parent.GetResult();
     output_primary := []Record{};
     output_included := []Record{};

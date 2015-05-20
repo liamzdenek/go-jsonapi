@@ -26,7 +26,7 @@ func NewTaskFindByIds(resource string, ids []string, ii *IncludeInstructions, vl
     }
 }
 
-func(w *TaskFindByIds) Work(wctx *TaskContext, a *API, r *http.Request) {
+func(w *TaskFindByIds) Work(a *API, s Session, wctx *TaskContext, r *http.Request) {
     resource := a.RM.GetResource(w.Resource);
 
     if(resource == nil) {
@@ -45,12 +45,12 @@ func(w *TaskFindByIds) Work(wctx *TaskContext, a *API, r *http.Request) {
         panic("Ids must be longer than 0");
     } else if(len(w.Ids) == 1) {
         var ider Ider;
-        ider, err = resource.R.FindOne(w.Ids[0]);
+        ider, err = resource.R.FindOne(a,s,w.Ids[0]);
         if ider != nil {
             data = []Ider{ider}
         }
     } else {
-        data, err = resource.R.FindMany(w.Paginator, w.Ids);
+        data, err = resource.R.FindMany(a,s,w.Paginator, w.Ids);
     }
     if err != nil {
         // TODO: is this the right error?

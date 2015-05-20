@@ -14,7 +14,7 @@ func NewTaskReplyer(wo TaskResultOutput) *TaskReplyer {
     }
 }
 
-func(w *TaskReplyer) Work(ctx *TaskContext, a *API, r *http.Request) {
+func(w *TaskReplyer) Work(a *API, s Session, ctx *TaskContext, r *http.Request) {
     //fmt.Printf("Waiting for final result\n");
     res := w.TaskResultOutput.GetResult();
     //fmt.Printf("FINAL RESULT: %#v\n", res);

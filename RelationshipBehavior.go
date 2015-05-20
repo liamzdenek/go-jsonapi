@@ -18,12 +18,12 @@ type RelationshipBehavior interface {
 
 type IdRelationshipBehavior interface{
     RelationshipBehavior
-    LinkId(srcR, dstR *ResourceManagerResource, src Ider) (ids []string)
+    LinkId(a *API, s Session, srcR, dstR *ResourceManagerResource, src Ider) (ids []string)
 }
 
 type IderRelationshipBehavior interface{
     RelationshipBehavior
-    LinkIder(srcR, dstR *ResourceManagerResource,src Ider) (dst []Ider)
+    LinkIder(a *API, s Session, srcR, dstR *ResourceManagerResource,src Ider) (dst []Ider)
 }
 
 func VerifyRelationshipBehavior(lb RelationshipBehavior) bool {

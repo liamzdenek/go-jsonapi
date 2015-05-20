@@ -23,30 +23,30 @@ func NewResourcePaginatorSimple(maxPerPage int, parent Resource) *ResourcePagina
     }
 }
 
-func(rp *ResourcePaginatorSimple) FindOne(id string) (Ider, error) {
-    return rp.Parent.FindOne(id);
+func(rp *ResourcePaginatorSimple) FindOne(a *API, s Session, id string) (Ider, error) {
+    return rp.Parent.FindOne(a, s, id);
 }
 
-func(rp *ResourcePaginatorSimple) FindMany(p *Paginator, ids []string) ([]Ider, error) {
+func(rp *ResourcePaginatorSimple) FindMany(a *API, s Session, p *Paginator, ids []string) ([]Ider, error) {
     if p != nil {
         p.MaxPerPage = rp.MaxPerPage;
         p.LastPage = len(ids)/rp.MaxPerPage
     }
-    return rp.Parent.FindMany(p, ids);
+    return rp.Parent.FindMany(a, s,p, ids);
 }
 
-func(rp *ResourcePaginatorSimple) FindManyByField(field string, value string) ([]Ider, error) {
-    return rp.Parent.FindManyByField(field, value);
+func(rp *ResourcePaginatorSimple) FindManyByField(a *API, s Session, field string, value string) ([]Ider, error) {
+    return rp.Parent.FindManyByField(a,s,field, value);
 }
 
-func(rp *ResourcePaginatorSimple) Delete(id string) error {
-    return rp.Parent.Delete(id);
+func(rp *ResourcePaginatorSimple) Delete(a *API, s Session, id string) error {
+    return rp.Parent.Delete(a,s,id);
 }
 
-func(rp *ResourcePaginatorSimple) ParseJSON(raw []byte) (Ider, *string, *string, *OutputLinkageSet, error) {
-    return rp.Parent.ParseJSON(raw);
+func(rp *ResourcePaginatorSimple) ParseJSON(a *API, s Session, raw []byte) (Ider, *string, *string, *OutputLinkageSet, error) {
+    return rp.Parent.ParseJSON(a, s,raw);
 }
 
-func(rp *ResourcePaginatorSimple) Create(ctx Context, resource_str string, ider Ider, id *string) (RecordCreatedStatus, error) {
-    return rp.Parent.Create(ctx, resource_str, ider, id);
+func(rp *ResourcePaginatorSimple) Create(a *API, s Session, ider Ider, id *string) (RecordCreatedStatus, error) {
+    return rp.Parent.Create(a,s, ider, id);
 }

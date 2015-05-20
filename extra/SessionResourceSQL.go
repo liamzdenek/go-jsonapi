@@ -2,6 +2,6 @@ package jsonapie;
 
 import "database/sql"
 
-type ContextResourceSQL interface {
+type SessionResourceSQL interface {
     GetSQLTransaction(db *sql.DB) (*sql.Tx, error)
 }

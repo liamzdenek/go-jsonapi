@@ -22,11 +22,12 @@ func NewWorkFindLinksByRecord(idertyper Record, ii *IncludeInstructions) *WorkFi
     }
 }
 
-func (w *WorkFindLinksByRecord) Work(wctx *TaskContext, a *API, r *http.Request) {
+func (w *WorkFindLinksByRecord) Work(a *API, s Session, wctx *TaskContext, r *http.Request) {
     //fmt.Printf("GOT RECORD TO FIND LINKS: %#v\n", w.Record.Link);
     
     linker := NewLinkerDefault(
         a,
+        s,
         a.RM.GetResource(w.Record.Type()),
         w.Record,
         wctx,

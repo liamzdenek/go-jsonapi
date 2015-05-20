@@ -13,6 +13,14 @@ type RelationshipBehaviorFromFieldToId struct {
     Required RelationshipRequirement
 }
 
+func init() {
+    // safety check to make sure RelationshipBehaviorFromFieldToId is a RelationshipBehavior and a RelationshipBehaviorId
+    var t RelationshipBehavior = &RelationshipBehaviorFromFieldToId{};
+    _ = t;
+    var t2 IdRelationshipBehavior = &RelationshipBehaviorFromFieldToId{};
+    _ = t2;
+}
+
 func NewRelationshipBehaviorFromFieldToId(srcFieldName string, required RelationshipRequirement) *RelationshipBehaviorFromFieldToId {
     return &RelationshipBehaviorFromFieldToId{
         SrcFieldName: srcFieldName,
@@ -20,7 +28,7 @@ func NewRelationshipBehaviorFromFieldToId(srcFieldName string, required Relation
 }
 func(l *RelationshipBehaviorFromFieldToId) IsSingle() (bool) { return true; }
 
-func(l *RelationshipBehaviorFromFieldToId) LinkId(srcR, dstR *ResourceManagerResource, src Ider) (ids []string) {
+func(l *RelationshipBehaviorFromFieldToId) LinkId(a *API, s Session, srcR, dstR *ResourceManagerResource, src Ider) (ids []string) {
     v := reflect.ValueOf(GetField(l.SrcFieldName, src));
     k := v.Kind()
     switch k { // TODO: fill this out

@@ -7,17 +7,17 @@ type API struct{
     BaseURIPath string
     RM *ResourceManager
     RR *RequestResolver
-    ContextFactory ContextFactory
+    SessionFactory
     Logger *log.Logger
 }
 
-func NewAPI(ctxm ContextFactory) *API {
+func NewAPI(sf SessionFactory) *API {
     api := &API{
         Router: httprouter.New(),
         RM: NewResourceManager(),
         RR: NewRequestResolver(),
         BaseURIPath: "/",
-        ContextFactory: ctxm,
+        SessionFactory: sf,
         Logger: log.New(os.Stdout,"",log.LstdFlags | log.Lshortfile),
     };
     api.InitRouter();
@@ -124,8 +124,8 @@ func(a *API) Wrap(child func(a *API, w http.ResponseWriter, r *http.Request, par
     }
 }
 
-func (a *API) GetNewContext() Context {
-    c := a.ContextFactory.NewContext();
+func (a *API) GetNewSession() Session {
+    c := a.SessionFactory.NewSession();
     c.Begin();
     return c;
 }

@@ -4,29 +4,29 @@ import (. "..";"database/sql";"fmt");
 
 func init() {
     // sanity check to ensure this satisfies the interface at compile time
-    var c Context = &ContextSimple{};
+    var c Session = &SessionSimple{};
     _ = c; // compiler stfu about unuse
     
-    var crs ContextResourceSQL = &ContextSimple{};
+    var crs SessionResourceSQL = &SessionSimple{};
     _ = crs; // compiler stfu abot unuse
 }
 
-type ContextSimple struct {
+type SessionSimple struct {
     Transactions map[*sql.DB]*sql.Tx;
 }
 
-func NewContextSimple() *ContextSimple {
-    return &ContextSimple{
+func NewSessionSimple() *SessionSimple {
+    return &SessionSimple{
         Transactions: make(map[*sql.DB]*sql.Tx),
     }
 }
 
-func (ctx *ContextSimple) Begin() error {
+func (ctx *SessionSimple) Begin() error {
     fmt.Printf("BEGIN\n");
     return nil;
 }
 
-func (ctx *ContextSimple) Success() error {
+func (ctx *SessionSimple) Success() error {
     fmt.Printf("SUCCESS\n");
     for _,tx := range ctx.Transactions {
         err := tx.Commit();
@@ -37,7 +37,7 @@ func (ctx *ContextSimple) Success() error {
     return nil;
 }
 
-func (ctx *ContextSimple) Failure() error {
+func (ctx *SessionSimple) Failure() error {
     fmt.Printf("FAILURE\n");
     for _,tx := range ctx.Transactions {
         err := tx.Rollback();
@@ -48,7 +48,7 @@ func (ctx *ContextSimple) Failure() error {
     return nil;
 }
 
-func (ctx *ContextSimple) GetSQLTransaction(db *sql.DB) (*sql.Tx, error) {
+func (ctx *SessionSimple) GetSQLTransaction(db *sql.DB) (*sql.Tx, error) {
     fmt.Printf("GETSQLTX\n");
     if tx, ok := ctx.Transactions[db]; ok && tx != nil {
         return tx, nil;

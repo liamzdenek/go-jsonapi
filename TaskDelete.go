@@ -16,7 +16,7 @@ func NewTaskDelete(resource, id string) *TaskDelete {
     }
 }
 
-func(t *TaskDelete) Work(wctx *TaskContext, a *API, r *http.Request) {
+func(t *TaskDelete) Work(a *API, s Session, wctx *TaskContext, r *http.Request) {
     ids := strings.Split(t.Id,",");
     isSingle := len(ids) == 1;
     if(!isSingle) {
@@ -31,7 +31,7 @@ func(t *TaskDelete) Work(wctx *TaskContext, a *API, r *http.Request) {
 
     resource.A.Authenticate("resource.Delete."+t.Resource, ids[0], r);
 
-    err := resource.R.Delete(ids[0]);
+    err := resource.R.Delete(a, s, ids[0]);
     Check(err);
     t.Result = true;
     Reply(NewResponderResourceSuccessfullyDeleted());

@@ -6,28 +6,28 @@ type ResponderRecordCreate struct {
     Ider Ider
     Resource string
     Status RecordCreatedStatus
-    Context Context
+    Session
     Error error
 }
 
-func NewResponderRecordCreate(ctx Context, resource_str string, ider Ider, createdStatus RecordCreatedStatus, err error) *ResponderRecordCreate {
+func NewResponderRecordCreate(s Session, resource_str string, ider Ider, createdStatus RecordCreatedStatus, err error) *ResponderRecordCreate {
     return &ResponderRecordCreate{
         Resource: resource_str,
         Ider: ider,
         Status: createdStatus,
         Error: err,
-        Context: ctx,
+        Session: s,
     }
 }
 
 func (rrc *ResponderRecordCreate) Respond(a *API, w http.ResponseWriter, r *http.Request) error {
     if rrc.Status & StatusFailed != 0 {
-        err := rrc.Context.Failure();
+        err := rrc.Session.Failure();
         if err != nil {
             rrc.Error = err;
         }
     } else {
-        err := rrc.Context.Success();
+        err := rrc.Session.Success();
         if err != nil {
             rrc.Error = err;
         }
