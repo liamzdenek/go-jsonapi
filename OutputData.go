@@ -106,7 +106,7 @@ func (o *OutputDatum) Prepare() {
     res["id"] = GetId(o.Datum);
     links := o.Datum.Data().Links;
     if(len(links.Linkages) > 0) {
-        res["links"] = links
+        res["relationships"] = links
     }
     res["type"] = o.Datum.Type();
     o.res = res;

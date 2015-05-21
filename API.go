@@ -45,14 +45,14 @@ func (a *API) MountResource(name string, r Resource, auth Authenticator) {
 // defines all the endpoints
 func (a *API) InitRouter() {
     a.Router.GET("/:resource/:id/:linkname",
-        a.WrapRedirector("linkname", "links",
-            a.WrapPlain(http.NotFound), // if :linkname = "links"
+        a.WrapRedirector("linkname", "relationships",
+            a.WrapPlain(http.NotFound), // if :linkname = "relationships"
             a.Wrap(a.RR.HandlerFindLinksByResourceId), // else
         ),
     );
     a.Router.GET("/:resource/:id/:linkname/:secondlinkname",
-        a.WrapRedirector("linkname", "links",
-            a.Wrap(a.RR.HandlerFindLinkByNameAndResourceId), // if :linkname = "links"
+        a.WrapRedirector("linkname", "relationships",
+            a.Wrap(a.RR.HandlerFindLinkByNameAndResourceId), // if :linkname = "relationships"
             a.WrapPlain(http.NotFound), // else
         ),
     );

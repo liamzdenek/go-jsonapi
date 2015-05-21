@@ -14,9 +14,9 @@ type Simple struct {
 }
 
 func init() {
-    ctxf := NewContextFactorySimple();
+    sf := NewSessionFactorySimple();
 
-    api := NewAPI(ctxf);
+    api := NewAPI(sf);
     
     no_auth := NewAuthenticatorNone();
 
@@ -44,7 +44,7 @@ func RunTests(t *testing.T, tests map[string]string) {
         defer resp.Body.Close()
         body, err := ioutil.ReadAll(resp.Body);
         if(string(body) != output) {
-            t.Logf("INTENDED OUTPUT: %s\nACTUAL OUTPUT: %s\nURI: %s\n", output, body, uri);
+            t.Logf("\nINTENDED OUTPUT: %s\nACTUAL OUTPUT:   %s\nURI: %s\n", output, body, uri);
             t.Fatal();
         }
     }
@@ -52,17 +52,17 @@ func RunTests(t *testing.T, tests map[string]string) {
 
 func TestRequestBasics(t *testing.T) {
     tests := map[string]string{
-        "/source/1": `{"data":{"attributes":{"Target":"Potato"},"id":"1","links":{"rel":{"linkage":{"type":"source","id":"Potato"},"self":"http://localhost:3030/source/1/links/rel","related":"http://localhost:3030/source/1/rel"}},"type":"source"}}`,
+        "/source/1": `{"data":{"attributes":{"Target":"Potato"},"id":"1","relationships":{"rel":{"data":{"type":"source","id":"Potato"},"links":{"related":"http://localhost:3030/source/1/rel","self":"http://localhost:3030/source/1/relationships/rel"}}},"type":"source"}}`,
 
-        "/source/1,Nonexistant": `{"data":[{"attributes":{"Target":"Potato"},"id":"1","links":{"rel":{"linkage":{"type":"source","id":"Potato"},"self":"http://localhost:3030/source/1/links/rel","related":"http://localhost:3030/source/1/rel"}},"type":"source"}]}`,
+        "/source/1,Nonexistant": `{"data":[{"attributes":{"Target":"Potato"},"id":"1","relationships":{"rel":{"data":{"type":"source","id":"Potato"},"links":{"related":"http://localhost:3030/source/1/rel","self":"http://localhost:3030/source/1/relationships/rel"}}},"type":"source"}]}`,
 
-        "/source/1,Potato": `{"data":[{"attributes":{"Target":"Potato"},"id":"1","links":{"rel":{"linkage":{"type":"source","id":"Potato"},"self":"http://localhost:3030/source/1/links/rel","related":"http://localhost:3030/source/1/rel"}},"type":"source"},{"attributes":{"Target":"1"},"id":"Potato","links":{"rel":{"linkage":{"type":"source","id":"1"},"self":"http://localhost:3030/source/Potato/links/rel","related":"http://localhost:3030/source/Potato/rel"}},"type":"source"}]}`,
+        "/source/1,Potato": `{"data":[{"attributes":{"Target":"Potato"},"id":"1","relationships":{"rel":{"data":{"type":"source","id":"Potato"},"links":{"related":"http://localhost:3030/source/1/rel","self":"http://localhost:3030/source/1/relationships/rel"}}},"type":"source"},{"attributes":{"Target":"1"},"id":"Potato","relationships":{"rel":{"data":{"type":"source","id":"1"},"links":{"related":"http://localhost:3030/source/Potato/rel","self":"http://localhost:3030/source/Potato/relationships/rel"}}},"type":"source"}]}`,
 
-        "/source/1/rel": `{"data":{"attributes":{"Target":"1"},"id":"Potato","links":{"rel":{"linkage":{"type":"source","id":"1"},"self":"http://localhost:3030/source/Potato/links/rel","related":"http://localhost:3030/source/Potato/rel"}},"type":"source"}}`,
+        "/source/1/rel": `{"data":{"attributes":{"Target":"1"},"id":"Potato","relationships":{"rel":{"data":{"type":"source","id":"1"},"links":{"related":"http://localhost:3030/source/Potato/rel","self":"http://localhost:3030/source/Potato/relationships/rel"}}},"type":"source"}}`,
 
-        "/source/1?include=rel":`{"data":{"attributes":{"Target":"Potato"},"id":"1","links":{"rel":{"linkage":{"type":"source","id":"Potato"},"self":"http://localhost:3030/source/1/links/rel","related":"http://localhost:3030/source/1/rel"}},"type":"source"},"included":[{"attributes":{"Target":"1"},"id":"Potato","links":{"rel":{"linkage":{"type":"source","id":"1"},"self":"http://localhost:3030/source/Potato/links/rel","related":"http://localhost:3030/source/Potato/rel"}},"type":"source"}]}`,
+        "/source/1?include=rel":`{"data":{"attributes":{"Target":"Potato"},"id":"1","relationships":{"rel":{"data":{"type":"source","id":"Potato"},"links":{"related":"http://localhost:3030/source/1/rel","self":"http://localhost:3030/source/1/relationships/rel"}}},"type":"source"},"included":[{"attributes":{"Target":"1"},"id":"Potato","relationships":{"rel":{"data":{"type":"source","id":"1"},"links":{"related":"http://localhost:3030/source/Potato/rel","self":"http://localhost:3030/source/Potato/relationships/rel"}}},"type":"source"}]}`,
 
-        "/source/1/links/rel": `{"data":{"type":"source","id":"Potato"}}`,
+        "/source/1/relationships/rel": `{"data":{"type":"source","id":"Potato"}}`,
     }
     RunTests(t,tests);
 }

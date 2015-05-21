@@ -2,6 +2,7 @@ package jsonapi;
 
 import ("encoding/json";"errors";);
 
+// TODO: 2015-05-17 change to spec refers to this as a "Resource Identifier Object" -- should update this name properly
 type OutputLink struct { // data[i].links["linkname"].linkage[j]
     Type string `json:"type"`
     Id string `json:"id"`
@@ -67,23 +68,25 @@ func(o *OutputLinkageSet) MarshalJSON() ([]byte,error) {
     for _, linkage := range o.Linkages {
         if(linkage.IsSingle) {
             out[linkage.LinkName] = struct{
-                Links *OutputLink `json:"linkage"`
-                Self string `json:"self"`
-                Related string `json:"related"`
+                Data *OutputLink `json:"data"`
+                Links map[string]string `json:"links"`
             }{
-                Links:linkage.Links[0],
-                Self:o.RelatedBase+"/links/"+linkage.LinkName,
-                Related: o.RelatedBase+"/"+linkage.LinkName,
+                Data:linkage.Links[0],
+                Links: map[string]string{
+                    "self":o.RelatedBase+"/relationships/"+linkage.LinkName,
+                    "related": o.RelatedBase+"/"+linkage.LinkName,
+                },
             };
         } else {
             out[linkage.LinkName] = struct{
-                Links []*OutputLink `json:"linkage"`
-                Self string `json:"self"`
-                Related string `json:"related"`
+                Data []*OutputLink `json:"data"`
+                Links map[string]string `json:"links"`
             }{
-                Links:linkage.Links,
-                Self:o.RelatedBase+"/links/"+linkage.LinkName,
-                Related: o.RelatedBase+"/"+linkage.LinkName,
+                Data:linkage.Links,
+                Links: map[string]string{
+                    "self":o.RelatedBase+"/relationships/"+linkage.LinkName,
+                    "related": o.RelatedBase+"/"+linkage.LinkName,
+                },
             };
         }
     }
