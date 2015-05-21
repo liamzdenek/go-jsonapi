@@ -18,7 +18,7 @@ func NewAPI(sf SessionFactory) *API {
         RR: NewRequestResolver(),
         BaseURIPath: "/",
         SessionFactory: sf,
-        Logger: log.New(os.Stdout,"",log.LstdFlags | log.Lshortfile),
+        Logger: log.New(os.Stdout,"",log.LstdFlags | log.Lmicroseconds | log.Lshortfile),
     };
     api.InitRouter();
     api.Logger.Printf("Initialized");
@@ -59,6 +59,7 @@ func (a *API) InitRouter() {
     a.Router.DELETE("/:resource/:id", a.Wrap(a.RR.HandlerDelete));
     a.Router.PATCH("/:resource/:id", a.Wrap(a.RR.HandlerUpdate));
     a.Router.POST("/:resource", a.Wrap(a.RR.HandlerCreate));
+    a.Router.GET("/:resource", a.Wrap(a.RR.HandlerFindDefault));
     a.Router.GET("/:resource/:id", a.Wrap(a.RR.HandlerFindResourceById));
 }
 

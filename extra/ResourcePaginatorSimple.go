@@ -23,16 +23,32 @@ func NewResourcePaginatorSimple(maxPerPage int, parent Resource) *ResourcePagina
     }
 }
 
+func(rp *ResourcePaginatorSimple) InitPaginator(p *Paginator) {
+    if p != nil {
+        p.MaxPerPage = rp.MaxPerPage;
+        //p.LastPage = len(ids)/rp.MaxPerPage
+    }
+}
+
+func(rp *ResourcePaginatorSimple) FinalizePaginator(p *Paginator, num_records int) {
+    if p != nil {
+        p.LastPage = num_records/rp.MaxPerPage
+    }
+}
+func(rp *ResourcePaginatorSimple) FindDefault(a *API, s Session, p *Paginator) ([]Ider, error) {
+    rp.InitPaginator(p);
+    return rp.Parent.FindDefault(a,s,p);
+}
+
 func(rp *ResourcePaginatorSimple) FindOne(a *API, s Session, id string) (Ider, error) {
     return rp.Parent.FindOne(a, s, id);
 }
 
 func(rp *ResourcePaginatorSimple) FindMany(a *API, s Session, p *Paginator, ids []string) ([]Ider, error) {
-    if p != nil {
-        p.MaxPerPage = rp.MaxPerPage;
-        p.LastPage = len(ids)/rp.MaxPerPage
-    }
-    return rp.Parent.FindMany(a, s,p, ids);
+    rp.InitPaginator(p);
+    iders, err := rp.Parent.FindMany(a, s,p, ids);
+    rp.FinalizePaginator(p, len(iders));
+    return iders, err;
 }
 
 func(rp *ResourcePaginatorSimple) FindManyByField(a *API, s Session, field string, value string) ([]Ider, error) {

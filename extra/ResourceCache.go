@@ -67,6 +67,10 @@ func(rc *ResourceCache) CacheCreate(a *API, s Session, hkey string, r *CacheReco
     rc.Cache.Create(a,s,r,&hkey)
 }
 
+func(rc *ResourceCache) FindDefault(a *API, s Session, p *Paginator) ([]Ider, error) {
+    panic("TODO");
+}
+
 func(rc *ResourceCache) FindOne(a *API, s Session, id string) (Ider, error) {
     hkey := string(rc.GenCacheKey("FindOne", id));
     a.Logger.Printf("CHECKING CACHE\n");

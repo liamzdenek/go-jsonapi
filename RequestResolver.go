@@ -16,6 +16,20 @@ func NewRequestResolver() *RequestResolver {
 
 /************************************************
  *
+ * HandlerFindResourceById is the entrypoint for /:resource requests, primarily:
+ * * /user
+ */
+func(rr *RequestResolver) HandlerFindDefault(a *API, w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+    rr.CentralSearchRouter(a,w,r,
+        ps.ByName("resource"),
+        "",
+        []string{},
+        OutputTypeResources, "",
+    );
+}
+
+/************************************************
+ *
  * HandlerFindResourceById is the entrypoint for /:resource/:id requests, primarily:
  * * /user/1
  * * /user/1,2,3
@@ -75,9 +89,13 @@ func(rr *RequestResolver) CentralSearchRouter(a *API, w http.ResponseWriter, r *
     ii := NewIncludeInstructionsFromRequest(r);
     wctx := NewTaskContext(a,r,w,a.GetNewSession());
     defer wctx.Cleanup();
+    ids := strings.Split(idstr,",");
+    if(len(idstr) == 0) {
+        ids = []string{}
+    }
     var work TaskResultRecords = NewTaskFindByIds(
         resourcestr,
-        strings.Split(idstr,","),
+        ids,
         ii,
         "root",
         NewPaginator(r),

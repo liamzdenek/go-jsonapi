@@ -1,6 +1,7 @@
 package jsonapi;
 
 type Resource interface {
+    FindDefault(a *API, s Session, page *Paginator) ([]Ider, error)
     FindOne(a *API, s Session, id string) (Ider, error)
     FindMany(a *API, s Session, page *Paginator, ids []string) ([]Ider, error)
     FindManyByField(a *API, s Session, field, value string) ([]Ider, error)

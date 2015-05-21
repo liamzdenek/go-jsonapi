@@ -36,6 +36,34 @@ func(sr *ResourceSQL) CastSession(s Session) SessionResourceSQL {
     return s.(SessionResourceSQL);
 }
 
+// TODO: update this to honor sorting
+func(sr *ResourceSQL) FindDefault(a *API, s Session, p *Paginator) ([]Ider, error) {
+    vs := reflect.New(reflect.SliceOf(reflect.PtrTo(sr.Type))).Interface()
+    offset_and_limit := "";
+    if p != nil && (p.MaxPerPage != 0) {
+        offset_and_limit = fmt.Sprintf("LIMIT %d OFFSET %d",
+            p.MaxPerPage,
+            p.CurPage * p.MaxPerPage,
+        );
+    }
+    q := fmt.Sprintf(
+        "SELECT * FROM %s %s",
+        sr.Table,
+        offset_and_limit,
+    )
+    a.Logger.Printf("Query: %#v\n", q);
+    err := meddler.QueryAll(
+        sr.DB,
+        vs,
+        q,
+    );
+    if(err != nil) {
+        return nil, err;
+    }
+    return sr.ConvertInterfaceSliceToIderSlice(vs), err
+;
+}
+
 func(sr *ResourceSQL) FindOne(a *API, s Session, id string) (Ider, error) {
     v := reflect.New(sr.Type).Interface();
     err := meddler.QueryRow(sr.DB, v, "SELECT * FROM "+sr.Table+" WHERE id=?", id);

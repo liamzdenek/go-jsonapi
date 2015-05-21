@@ -42,7 +42,7 @@ func(w *TaskFindByIds) Work(a *API, s Session, wctx *TaskContext, r *http.Reques
 
     var err error;
     if(len(w.Ids) == 0) {
-        panic("Ids must be longer than 0");
+        data,err = resource.R.FindDefault(a,s,w.Paginator)
     } else if(len(w.Ids) == 1) {
         var ider Ider;
         ider, err = resource.R.FindOne(a,s,w.Ids[0]);

@@ -31,6 +31,10 @@ func(rr *ResourceRAM) Push(id string, ider Ider) {
     rr.Storage[id] = ider;
 }
 
+func(rr *ResourceRAM) FindDefault(a *API, s Session, p *Paginator) ([]Ider, error) {
+    panic("ResourceRAM does not support requests to FindDefault");
+}
+
 func(rr *ResourceRAM) FindOne(a *API, s Session, id string) (Ider, error) {
     val, exists := rr.Storage[id];
     if(!exists) {

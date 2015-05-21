@@ -37,16 +37,20 @@ func SetId(ider Ider, id string) error {
 }
 
 func GetIdField(ider Ider) (reflect.Value) {
+    return GetFieldByTag(ider, "id");
+}
+
+func GetFieldByTag(ider Ider, realtag string) (reflect.Value) {
     val := reflect.Indirect(reflect.ValueOf(ider))
     typ := val.Type();
     fields := val.NumField();
     for i := 0; i < fields; i++ {
         tags := strings.Split(typ.Field(i).Tag.Get("jsonapi"),",");
         for _,tag := range tags {
-            if(tag == "id") {
+            if(tag == realtag) {
                 return val.Field(i);
             }
         }
     }
-    panic(fmt.Sprintf("Couldn't get ID field for provided ider: %#v\n", ider));
+    panic(fmt.Sprintf("Couldn't get field \"%s\" for provided ider: %#v\n", realtag, ider));
 }
