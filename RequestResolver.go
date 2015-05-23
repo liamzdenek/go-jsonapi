@@ -14,6 +14,20 @@ func NewRequestResolver() *RequestResolver {
     return &RequestResolver{};
 }
 
+
+/************************************************
+ *
+ * 
+ */
+func(rr *RequestResolver) HandlerRoot(a *API, w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+    defer func() {
+        if raw := recover(); raw != nil {
+            a.CatchResponses(w,r,raw);
+        }
+    }();
+    o := NewOutput(r,a.Meta);
+    Reply(o);
+}
 /************************************************
  *
  * HandlerFindResourceById is the entrypoint for /:resource requests, primarily:

@@ -8,6 +8,7 @@ type Output struct { // responsible for the root node
     Included *OutputIncluded `json:"included,omitempty"`
     Errors []error `json:"errors,omitempty"`
     Request *http.Request `json:"-"`
+    Meta interface{} `json:"meta,omitempty"`
 }
 
 type OutputPaginator struct {
@@ -18,11 +19,12 @@ type OutputPaginator struct {
     Last string `json:"last,omitempty"`
 }
 
-func NewOutput(r *http.Request) *Output {
+func NewOutput(r *http.Request, m interface{}) *Output {
     return &Output{
         Data: &OutputData{},
         Included: NewOutputIncluded(&[]Record{}),
         Request: r,
+        Meta: m,
     }
 }
 
@@ -84,6 +86,9 @@ func (o Output) MarshalJSON() ([]byte, error) {
     }
     res := map[string]interface{}{};
     res["data"] = o.Data;
+    if(o.Meta != nil) {
+        res["meta"] = o.Meta;
+    }
     if(o.Included != nil && o.Included.ShouldBeVisible()) {
         res["included"] = o.Included;
     }

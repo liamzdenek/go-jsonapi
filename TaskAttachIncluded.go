@@ -69,7 +69,7 @@ func (w *TaskAttachIncluded) Work(a *API, s Session, ctx *TaskContext, r *http.R
         }
     }
 
-    res := NewOutput(r);
+    res := NewOutput(r,nil);
     if w.OutputType == OutputTypeResources {
         a.Logger.Printf("Primary data is a resource");
         res.Data = NewOutputDataResources(parent.IsSingle, output_primary);

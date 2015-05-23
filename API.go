@@ -9,6 +9,7 @@ type API struct{
     RR *RequestResolver
     SessionFactory
     Logger *log.Logger
+    Meta map[string]interface{}
 }
 
 func NewAPI(sf SessionFactory) *API {
@@ -19,6 +20,9 @@ func NewAPI(sf SessionFactory) *API {
         BaseURIPath: "/",
         SessionFactory: sf,
         Logger: log.New(os.Stdout,"",log.LstdFlags | log.Lmicroseconds | log.Lshortfile),
+        Meta: map[string]interface{}{
+            "powered-by":"go-jsonapi",
+        },
     };
     api.InitRouter();
     api.Logger.Printf("Initialized");
@@ -44,6 +48,7 @@ func (a *API) MountResource(name string, r Resource, auth Authenticator) {
 
 // defines all the endpoints
 func (a *API) InitRouter() {
+    a.Router.GET("/", a.Wrap(a.RR.HandlerRoot));
     a.Router.GET("/:resource/:id/:linkname",
         a.WrapRedirector("linkname", "relationships",
             a.WrapPlain(http.NotFound), // if :linkname = "relationships"

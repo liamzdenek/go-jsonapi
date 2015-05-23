@@ -17,7 +17,7 @@ func NewResponderErrors(e []error) *ResponderErrors {
 }
 
 func(re *ResponderErrors) Respond(a *API, w http.ResponseWriter, r *http.Request) error {
-    o := NewOutput(r);
+    o := NewOutput(r,nil);
     o.Errors = re.Errors;
     o.Prepare();
     a.Send(o,w)
