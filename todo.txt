@@ -6,3 +6,5 @@
   * ResourceLogin ? dunno hw this fits with Oauth2 yet
 * make Context part of Session
 * think a better way to handle Pagination -- possibly through a Session interface?
+* deprecate Ider -- it should always be a Record, even if some of the fields are nil. There is no good reason for distinction
+* Attempt to deprecate the Nature/Denature process -- not sure how to do this one, but it would simplify a lot
