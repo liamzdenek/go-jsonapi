@@ -1,6 +1,6 @@
 package jsonapi;
 
-import ("reflect";"encoding/json";);
+import ("reflect";"encoding/json";"fmt");
 
 func Check(e error) {
     if e != nil {
@@ -35,10 +35,11 @@ func ParseJSONHelper(raw []byte, t reflect.Type) (Ider, *string, *string, *Outpu
     if(err != nil) {
         return nil, nil, nil, nil, err;
     }
-    if(rp.Data.Linkages == nil) {
-        rp.Data.Linkages = &OutputLinkageSet{};
+    if(rp.Data.Relationships == nil) {
+        fmt.Printf("GOT NO RELATIONSHIPS\n");
+        rp.Data.Relationships = &OutputLinkageSet{};
     }
-    return v.(Ider), rp.Data.Id, &rp.Data.Type, rp.Linkages(), nil;
+    return v.(Ider), rp.Data.Id, &rp.Data.Type, rp.Relationships(), nil;
 }
 
 func Catch(f func()) (r interface{}) {

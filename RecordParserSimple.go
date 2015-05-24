@@ -16,15 +16,15 @@ func NewRecordParserSimple(res interface{}) *RecordParserSimple {
     };
 }
 
-func(rps *RecordParserSimple) Linkages() *OutputLinkageSet {
-    return rps.Data.Linkages;
+func(rps *RecordParserSimple) Relationships() *OutputLinkageSet {
+    return rps.Data.Relationships;
 }
 
 type RecordParserSimpleData struct {
-    Attributes RecordParserSimpleAttributes
+    Attributes RecordParserSimpleAttributes `json:"attributes"`
     Id *string `json:"id"`
     Type string `json:"type"`
-    Linkages *OutputLinkageSet `json:"links"`
+    Relationships *OutputLinkageSet `json:"relationships"`
 }
 
 type RecordParserSimpleAttributes struct {

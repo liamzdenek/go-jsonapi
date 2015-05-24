@@ -22,7 +22,6 @@ type OutputLinkageSingle struct {
 }
 
 func(o *OutputLinkage) UnmarshalJSON(data []byte) error {
-
     a := &OutputLinkageSingle{}
     err := json.Unmarshal(data, a);
 
@@ -47,6 +46,15 @@ type OutputLinkageSet struct { // data[i].links
     Linkages []*OutputLinkage
     RelatedBase string
     //Parent *OutputDatum
+}
+
+func(o *OutputLinkageSet) GetLinkageByName(name string) *OutputLinkage {
+    for _, linkage := range o.Linkages {
+        if(linkage.LinkName == name) {
+            return linkage;
+        }
+    }
+    return nil;
 }
 
 func(o *OutputLinkageSet) UnmarshalJSON(data []byte) error {

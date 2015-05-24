@@ -42,7 +42,7 @@ func(l *RelationshipBehaviorFromFieldToId) LinkId(a *API, s Session, srcR, dstR 
 }
 
 func(l *RelationshipBehaviorFromFieldToId) VerifyLinks(a *API, s Session, ider Ider, linkages *OutputLinkage) error {
-    a.Logger.Printf("Verify links\n");
+    a.Logger.Printf("Verify links %v\n",linkages);
     isEmpty := linkages == nil || linkages.Links == nil || len(linkages.Links) == 0;
     if(isEmpty && l.Required == Required) {
         return errors.New("Linkage is empty but is required");

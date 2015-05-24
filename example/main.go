@@ -13,7 +13,7 @@ import (
 type UserSession struct{
     ID string `jsonapi:"id"`
     UserId int `json:"-"`
-    Created *time.Time `json:"created,omitempty"`
+    Created *time.Time `json:"created"`
 }
 
 type User struct{
