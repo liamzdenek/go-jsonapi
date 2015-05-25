@@ -6,7 +6,7 @@ type Output struct { // responsible for the root node
     Data *OutputData `json:"data,omitempty"`
     Links *OutputPaginator `json:"links,omitempty"`
     Included *OutputIncluded `json:"included,omitempty"`
-    Errors []error `json:"errors,omitempty"`
+    Errors []OutputError `json:"errors,omitempty"`
     Request *http.Request `json:"-"`
     Meta interface{} `json:"meta,omitempty"`
 }
@@ -74,14 +74,10 @@ func (o Output) MarshalJSON() ([]byte, error) {
     // A document MUST contain either primary data or an array of error objects.
     if(len(o.Errors) > 0) {
         //a.Logger.Printf("ERrors: %v\n", o.Errors);
-        es := []string{};
-        for _,e := range o.Errors {
-            es = append(es, e.Error());
-        }
         return json.Marshal(struct{
-            Errors []string `json:"errors"`
+            Errors []OutputError `json:"errors"`
         }{
-            Errors: es,
+            Errors: o.Errors,
         });
     }
     res := map[string]interface{}{};

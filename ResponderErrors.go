@@ -3,16 +3,23 @@ package jsonapi;
 import ("net/http";)
 
 type ResponderErrors struct{
-    Errors []error
+    Errors []OutputError
 }
 
 func NewResponderError(e error) *ResponderErrors {
     return NewResponderErrors([]error{e});
 }
 
-func NewResponderErrors(e []error) *ResponderErrors {
+func NewResponderErrors(es []error) *ResponderErrors {
+    // TODO: replace this with code to make NewResponderErrors accept a list of OutputError to begin with
+    oes := []OutputError{}
+    for _,e := range es {
+        oes = append(oes, OutputError{
+            Title: e.Error(),
+        });
+    }
     return &ResponderErrors{
-        Errors: e,
+        Errors: oes,
     }
 }
 
