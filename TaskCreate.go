@@ -27,7 +27,7 @@ func(t *TaskCreate) Work(a *API, s Session, tctx *TaskContext, r *http.Request) 
 
     body, err := ioutil.ReadAll(r.Body);
     if err != nil {
-        panic(NewResponderError(errors.New(fmt.Sprintf("Body could not be parsed: %v\n", err))));
+        panic(NewResponderBaseErrors(400, errors.New(fmt.Sprintf("Body could not be parsed: %v\n", err))));
     }
 
     ider,id,rtype,linkages,err := resource.R.ParseJSON(s,nil,body);
@@ -61,7 +61,7 @@ func(t *TaskCreate) Work(a *API, s Session, tctx *TaskContext, r *http.Request) 
             panic("TODO: This");
         }
         rel.A.Authenticate(a,s,"relationship.Create."+rel.SrcR+"."+rel.Name+"."+rel.DstR, "", r);
-        err := rel.B.VerifyLinks(a,s,ider,linkage);
+        err := rel.B.VerifyLinks(s,ider,linkage);
         if err != nil {
             Reply(NewResponderRecordCreate(resource_str, nil, StatusFailed, err));
         }
@@ -70,7 +70,7 @@ func(t *TaskCreate) Work(a *API, s Session, tctx *TaskContext, r *http.Request) 
     // the id object before it's inserted
     for _,linkage := range linkages.Linkages {
         rel := a.RM.GetRelationship(resource_str, linkage.LinkName)
-        err := rel.B.PreCreate(a,s,ider,linkage);
+        err := rel.B.PreSave(s,ider,linkage);
         if err != nil {
             Reply(NewResponderRecordCreate(resource_str, nil, StatusFailed, err));
         }
@@ -80,7 +80,7 @@ func(t *TaskCreate) Work(a *API, s Session, tctx *TaskContext, r *http.Request) 
     if(err == nil && ider != nil && createdStatus & StatusCreated != 0) {
         for _,linkage := range linkages.Linkages {
             rel := a.RM.GetRelationship(resource_str, linkage.LinkName)
-            err = rel.B.PostCreate(a,s,ider,linkage);
+            err = rel.B.PostSave(s,ider,linkage);
             if err != nil {
                 Reply(NewResponderRecordCreate(resource_str, nil, StatusFailed, err));
             }

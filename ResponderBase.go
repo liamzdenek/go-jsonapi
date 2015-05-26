@@ -24,6 +24,19 @@ func NewResponderBase(status int, o *Output) *ResponderBase {
     }
 }
 
+func NewResponderBaseErrors(code int, es ...error) *ResponderBase {
+    // TODO: replace this with code to make NewResponderErrors accept a list of OutputError to begin with
+    oes := []OutputError{}
+    for _,e := range es {
+        oes = append(oes, OutputError{
+            Title: e.Error(),
+        });
+    }
+    o := NewOutput(nil);
+    o.Errors = oes;
+    return NewResponderBase(code, o);
+}
+
 func(rb *ResponderBase) PushHeader(k,v string) {
     if _, ok := rb.Headers[k]; !ok {
         rb.Headers[k] = []string{}

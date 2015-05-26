@@ -88,7 +88,7 @@ func (o OutputData) MarshalJSON() ([]byte, error) {
     if(o.Target == OneToManyLinkage) {
         return json.Marshal(o.Linkage.Links);
     }
-    panic(NewResponderError(errors.New("Unknown data type sent to OutputData")));
+    panic(NewResponderBaseErrors(500, errors.New("Unknown data type sent to OutputData")));
 }
 
 type OutputDatum struct { // data[i]

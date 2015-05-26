@@ -27,7 +27,7 @@ func NewRelationshipBehaviorFromFieldToId(srcFieldName string, required Relation
 }
 func(l *RelationshipBehaviorFromFieldToId) IsSingle() (bool) { return true; }
 
-func(l *RelationshipBehaviorFromFieldToId) LinkId(a *API, s Session, srcR, dstR *ResourceManagerResource, src Ider) (ids []string) {
+func(l *RelationshipBehaviorFromFieldToId) LinkId(s Session, srcR, dstR *ResourceManagerResource, src Ider) (ids []string) {
     v := reflect.ValueOf(GetField(l.SrcFieldName, src));
     k := v.Kind()
     switch k { // TODO: fill this out
@@ -41,7 +41,8 @@ func(l *RelationshipBehaviorFromFieldToId) LinkId(a *API, s Session, srcR, dstR 
     return ids;
 }
 
-func(l *RelationshipBehaviorFromFieldToId) VerifyLinks(a *API, s Session, ider Ider, linkages *OutputLinkage) error {
+func(l *RelationshipBehaviorFromFieldToId) VerifyLinks(s Session, ider Ider, linkages *OutputLinkage) error {
+    a := s.GetData().API;
     a.Logger.Printf("Verify links %v\n",linkages);
     isEmpty := linkages == nil || linkages.Links == nil || len(linkages.Links) == 0;
     if(isEmpty && l.Required == Required) {
@@ -52,7 +53,8 @@ func(l *RelationshipBehaviorFromFieldToId) VerifyLinks(a *API, s Session, ider I
     }
     return nil;
 }
-func(l *RelationshipBehaviorFromFieldToId) PreCreate(a *API, s Session, ider Ider, linkages *OutputLinkage) error {
+func(l *RelationshipBehaviorFromFieldToId) PreSave(s Session, ider Ider, linkages *OutputLinkage) error {
+    a := s.GetData().API;
     if(len(linkages.Links) == 0 || linkages.Links[0] == nil) {
         return errors.New("RelationshipBehaviorFromFieldToId requires id to be provided for new records");
     }
@@ -64,7 +66,8 @@ func(l *RelationshipBehaviorFromFieldToId) PreCreate(a *API, s Session, ider Ide
     a.Logger.Printf("Pre create\n");
     return nil;
 }
-func(l *RelationshipBehaviorFromFieldToId) PostCreate(a *API, s Session, ider Ider, linkages *OutputLinkage) error {
+func(l *RelationshipBehaviorFromFieldToId) PostSave(s Session, ider Ider, linkages *OutputLinkage) error {
+    a := s.GetData().API;
     a.Logger.Printf("Post create\n");
     return nil;
 }

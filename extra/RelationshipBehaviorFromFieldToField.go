@@ -28,8 +28,9 @@ func NewRelationshipBehaviorFromFieldToField(srcFieldName, dstFieldName string, 
 
 func(l *RelationshipBehaviorFromFieldToField) IsSingle() (bool) { return false; }
 
-func(l *RelationshipBehaviorFromFieldToField) LinkIder(a *API, s Session, srcR, dstR *ResourceManagerResource, src Ider) (dst []Ider) {
-    ids := l.FromFieldToId.LinkId(a,s,srcR, dstR, src);
+func(l *RelationshipBehaviorFromFieldToField) LinkIder(s Session, srcR, dstR *ResourceManagerResource, src Ider) (dst []Ider) {
+    a := s.GetData().API;
+    ids := l.FromFieldToId.LinkId(s,srcR, dstR, src);
     //dstrmr := rmr.RM.GetResource(rmr.DstR);
     dst = []Ider{}
     for _, id := range ids {
@@ -42,12 +43,15 @@ func(l *RelationshipBehaviorFromFieldToField) LinkIder(a *API, s Session, srcR, 
     return dst;
 }
 
-func(l *RelationshipBehaviorFromFieldToField) VerifyLinks(a *API, s Session, ider Ider, linkages *OutputLinkage) error {
-    return l.FromFieldToId.VerifyLinks(a,s,ider,linkages);
+func(l *RelationshipBehaviorFromFieldToField) VerifyLinks(s Session, ider Ider, linkages *OutputLinkage) error {
+    panic("TODO");
+    return l.FromFieldToId.VerifyLinks(s,ider,linkages);
 }
-func(l *RelationshipBehaviorFromFieldToField) PreCreate(a *API, s Session, ider Ider, linkages *OutputLinkage) error {
-    return l.FromFieldToId.PreCreate(a,s,ider,linkages);
+func(l *RelationshipBehaviorFromFieldToField) PreSave(s Session, ider Ider, linkages *OutputLinkage) error {
+    panic("TODO");
+    return l.FromFieldToId.PreSave(s,ider,linkages);
 }
-func(l *RelationshipBehaviorFromFieldToField) PostCreate(a *API, s Session, ider Ider, linkages *OutputLinkage) error {
-    return l.FromFieldToId.PostCreate(a,s,ider,linkages);
+func(l *RelationshipBehaviorFromFieldToField) PostSave(s Session, ider Ider, linkages *OutputLinkage) error {
+    panic("TODO");
+    return l.FromFieldToId.PostSave(s,ider,linkages);
 }

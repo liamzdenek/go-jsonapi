@@ -11,19 +11,19 @@ const (
 // children: IdRelationshipBehavior or a HasIdRelationshipBehavior
 type RelationshipBehavior interface {
     IsSingle() bool
-    VerifyLinks(a *API, s Session, ider Ider, linkages *OutputLinkage) error
-    PreCreate(a *API, s Session, ider Ider, linkages *OutputLinkage) error
-    PostCreate(a *API, s Session, ider Ider, linkages *OutputLinkage) error
+    VerifyLinks(s Session, ider Ider, linkages *OutputLinkage) error
+    PreSave(s Session, ider Ider, linkages *OutputLinkage) error
+    PostSave(s Session, ider Ider, linkages *OutputLinkage) error
 }
 
 type IdRelationshipBehavior interface{
     RelationshipBehavior
-    LinkId(a *API, s Session, srcR, dstR *ResourceManagerResource, src Ider) (ids []string)
+    LinkId(s Session, srcR, dstR *ResourceManagerResource, src Ider) (ids []string)
 }
 
 type IderRelationshipBehavior interface{
     RelationshipBehavior
-    LinkIder(a *API, s Session, srcR, dstR *ResourceManagerResource,src Ider) (dst []Ider)
+    LinkIder(s Session, srcR, dstR *ResourceManagerResource,src Ider) (dst []Ider)
 }
 
 func VerifyRelationshipBehavior(lb RelationshipBehavior) bool {

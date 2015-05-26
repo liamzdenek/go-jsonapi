@@ -88,11 +88,11 @@ func(a *API) CatchResponses(s Session, w http.ResponseWriter, req *http.Request,
         rb.Respond(a,s,w,req);
     case error:
         a.Logger.Printf("Panic(error) is deprecated as it is always ambiguous. You probably intend to use panic(NewResponderError()) instead\n");
-        re := NewResponderError(r);
+        re := NewResponderBaseErrors(500, r);
         re.Respond(a,s,w,req);
     case string:
         a.Logger.Printf("Panic(string) is deprecated as it is always ambiguous. You probably intend to use panic(NewResponderError()) instead\n");
-        re := NewResponderError(errors.New(r));
+        re := NewResponderBaseErrors(500,errors.New(r));
         re.Respond(a,s,w,req);
     default:
         w.Write([]byte(fmt.Sprintf("Internal error handling request. Improper object sent to response method: %#v\n", r)));

@@ -20,7 +20,7 @@ func(t *TaskDelete) Work(a *API, s Session, wctx *TaskContext, r *http.Request) 
     ids := strings.Split(t.Id,",");
     isSingle := len(ids) == 1;
     if(!isSingle) {
-        panic(NewResponderError(errors.New("This request does not support more than one id")));
+        panic(NewResponderBaseErrors(400,errors.New("This request does not support more than one id")));
     }
 
     resource := a.RM.GetResource(t.Resource);

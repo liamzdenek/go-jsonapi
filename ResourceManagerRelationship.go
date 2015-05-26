@@ -21,7 +21,7 @@ func(rmr *ResourceManagerRelationship) ResolveId(a *API, s Session, r *http.Requ
     }
     included := []Record{};
     dstRmr := rmr.RM.GetResource(rmr.DstR);
-    ids := lb.LinkId(a,s,rmr.RM.GetResource(rmr.SrcR), dstRmr, src);
+    ids := lb.LinkId(s,rmr.RM.GetResource(rmr.SrcR), dstRmr, src);
     for _, id := range ids {
         res.Links = append(res.Links, &OutputLink{
             Type: rmr.DstR,
@@ -46,7 +46,7 @@ func(rmr *ResourceManagerRelationship) ResolveIder(a *API, s Session, r *http.Re
     }
     included := []Record{};
     dstRmr := rmr.RM.GetResource(rmr.DstR);
-    links := lb.LinkIder(a,s,rmr.RM.GetResource(rmr.SrcR), dstRmr, src);
+    links := lb.LinkIder(s,rmr.RM.GetResource(rmr.SrcR), dstRmr, src);
     for _, link := range links {
         res.Links = append(res.Links, &OutputLink{
             Type: rmr.DstR,
@@ -75,6 +75,6 @@ func(rmr *ResourceManagerRelationship) Resolve(a *API, s Session, src Ider, r *h
         case IderRelationshipBehavior:
             return rmr.ResolveIder(a, s, r, lb, src, tctx, include);
         default:
-            panic(NewResponderError(errors.New("Attempted to resolve a linkage behavior that is neither an Id or Ider LinkageBehavior.. This should never happen")));
+            panic(NewResponderBaseErrors(500, errors.New("Attempted to resolve a linkage behavior that is neither an Id or Ider LinkageBehavior.. This should never happen")));
     }
 }

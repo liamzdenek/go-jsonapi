@@ -57,7 +57,7 @@ func(w *TaskFindByIds) Work(a *API, s Session, wctx *TaskContext, r *http.Reques
     }
     if err != nil {
         // TODO: is this the right error?
-        panic(NewResponderError(err));
+        panic(NewResponderBaseErrors(500, err));
     }
     //a.Logger.Printf("GOT DATA: %#v\n", data);
     res := []Record{};

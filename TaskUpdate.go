@@ -27,31 +27,48 @@ func(t *TaskUpdate) Work(a *API, s Session, tctx *TaskContext, r *http.Request) 
 
     ider, err := resource.R.FindOne(s,t.Id);
 
+    if err != nil {
+        Reply(NewResponderBaseErrors(404, errors.New(fmt.Sprintf("Couldn't get record to be updated: %s", err))));
+    }
+    if ider == nil {
+        Reply(NewResponderBaseErrors(404, errors.New(fmt.Sprintf("Record does not exist to be updated"))));
+    }
+
     body, err := ioutil.ReadAll(r.Body);
     if err != nil {
-        panic(NewResponderError(errors.New(fmt.Sprintf("Body could not be parsed: %v\n", err))));
+        panic(NewResponderBaseErrors(400,errors.New(fmt.Sprintf("Body could not be parsed: %v\n", err))));
     }
 
     ider,id,rtype,linkages,err := resource.R.ParseJSON(s,ider,body);
-    fmt.Printf("LINKAGES: %#v\n", linkages);
     if err != nil {
-        Reply(NewResponderError(errors.New(fmt.Sprintf("ParseJSON threw error: %s", err))));
+        Reply(NewResponderBaseErrors(500, errors.New(fmt.Sprintf("ParseJSON threw error: %s", err))));
     }
     if(ider == nil) {
-        Reply(NewResponderError(errors.New("No error was thrown but ParseJSON did not return a valid object")));
+        Reply(NewResponderBaseErrors(500, errors.New("No error was thrown but ParseJSON did not return a valid object")));
     }
     if(rtype != nil && *rtype != resource_str) {
-        Reply(NewResponderError(errors.New(fmt.Sprintf("This is resource \"%s\" but the new object includes type:\"%s\"", resource_str, rtype))));
+        Reply(NewResponderBaseErrors(409, errors.New(fmt.Sprintf("This is resource \"%s\" but the new object includes type:\"%s\"", resource_str, rtype))));
     }
     if(id != nil && *id != t.Id) {
-        Reply(NewResponderError(errors.New(fmt.Sprintf("The ID provided \"%s\" does not match the ID provided in the url \"%s\"", id, t.Id))));
+        Reply(NewResponderBaseErrors(409, errors.New(fmt.Sprintf("The ID provided \"%s\" does not match the ID provided in the url \"%s\"", *id, t.Id))));
+    }
+
+    for _,linkage := range linkages.Linkages {
+        fmt.Printf("LINKAGES: %#v\n", linkage);
+        rel := a.RM.GetRelationship(resource_str, linkage.LinkName);
+        err := rel.B.VerifyLinks(s, ider, linkage);
+        if err != nil {
+            
+        }
     }
 
     err = resource.R.Update(s,t.Id,ider);
     if(err != nil) {
-        Reply(NewResponderError(errors.New(fmt.Sprintf("Could not update resource: %s", err))));
+        Reply(NewResponderBaseErrors(500, errors.New(fmt.Sprintf("Could not update resource: %s", err))));
     }
-    Reply("OK");
+    
+    // TODO: the spec requires a 200 option with the requested resource if we modified it internally... no idea how to pull off that one
+    Reply(NewResponderBase(202, nil));
 }
 
 func(t *TaskUpdate) ResponseWorker(has_paniced bool) {
