@@ -1,6 +1,6 @@
 package jsonapi;
 
-import ("encoding/json";"errors";);
+import ("encoding/json";"errors";"fmt");
 
 // TODO: 2015-05-17 change to spec refers to this as a "Resource Identifier Object" -- should update this name properly
 type OutputLink struct { // data[i].links["linkname"].linkage[j]
@@ -58,12 +58,41 @@ func(o *OutputLinkageSet) GetLinkageByName(name string) *OutputLinkage {
 }
 
 func(o *OutputLinkageSet) UnmarshalJSON(data []byte) error {
-    res := map[string]*OutputLinkage{};
-    err := json.Unmarshal(data, &res);
-    if(err != nil) { return err; }
-    for linkname,r := range res {
+    fmt.Printf("\n\n\nUNMARSHAL JSON DATA: %s\n\n\n\n", data);
+    type DataSingle struct{
+        Data *OutputLink `json:"data"`
+    }
+    type DataMany struct {
+        Data []*OutputLink `json:"data"`
+    }
+    links := map[string][]*OutputLink{};
+    res_single := map[string]DataSingle{};
+    err := json.Unmarshal(data, &res_single);
+    if(err == nil) {
+        for k, v := range res_single {
+            links[k] = []*OutputLink{v.Data};
+        }
+    } else {
+        res_many := map[string]DataMany{};
+        err := json.Unmarshal(data, &res_many);
+        if err != nil {
+            return err;
+        }
+        for k,v := range res_many {
+            links[k] = v.Data;
+        }
+    }
+    fmt.Printf("LINKS: %#v\n", links);
+    /*
+    for linkname,r := range links {
         r.LinkName = linkname;
         o.Linkages = append(o.Linkages, r);
+    }*/
+    for k,vs := range links {
+        o.Linkages = append(o.Linkages, &OutputLinkage{
+            LinkName: k,
+            Links: vs,
+        })
     }
     return nil;
 }

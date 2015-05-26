@@ -44,9 +44,10 @@ func(rb *ResponderBase) PushHeader(k,v string) {
     rb.Headers[k] = append(rb.Headers[k], v);
 }
 
-func(rb *ResponderBase) Respond(a *API, s Session, w http.ResponseWriter, r *http.Request) error {
+func(rb *ResponderBase) Respond(s Session, w http.ResponseWriter, r *http.Request) error {
+    a := s.GetData().API
     var err error;
-    if !(rb.Status >= 200 && rb.Status < 300) || len(rb.Output.Errors) > 0 {
+    if !(rb.Status >= 200 && rb.Status < 300) || (rb.Output != nil && rb.Output.Errors != nil && len(rb.Output.Errors) > 0) {
         err = s.Failure(a);
     } else {
         err = s.Success(a);
@@ -57,14 +58,18 @@ func(rb *ResponderBase) Respond(a *API, s Session, w http.ResponseWriter, r *htt
     if err != nil {
         panic(err); // TODO: properly encapsulate this into rrc.Output.Errors
     }
-    
-    rb.Output.Prepare();
+   
+    if rb.Output != nil {
+        rb.Output.Prepare();
+    }
     for k,vs := range rb.Headers {
         for _, v := range vs {
             w.Header().Add(k,v);
         }
     }
     w.WriteHeader(rb.Status);
-    a.Send(rb.Output,w)
+    if rb.Output != nil {
+        a.Send(rb.Output,w)
+    }
     return nil;
 }

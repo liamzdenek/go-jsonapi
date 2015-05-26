@@ -43,7 +43,7 @@ func(l *RelationshipBehaviorFromFieldToId) LinkId(s Session, srcR, dstR *Resourc
 
 func(l *RelationshipBehaviorFromFieldToId) VerifyLinks(s Session, ider Ider, linkages *OutputLinkage) error {
     a := s.GetData().API;
-    a.Logger.Printf("Verify links %v\n",linkages);
+    a.Logger.Printf("Verify links %#v\n",linkages);
     isEmpty := linkages == nil || linkages.Links == nil || len(linkages.Links) == 0;
     if(isEmpty && l.Required == Required) {
         return errors.New("Linkage is empty but is required");
@@ -55,15 +55,15 @@ func(l *RelationshipBehaviorFromFieldToId) VerifyLinks(s Session, ider Ider, lin
 }
 func(l *RelationshipBehaviorFromFieldToId) PreSave(s Session, ider Ider, linkages *OutputLinkage) error {
     a := s.GetData().API;
+    a.Logger.Printf("PreSave\n");
     if(len(linkages.Links) == 0 || linkages.Links[0] == nil) {
-        return errors.New("RelationshipBehaviorFromFieldToId requires id to be provided for new records");
+        return errors.New("RelationshipBehaviorFromFieldToId requires the relationship to be provided when modifying this relationship");
     }
     str, err := strconv.Atoi(linkages.Links[0].Id);
     if err != nil {
         return err;
     }
     SetField(l.SrcFieldName, ider, str);
-    a.Logger.Printf("Pre create\n");
     return nil;
 }
 func(l *RelationshipBehaviorFromFieldToId) PostSave(s Session, ider Ider, linkages *OutputLinkage) error {

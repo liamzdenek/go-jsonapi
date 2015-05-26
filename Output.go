@@ -27,10 +27,12 @@ func NewOutput(m interface{}) *Output {
 }
 
 func (o *Output) Prepare() {
-    if(o.Data.Included == nil) {
-        o.Data.Included = o.Included.Included;
+    if(o.Data != nil) {
+        if(o.Data.Included == nil) {
+            o.Data.Included = o.Included.Included;
+        }
+        o.Data.Prepare();
     }
-    o.Data.Prepare();
 }
 
 func (o *Output) SetPaginator(r *http.Request, p *Paginator) {

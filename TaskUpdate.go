@@ -54,11 +54,21 @@ func(t *TaskUpdate) Work(a *API, s Session, tctx *TaskContext, r *http.Request) 
     }
 
     for _,linkage := range linkages.Linkages {
-        fmt.Printf("LINKAGES: %#v\n", linkage);
         rel := a.RM.GetRelationship(resource_str, linkage.LinkName);
         err := rel.B.VerifyLinks(s, ider, linkage);
         if err != nil {
-            
+            // TODO: A server MUST return 403 Forbidden in response to an unsupported request to update a resource or relationship. -- i don't know if this is the right behavior for this condition
+            Reply(NewResponderBaseErrors(403, errors.New(fmt.Sprintf("Verification of new links for relationship %s failed: %s", linkage.LinkName, err))));
+        }
+    }
+
+    for _,linkage := range linkages.Linkages {
+        rel := a.RM.GetRelationship(resource_str, linkage.LinkName);
+        a.Logger.Printf("CALLING PRE SAVE %s %s\n", resource_str, linkage.LinkName);
+        err := rel.B.PreSave(s, ider, linkage);
+        if err != nil {
+            // TODO: A server MUST return 403 Forbidden in response to an unsupported request to update a resource or relationship. -- i don't know if this is the right behavior for this condition
+            Reply(NewResponderBaseErrors(400, errors.New(fmt.Sprintf("Could not PreSave relationship %s: %s", linkage.LinkName, err))));
         }
     }
 
@@ -67,6 +77,16 @@ func(t *TaskUpdate) Work(a *API, s Session, tctx *TaskContext, r *http.Request) 
         Reply(NewResponderBaseErrors(500, errors.New(fmt.Sprintf("Could not update resource: %s", err))));
     }
     
+    a.Logger.Printf("UPDATE WAS CALLED\n");
+    for _,linkage := range linkages.Linkages {
+        rel := a.RM.GetRelationship(resource_str, linkage.LinkName);
+        err := rel.B.PostSave(s, ider, linkage);
+        if err != nil {
+            // TODO: A server MUST return 403 Forbidden in response to an unsupported request to update a resource or relationship. -- i don't know if this is the right behavior for this condition
+            Reply(NewResponderBaseErrors(400, errors.New(fmt.Sprintf("Could not PostSave relationship %s: %s", linkage.LinkName, err))));
+        }
+    }
+
     // TODO: the spec requires a 200 option with the requested resource if we modified it internally... no idea how to pull off that one
     Reply(NewResponderBase(202, nil));
 }
