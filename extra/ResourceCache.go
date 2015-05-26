@@ -101,10 +101,14 @@ func(rc *ResourceCache) Delete(a *API, s Session, id string) error {
     return rc.Resource.Delete(a,s,id);
 }
 
-func(rc *ResourceCache) ParseJSON(a *API, s Session, raw []byte) (Ider, *string, *string, *OutputLinkageSet, error) {
-    return rc.Resource.ParseJSON(a, s, raw);
+func(rc *ResourceCache) ParseJSON(a *API, s Session, idersrc Ider, raw []byte) (Ider, *string, *string, *OutputLinkageSet, error) {
+    return rc.Resource.ParseJSON(a, s, idersrc, raw);
 }
 
 func(rc *ResourceCache) Create(a *API, s Session, ider Ider, id *string) (RecordCreatedStatus, error) {
     return rc.Resource.Create(a,s, ider, id);
+}
+
+func(rc *ResourceCache) Update(a *API, s Session, id string, ider Ider) error {
+    panic("NOT IMPLEMENTED");
 }

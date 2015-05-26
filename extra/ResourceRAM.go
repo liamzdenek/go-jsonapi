@@ -7,6 +7,7 @@ import (
     . ".."
 );
 
+// TODO: this resource should not return the exact same pointer every time... failure semantics mean that we might accidentally push modifications that were refused due to the same data existing both here and being returned from here
 type ResourceRAM struct{
     Type reflect.Type
     Storage map[string]Ider
@@ -65,18 +66,30 @@ func(rr *ResourceRAM) Delete(a *API, s Session, id string) error {
     return nil;
 }
 
-func(rr *ResourceRAM) ParseJSON(a *API, s Session, raw []byte) (Ider, *string, *string, *OutputLinkageSet, error) {
-    return ParseJSONHelper(raw, rr.Type);
+func(rr *ResourceRAM) ParseJSON(a *API, s Session, ider Ider, raw []byte) (Ider, *string, *string, *OutputLinkageSet, error) {
+    return ParseJSONHelper(ider, raw, rr.Type);
 }
 
 func(rr *ResourceRAM) Create(a *API, s Session, ider Ider, id *string) (RecordCreatedStatus, error) {
     if(id == nil) {
         return StatusFailed, errors.New("ResourceRAM requires specifying an ID for Create() requests."); // TODO: it should
     }
+    if _, exists := rr.Storage[*id]; exists {
+        return StatusFailed, errors.New("The provided ID already exists"); // TODO: it should
+    }
     SetId(ider, *id);
     a.Logger.Printf("Setting %s = %#v\n", GetId(ider), ider);
     rr.Storage[GetId(ider)] = ider;
     return StatusCreated, nil;
+}
+
+func(rr *ResourceRAM) Update(a *API, s Session, id string, ider Ider) error {
+    err := SetId(ider, id);
+    if err != nil {
+        return err;
+    }
+    rr.Storage[GetId(ider)] = ider;
+    return nil
 }
 
 func (rr *ResourceRAM) GetTableFieldFromStructField(structstr string) (string, error) {

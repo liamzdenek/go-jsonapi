@@ -28,8 +28,10 @@ func SetField(field string, i interface{}, v interface{}) {
     reflect.Indirect(reflect.ValueOf(i)).FieldByName(field).Set(reflect.ValueOf(v));
 }
 
-func ParseJSONHelper(raw []byte, t reflect.Type) (Ider, *string, *string, *OutputLinkageSet, error) {
-    v := reflect.New(t).Interface();
+func ParseJSONHelper(v Ider, raw []byte, t reflect.Type) (Ider, *string, *string, *OutputLinkageSet, error) {
+    if v == nil {
+        v = reflect.New(t).Interface().(Ider);
+    }
     rp := NewRecordParserSimple(v);
     err := json.Unmarshal(raw, rp);
     if(err != nil) {

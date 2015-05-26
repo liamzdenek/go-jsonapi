@@ -59,10 +59,14 @@ func(rp *ResourcePaginatorSimple) Delete(a *API, s Session, id string) error {
     return rp.Parent.Delete(a,s,id);
 }
 
-func(rp *ResourcePaginatorSimple) ParseJSON(a *API, s Session, raw []byte) (Ider, *string, *string, *OutputLinkageSet, error) {
-    return rp.Parent.ParseJSON(a, s,raw);
+func(rp *ResourcePaginatorSimple) ParseJSON(a *API, s Session, ider Ider, raw []byte) (Ider, *string, *string, *OutputLinkageSet, error) {
+    return rp.Parent.ParseJSON(a, s, ider, raw);
 }
 
 func(rp *ResourcePaginatorSimple) Create(a *API, s Session, ider Ider, id *string) (RecordCreatedStatus, error) {
     return rp.Parent.Create(a,s, ider, id);
+}
+
+func(rp *ResourcePaginatorSimple) Update(a *API, s Session, id string, ider Ider) error {
+    panic("NOT IMPLEMENTED");
 }

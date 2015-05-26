@@ -160,10 +160,15 @@ func(rr *RequestResolver) HandlerCreate(a *API, w http.ResponseWriter, r *http.R
     );
     wctx.Push(creater);
     creater.Wait();
-
-    return;
 }
 
 func(rr *RequestResolver) HandlerUpdate(a *API, w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-
+    wctx := NewTaskContext(a,r,w,a.GetNewSession());
+    defer wctx.Cleanup();
+    creater := NewTaskUpdate(
+        ps.ByName("resource"),
+        ps.ByName("id"),
+    );
+    wctx.Push(creater);
+    creater.Wait();
 }

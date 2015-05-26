@@ -30,7 +30,7 @@ func(t *TaskCreate) Work(a *API, s Session, tctx *TaskContext, r *http.Request) 
         panic(NewResponderError(errors.New(fmt.Sprintf("Body could not be parsed: %v\n", err))));
     }
 
-    ider,id,rtype,linkages,err := resource.R.ParseJSON(a,s,body);
+    ider,id,rtype,linkages,err := resource.R.ParseJSON(a,s,nil,body);
     if err != nil {
         Reply(NewResponderRecordCreate(s, resource_str, nil, StatusFailed, errors.New(fmt.Sprintf("ParseJSON threw error: %s", err))));
     }

@@ -132,8 +132,8 @@ func(sr *ResourceSQL) Delete(a *API, s Session, id string) error {
 }
 
 
-func(sr *ResourceSQL) ParseJSON(a *API, s Session, raw []byte) (Ider, *string, *string, *OutputLinkageSet, error) {
-    return ParseJSONHelper(raw, sr.Type);
+func(sr *ResourceSQL) ParseJSON(a *API, s Session, ider Ider, raw []byte) (Ider, *string, *string, *OutputLinkageSet, error) {
+    return ParseJSONHelper(ider, raw, sr.Type);
 }
 
 func(sr *ResourceSQL) Create(a *API, s Session, ider Ider, id *string) (RecordCreatedStatus, error) {
@@ -148,6 +148,10 @@ func(sr *ResourceSQL) Create(a *API, s Session, ider Ider, id *string) (RecordCr
     }
     err = meddler.Insert(tx, sr.Table, ider)
     return StatusCreated, err;
+}
+
+func(sr *ResourceSQL) Update(a *API, s Session, id string, ider Ider) error {
+    panic("NOT IMPLEMENTED");
 }
 
 func (sr *ResourceSQL) ConvertInterfaceSliceToIderSlice(src interface{}) []Ider {

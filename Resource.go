@@ -9,7 +9,7 @@ type Resource interface {
     // does not easily support this right now
     //FindManyByFieldWithManyValues(field string, []value string) ([]Ider, error)
     Delete(a *API, s Session, id string) error
-    ParseJSON(a *API, s Session, raw []byte) (ider Ider, id *string, rtype *string, links *OutputLinkageSet, err error)
+    ParseJSON(a *API, s Session, ider_src Ider, raw []byte) (ider Ider, id *string, rtype *string, links *OutputLinkageSet, err error)
     Create(a *API, s Session, ider Ider, id *string) (status RecordCreatedStatus, err error)
-    //Update(resource_str, id string, ) error
+    Update(a *API, s Session, id string, ider Ider) error
 }
