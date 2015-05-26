@@ -7,7 +7,6 @@ type Output struct { // responsible for the root node
     Links *OutputPaginator `json:"links,omitempty"`
     Included *OutputIncluded `json:"included,omitempty"`
     Errors []OutputError `json:"errors,omitempty"`
-    Request *http.Request `json:"-"`
     Meta interface{} `json:"meta,omitempty"`
 }
 
@@ -19,11 +18,10 @@ type OutputPaginator struct {
     Last string `json:"last,omitempty"`
 }
 
-func NewOutput(r *http.Request, m interface{}) *Output {
+func NewOutput(m interface{}) *Output {
     return &Output{
         Data: &OutputData{},
         Included: NewOutputIncluded(&[]Record{}),
-        Request: r,
         Meta: m,
     }
 }
@@ -35,8 +33,7 @@ func (o *Output) Prepare() {
     o.Data.Prepare();
 }
 
-func (o *Output) SetPaginator(p *Paginator) {
-    r := o.Request;
+func (o *Output) SetPaginator(r *http.Request, p *Paginator) {
     if p == nil || p.MaxPerPage == 0 {
         return;
     }

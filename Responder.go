@@ -3,5 +3,5 @@ package jsonapi;
 import ("net/http");
 
 type Responder interface{
-    Respond(*API, http.ResponseWriter, *http.Request) error
+    Respond(*API, Session, http.ResponseWriter, *http.Request) error
 }

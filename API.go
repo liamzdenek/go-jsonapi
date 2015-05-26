@@ -73,27 +73,27 @@ func(a *API) ServeHTTP(w http.ResponseWriter, r *http.Request) {
     a.Router.ServeHTTP(w, r);
 }
 
-func(a *API) CatchResponses(w http.ResponseWriter, req *http.Request, raw interface{}) (was_handled bool, should_print_stack bool){
+func(a *API) CatchResponses(s Session, w http.ResponseWriter, req *http.Request, raw interface{}) (was_handled bool, should_print_stack bool){
     a.Logger.Printf("Caught panic: %#v\n", raw);
     should_print_stack = true;
     switch r := raw.(type) {
     case Responder:
         should_print_stack = false;
         a.Logger.Printf("Respnding\n");
-        r.Respond(a,w,req);
+        r.Respond(a,s,w,req);
     case *Output:
         should_print_stack = false;
         a.Logger.Printf("Responder output\n");
-        re := NewResponderOutput(r);
-        re.Respond(a,w,req);
+        rb := NewResponderBase(200,r);
+        rb.Respond(a,s,w,req);
     case error:
         a.Logger.Printf("Panic(error) is deprecated as it is always ambiguous. You probably intend to use panic(NewResponderError()) instead\n");
         re := NewResponderError(r);
-        re.Respond(a,w,req);
+        re.Respond(a,s,w,req);
     case string:
         a.Logger.Printf("Panic(string) is deprecated as it is always ambiguous. You probably intend to use panic(NewResponderError()) instead\n");
         re := NewResponderError(errors.New(r));
-        re.Respond(a,w,req);
+        re.Respond(a,s,w,req);
     default:
         w.Write([]byte(fmt.Sprintf("Internal error handling request. Improper object sent to response method: %#v\n", r)));
         return false, true;

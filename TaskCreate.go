@@ -32,19 +32,19 @@ func(t *TaskCreate) Work(a *API, s Session, tctx *TaskContext, r *http.Request) 
 
     ider,id,rtype,linkages,err := resource.R.ParseJSON(a,s,nil,body);
     if err != nil {
-        Reply(NewResponderRecordCreate(s, resource_str, nil, StatusFailed, errors.New(fmt.Sprintf("ParseJSON threw error: %s", err))));
+        Reply(NewResponderRecordCreate(resource_str, nil, StatusFailed, errors.New(fmt.Sprintf("ParseJSON threw error: %s", err))));
     }
 
     if(ider == nil) {
-        Reply(NewResponderRecordCreate(s, resource_str, nil, StatusFailed, errors.New("No error was thrown but ParseJSON did not return a valid object")));
+        Reply(NewResponderRecordCreate(resource_str, nil, StatusFailed, errors.New("No error was thrown but ParseJSON did not return a valid object")));
     }
     if(rtype != nil && *rtype != resource_str) {
-        Reply(NewResponderRecordCreate(s, resource_str, nil, StatusFailed, errors.New(fmt.Sprintf("This is resource \"%s\" but the new object includes type:\"%s\"", resource_str, rtype))));
+        Reply(NewResponderRecordCreate(resource_str, nil, StatusFailed, errors.New(fmt.Sprintf("This is resource \"%s\" but the new object includes type:\"%s\"", resource_str, rtype))));
     }
     if(id != nil && *id != "") {
         err = SetId(ider, *id);
         if(err != nil) {
-            Reply(NewResponderRecordCreate(s, resource_str, nil, StatusFailed, errors.New(fmt.Sprintf("SetId failed:\"%s\"", err))));
+            Reply(NewResponderRecordCreate(resource_str, nil, StatusFailed, errors.New(fmt.Sprintf("SetId failed:\"%s\"", err))));
         }
     }
 
@@ -63,7 +63,7 @@ func(t *TaskCreate) Work(a *API, s Session, tctx *TaskContext, r *http.Request) 
         rel.A.Authenticate(a,s,"relationship.Create."+rel.SrcR+"."+rel.Name+"."+rel.DstR, "", r);
         err := rel.B.VerifyLinks(a,s,ider,linkage);
         if err != nil {
-            Reply(NewResponderRecordCreate(s,resource_str, nil, StatusFailed, err));
+            Reply(NewResponderRecordCreate(resource_str, nil, StatusFailed, err));
         }
     }
     // trigger the pre-creates so the linkages have a chance to modify
@@ -72,7 +72,7 @@ func(t *TaskCreate) Work(a *API, s Session, tctx *TaskContext, r *http.Request) 
         rel := a.RM.GetRelationship(resource_str, linkage.LinkName)
         err := rel.B.PreCreate(a,s,ider,linkage);
         if err != nil {
-            Reply(NewResponderRecordCreate(s,resource_str, nil, StatusFailed, err));
+            Reply(NewResponderRecordCreate(resource_str, nil, StatusFailed, err));
         }
     }
 
@@ -82,11 +82,11 @@ func(t *TaskCreate) Work(a *API, s Session, tctx *TaskContext, r *http.Request) 
             rel := a.RM.GetRelationship(resource_str, linkage.LinkName)
             err = rel.B.PostCreate(a,s,ider,linkage);
             if err != nil {
-                Reply(NewResponderRecordCreate(s,resource_str, nil, StatusFailed, err));
+                Reply(NewResponderRecordCreate(resource_str, nil, StatusFailed, err));
             }
         }
     }
-    Reply(NewResponderRecordCreate(s,resource_str, ider, createdStatus, err));
+    Reply(NewResponderRecordCreate(resource_str, ider, createdStatus, err));
 }
 
 func(t *TaskCreate) ResponseWorker(has_paniced bool) {

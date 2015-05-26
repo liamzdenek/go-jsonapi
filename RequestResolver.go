@@ -22,10 +22,10 @@ func NewRequestResolver() *RequestResolver {
 func(rr *RequestResolver) HandlerRoot(a *API, w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
     defer func() {
         if raw := recover(); raw != nil {
-            a.CatchResponses(w,r,raw);
+            a.CatchResponses(a.GetNewSession(),w,r,raw);
         }
     }();
-    o := NewOutput(r,a.Meta);
+    o := NewOutput(a.Meta);
     Reply(o);
 }
 /************************************************

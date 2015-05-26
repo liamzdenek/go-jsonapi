@@ -69,7 +69,7 @@ func (w *TaskAttachIncluded) Work(a *API, s Session, ctx *TaskContext, r *http.R
         }
     }
 
-    res := NewOutput(r,nil);
+    res := NewOutput(nil);
     if w.OutputType == OutputTypeResources {
         a.Logger.Printf("Primary data is a resource");
         res.Data = NewOutputDataResources(parent.IsSingle, output_primary);
@@ -80,7 +80,7 @@ func (w *TaskAttachIncluded) Work(a *API, s Session, ctx *TaskContext, r *http.R
 
     a.Logger.Printf("PAGINATOR: %#v\n", parent.Paginator);
 
-    res.SetPaginator(parent.Paginator);
+    res.SetPaginator(r,parent.Paginator);
 
     res.Included.Included = &output_included;
     w.ActualOutput = res;

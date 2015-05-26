@@ -19,7 +19,7 @@ func NewTaskContext(a *API, r *http.Request, w http.ResponseWriter, session Sess
                 defer func() {
                     if raw := recover(); !has_paniced && raw != nil {
                         has_paniced = true;
-                        _, should_print_stack := a.CatchResponses(w,r,raw);
+                        _, should_print_stack := a.CatchResponses(session,w,r,raw);
                         if(should_print_stack) {
                             const size = 64 << 10
                             buf := make([]byte, size)
