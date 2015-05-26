@@ -30,7 +30,7 @@ func(t *TaskCreate) Work(a *API, s Session, tctx *TaskContext, r *http.Request) 
         panic(NewResponderError(errors.New(fmt.Sprintf("Body could not be parsed: %v\n", err))));
     }
 
-    ider,id,rtype,linkages,err := resource.R.ParseJSON(a,s,nil,body);
+    ider,id,rtype,linkages,err := resource.R.ParseJSON(s,nil,body);
     if err != nil {
         Reply(NewResponderRecordCreate(resource_str, nil, StatusFailed, errors.New(fmt.Sprintf("ParseJSON threw error: %s", err))));
     }
@@ -76,7 +76,7 @@ func(t *TaskCreate) Work(a *API, s Session, tctx *TaskContext, r *http.Request) 
         }
     }
 
-    createdStatus, err := resource.R.Create(a,s,ider,id);
+    createdStatus, err := resource.R.Create(s,ider,id);
     if(err == nil && ider != nil && createdStatus & StatusCreated != 0) {
         for _,linkage := range linkages.Linkages {
             rel := a.RM.GetRelationship(resource_str, linkage.LinkName)

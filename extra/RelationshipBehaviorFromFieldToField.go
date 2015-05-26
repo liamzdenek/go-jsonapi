@@ -33,7 +33,7 @@ func(l *RelationshipBehaviorFromFieldToField) LinkIder(a *API, s Session, srcR, 
     //dstrmr := rmr.RM.GetResource(rmr.DstR);
     dst = []Ider{}
     for _, id := range ids {
-        newdst, err := dstR.R.FindManyByField(a, s, l.DstFieldName, id);
+        newdst, err := dstR.R.FindManyByField(s, RequestParams{}, l.DstFieldName, id);
         if(err != nil) {
             a.Logger.Printf("RelationshipBehaviorFromFieldToField got an error from FindManyByField for %s: %s", dstR.Name, err);
         }

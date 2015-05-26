@@ -30,7 +30,7 @@ func(rmr *ResourceManagerRelationship) ResolveId(a *API, s Session, r *http.Requ
     }
     a.Logger.Printf("SHOULD FETCH LINK: %s %b\n\n", rmr.Name, include.ShouldFetch(rmr.Name));
     if(include.ShouldFetch(rmr.Name)) {
-        linkdata, err := resource.R.FindMany(a, s, nil, ids);
+        linkdata, err := resource.R.FindMany(s, RequestParams{}, ids);
         Check(err);
         for _, link := range linkdata {
             a.Logger.Printf("Passing thru child include: %#v\n\n\n", include);

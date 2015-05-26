@@ -25,14 +25,14 @@ func(t *TaskUpdate) Work(a *API, s Session, tctx *TaskContext, r *http.Request) 
 
     resource.A.Authenticate(a,s,"resource.Update."+resource_str, "", r);
 
-    ider, err := resource.R.FindOne(a,s,t.Id);
+    ider, err := resource.R.FindOne(s,t.Id);
 
     body, err := ioutil.ReadAll(r.Body);
     if err != nil {
         panic(NewResponderError(errors.New(fmt.Sprintf("Body could not be parsed: %v\n", err))));
     }
 
-    ider,id,rtype,linkages,err := resource.R.ParseJSON(a,s,ider,body);
+    ider,id,rtype,linkages,err := resource.R.ParseJSON(s,ider,body);
     fmt.Printf("LINKAGES: %#v\n", linkages);
     if err != nil {
         Reply(NewResponderError(errors.New(fmt.Sprintf("ParseJSON threw error: %s", err))));
@@ -47,7 +47,7 @@ func(t *TaskUpdate) Work(a *API, s Session, tctx *TaskContext, r *http.Request) 
         Reply(NewResponderError(errors.New(fmt.Sprintf("The ID provided \"%s\" does not match the ID provided in the url \"%s\"", id, t.Id))));
     }
 
-    err = resource.R.Update(a,s,t.Id,ider);
+    err = resource.R.Update(s,t.Id,ider);
     if(err != nil) {
         Reply(NewResponderError(errors.New(fmt.Sprintf("Could not update resource: %s", err))));
     }

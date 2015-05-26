@@ -49,9 +49,10 @@ func(rc *ResourceCache) GenCacheKey(args ...string) (res string) {
     return
 }
 
-func(rc *ResourceCache) CacheFind(a *API, s Session, hkey string) (res *CacheRecord, err error) {
+func(rc *ResourceCache) CacheFind(s Session, hkey string) (res *CacheRecord, err error) {
+    a := s.GetData().API;
     r := Catch(func() {
-        ider, err := rc.Cache.FindOne(a, s, hkey);
+        ider, err := rc.Cache.FindOne(s, hkey);
         Check(err);
         a.Logger.Printf("CACHE OUTPUT: %v\n", ider);
         res = ider.(*CacheRecord);
@@ -62,53 +63,56 @@ func(rc *ResourceCache) CacheFind(a *API, s Session, hkey string) (res *CacheRec
     return;
 }
 
-func(rc *ResourceCache) CacheCreate(a *API, s Session, hkey string, r *CacheRecord) {
+func(rc *ResourceCache) CacheCreate(s Session, hkey string, r *CacheRecord) {
+    a := s.GetData().API;
     a.Logger.Printf("PUTTING INTO CACHE: %s - %#v\n", hkey, r);
-    rc.Cache.Create(a,s,r,&hkey)
+    rc.Cache.Create(s,r,&hkey)
 }
 
-func(rc *ResourceCache) FindDefault(a *API, s Session, p *Paginator) ([]Ider, error) {
+func(rc *ResourceCache) FindDefault(s Session, rp RequestParams) ([]Ider, error) {
     panic("TODO");
 }
 
-func(rc *ResourceCache) FindOne(a *API, s Session, id string) (Ider, error) {
+func(rc *ResourceCache) FindOne(s Session, id string) (Ider, error) {
+    a := s.GetData().API;
     hkey := string(rc.GenCacheKey("FindOne", id));
     a.Logger.Printf("CHECKING CACHE\n");
-    cacherecord, err := rc.CacheFind(a,s,hkey);
+    cacherecord, err := rc.CacheFind(s,hkey);
     if err == nil && cacherecord != nil {
         a.Logger.Printf("CACHE SUCCESS %#v\n", cacherecord);
         return cacherecord.Iders[0], nil;
     }
     a.Logger.Printf("CACHE FAILURE -- %s\n", err);
-    ider, err := rc.Resource.FindOne(a,s,id);
+    ider, err := rc.Resource.FindOne(s,id);
     if err == nil && ider != nil {
-        rc.CacheCreate(a,s,hkey, &CacheRecord{
+        rc.CacheCreate(s,hkey, &CacheRecord{
             Iders: []Ider{ider},
         });
     }
     return ider, err;
 }
 
-func(rc *ResourceCache) FindMany(a *API, s Session, p *Paginator, ids []string) ([]Ider, error) {
-    return rc.Resource.FindMany(a, s,p, ids);
+func(rc *ResourceCache) FindMany(s Session, rp RequestParams, ids []string) ([]Ider, error) {
+    return rc.Resource.FindMany(s,rp, ids);
 }
 
-func(rc *ResourceCache) FindManyByField(a *API, s Session, field string, value string) ([]Ider, error) {
-    return rc.Resource.FindManyByField(a,s, field, value);
+// TODO: this function should be cached
+func(rc *ResourceCache) FindManyByField(s Session, rp RequestParams, field string, value string) ([]Ider, error) {
+    return rc.Resource.FindManyByField(s,rp, field, value);
 }
 
-func(rc *ResourceCache) Delete(a *API, s Session, id string) error {
-    return rc.Resource.Delete(a,s,id);
+func(rc *ResourceCache) Delete(s Session, id string) error {
+    return rc.Resource.Delete(s,id);
 }
 
-func(rc *ResourceCache) ParseJSON(a *API, s Session, idersrc Ider, raw []byte) (Ider, *string, *string, *OutputLinkageSet, error) {
-    return rc.Resource.ParseJSON(a, s, idersrc, raw);
+func(rc *ResourceCache) ParseJSON(s Session, idersrc Ider, raw []byte) (Ider, *string, *string, *OutputLinkageSet, error) {
+    return rc.Resource.ParseJSON(s, idersrc, raw);
 }
 
-func(rc *ResourceCache) Create(a *API, s Session, ider Ider, id *string) (RecordCreatedStatus, error) {
-    return rc.Resource.Create(a,s, ider, id);
+func(rc *ResourceCache) Create(s Session, ider Ider, id *string) (RecordCreatedStatus, error) {
+    return rc.Resource.Create(s, ider, id);
 }
 
-func(rc *ResourceCache) Update(a *API, s Session, id string, ider Ider) error {
+func(rc *ResourceCache) Update(s Session, id string, ider Ider) error {
     panic("NOT IMPLEMENTED");
 }

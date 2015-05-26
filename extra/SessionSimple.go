@@ -12,6 +12,7 @@ func init() {
 }
 
 type SessionSimple struct {
+    Data *SessionData
     Transactions map[*sql.DB]*sql.Tx;
     A *API
 }
@@ -20,6 +21,14 @@ func NewSessionSimple() *SessionSimple {
     return &SessionSimple{
         Transactions: make(map[*sql.DB]*sql.Tx),
     }
+}
+
+func (ctx *SessionSimple) SetData(d *SessionData) {
+    ctx.Data = d;
+}
+
+func (ctx *SessionSimple) GetData() *SessionData {
+    return ctx.Data;
 }
 
 func (ctx *SessionSimple) Begin(a *API) error {

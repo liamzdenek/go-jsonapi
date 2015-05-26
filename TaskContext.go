@@ -7,6 +7,10 @@ type TaskContext struct {
 }
 
 func NewTaskContext(a *API, r *http.Request, w http.ResponseWriter, session Session) *TaskContext {
+    session.SetData(&SessionData{
+        API: a,
+        Request: r,
+    });
     res := &TaskContext{
         Context: make(chan Task, 10), // the buffer is to prevent some context switching when a lot of tasks are pushed at once
     };

@@ -50,6 +50,6 @@ func NewResponderRecordCreate(resource_str string, ider Ider, createdStatus Reco
     }
 }
 
-func NewResponderResourceSuccessfullyDeleted() *ResponderResourceSuccessfullyDeleted {
+func NewResponderResourceSuccessfullyDeleted() *ResponderBase {
     return NewResponderBase(204, nil);
 }
