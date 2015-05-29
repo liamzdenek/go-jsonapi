@@ -2,6 +2,7 @@ package jsonapie;
 
 import(
     . ".."
+    "errors"
 );
 
 func init() {
@@ -15,6 +16,7 @@ func init() {
 type RelationshipBehaviorFromFieldToField struct {
     SrcFieldName string
     DstFieldName string
+    Required RelationshipRequirement
     FromFieldToId *RelationshipBehaviorFromFieldToId
 }
 
@@ -22,6 +24,7 @@ func NewRelationshipBehaviorFromFieldToField(srcFieldName, dstFieldName string, 
     return &RelationshipBehaviorFromFieldToField{
         SrcFieldName: srcFieldName,
         DstFieldName: dstFieldName,
+        Required: required,
         FromFieldToId: NewRelationshipBehaviorFromFieldToId(srcFieldName, required),
     }
 }
@@ -44,14 +47,22 @@ func(l *RelationshipBehaviorFromFieldToField) LinkIder(s Session, srcR, dstR *Re
 }
 
 func(l *RelationshipBehaviorFromFieldToField) VerifyLinks(s Session, ider Ider, linkages *OutputLinkage) error {
-    panic("TODO");
-    return l.FromFieldToId.VerifyLinks(s,ider,linkages);
+    isEmpty := linkages == nil || linkages.Links == nil || len(linkages.Links) == 0;
+    if(isEmpty && l.Required == Required) {
+        return errors.New("Linkage is empty but is required");
+    }
+    //return l.FromFieldToId.VerifyLinks(s,ider,linkages);
 }
 func(l *RelationshipBehaviorFromFieldToField) PreSave(s Session, ider Ider, linkages *OutputLinkage) error {
-    panic("TODO");
-    return l.FromFieldToId.PreSave(s,ider,linkages);
+    return nil; // no PreSave as we need Ider to be flushed to DB before we can use its ID
 }
 func(l *RelationshipBehaviorFromFieldToField) PostSave(s Session, ider Ider, linkages *OutputLinkage) error {
-    panic("TODO");
-    return l.FromFieldToId.PostSave(s,ider,linkages);
+    id := GetId(ider);
+    a := s.GetData().API;
+    resource := a.RM.GetResource(l.DstFieldName);
+    //resource.B.FindMany(s, nil, 
+    // retrieve current list of links
+    // calculate differences
+    // for -- remove ones that shouldn't be there anymore
+    // for -- add ones that should be there now
 }
