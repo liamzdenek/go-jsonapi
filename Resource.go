@@ -6,7 +6,7 @@ package jsonapi;
 
 type Resource interface {
     //FindDefault(s Session, rp RequestParams) ([]Ider, error)
-    //FindOne(s Session, id string) (Ider, error)
+    FindOne(r Request, id string) (*Record, error)
     //FindMany(s Session, rp RequestParams, ids []string) ([]Ider, error)
     //FindManyByField(s Session, rp RequestParams, field, value string) ([]Ider, error)
     // TODO: this iss necessary for optimizations but the backend

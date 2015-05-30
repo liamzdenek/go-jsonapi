@@ -11,11 +11,11 @@ type LoggerDefault struct{
     Logger *log.Logger
 }
 
-func NewLoggerDefault(output io.Writer) LoggerDefault {
+func NewLoggerDefault(output io.Writer) *LoggerDefault {
     if output == nil {
         output = os.Stdout;
     }
-    return LoggerDefault{
+    return &LoggerDefault{
         Output: output,
         Logger: log.New(output,"",log.LstdFlags | log.Lmicroseconds | log.Lshortfile),
     }

@@ -1,2 +1,28 @@
 package jsonapi;
 
+/**
+Check() will call panic(e) if the error provided is non-nil
+*/
+func Check(e error) {
+    if e != nil {
+        panic(e);
+    }
+}
+
+/**
+Reply() is just an alias for panic() -- it is syntax sugar in a few places.
+*/
+func Reply(a interface{}) {
+    panic(a);
+}
+
+/**
+Catch() functions similarly to most other languages try-catch... If a panic is thrown within the provided lambda, it will be intercepted and returned as an argument. If no error occurs, the return is nil.
+*/
+func Catch(f func()) (r interface{}) {
+    defer func() {
+        r = recover();
+    }();
+    f();
+    return
+}

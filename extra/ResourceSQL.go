@@ -1,23 +1,12 @@
 package jsonapie;
 
-import ("database/sql");
-
-type ResourceSQL struct {
-
-}
-
-func NewResourceSQL(db *sql.DB, table string, t interface{}) *ResourceSQL {
-    return &ResourceSQL{}
-}
-
-/*
 import (
     "database/sql";
     "github.com/russross/meddler";
     "reflect"
-    "strings"
-    "fmt"
-    "errors"
+    //"strings"
+    //"fmt"
+    //"errors"
     . ".."
 );
 
@@ -34,19 +23,14 @@ func init() {
     _ = t;
 }
 
-func NewResourceSQL(db *sql.DB, table string, t Ider) *ResourceSQL {
+func NewResourceSQL(db *sql.DB, table string, t interface{}) *ResourceSQL {
     return &ResourceSQL{
         DB: db,
         Table: table,
         Type: reflect.Indirect(reflect.ValueOf(t)).Type(),
     }
 }
-
-func(sr *ResourceSQL) CastSession(s Session) SessionResourceSQL {
-    // TODO: proper error handling
-    return s.(SessionResourceSQL);
-}
-
+/*
 // TODO: update this to honor sorting
 func(sr *ResourceSQL) FindDefault(s Session, rp RequestParams) ([]Ider, error) {
     p := rp.Paginator;
@@ -76,13 +60,20 @@ func(sr *ResourceSQL) FindDefault(s Session, rp RequestParams) ([]Ider, error) {
     return sr.ConvertInterfaceSliceToIderSlice(vs), err
 ;
 }
+*/
 
-func(sr *ResourceSQL) FindOne(s Session, id string) (Ider, error) {
+func(sr *ResourceSQL) FindOne(r Request, id string) (*Record, error) {
     v := reflect.New(sr.Type).Interface();
     err := meddler.QueryRow(sr.DB, v, "SELECT * FROM "+sr.Table+" WHERE id=?", id);
-    return v.(Ider), err;
+    if err != nil {
+        return nil, err;
+    }
+    return &Record{
+        Id: id,
+        Attributes: v,
+    }, nil;
 }
-
+/*
 func(sr *ResourceSQL) FindMany(s Session, rp RequestParams, ids []string) ([]Ider, error) {
     p := rp.Paginator;
     args := []interface{}{};

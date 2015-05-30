@@ -14,6 +14,7 @@ type API struct {
     Resources map[string]APIMountedResource
     Relationships map[string]map[string]APIMountedRelationship
     Router *httprouter.Router
+    Logger Logger
 }
 
 func NewAPI() *API {
@@ -21,6 +22,7 @@ func NewAPI() *API {
         Resources: map[string]APIMountedResource{},
         Relationships: map[string]map[string]APIMountedRelationship{},
         Router: httprouter.New(),
+        Logger: NewLoggerDefault(nil),
     }
     a.InitRouter();
     return a;
@@ -73,5 +75,16 @@ func (a *API) ServeHTTP(w http.ResponseWriter,r *http.Request) {
 InitRouter() prepares the internal httprouter object with all of the desired routes. This is called automatically. You should never have to call this unless you wish to muck around with the httprouter
 */
 func (a *API) InitRouter() {
-    a.Router.GET("/:resource/:id", a.EntryFindRecordByResourceAndId);
+    a.Router.GET("/:resource/:id", a.Wrap(a.EntryFindRecordByResourceAndId));
+}
+
+/**
+Wrap() reroutes a request to a standard httprouter.Handler (? double check) and converts it to the function signature that our entrypoint functions expect. It also initializes our panic handling and our thread pool handling.
+*/
+func(a *API) Wrap(child func(r *Request)) httprouter.Handle {
+    return func(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+        req := NewRequest(a,r,w,params);
+        defer req.Defer();
+        child(req);
+    }
 }
