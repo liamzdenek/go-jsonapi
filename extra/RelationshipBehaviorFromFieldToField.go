@@ -51,18 +51,47 @@ func(l *RelationshipBehaviorFromFieldToField) VerifyLinks(s Session, ider Ider, 
     if(isEmpty && l.Required == Required) {
         return errors.New("Linkage is empty but is required");
     }
+    return nil;
     //return l.FromFieldToId.VerifyLinks(s,ider,linkages);
 }
 func(l *RelationshipBehaviorFromFieldToField) PreSave(s Session, ider Ider, linkages *OutputLinkage) error {
     return nil; // no PreSave as we need Ider to be flushed to DB before we can use its ID
 }
 func(l *RelationshipBehaviorFromFieldToField) PostSave(s Session, ider Ider, linkages *OutputLinkage) error {
+    panic("TODO");
+    /*
     id := GetId(ider);
     a := s.GetData().API;
+    wctx := s.GetData().TaskContext;
     resource := a.RM.GetResource(l.DstFieldName);
-    //resource.B.FindMany(s, nil, 
-    // retrieve current list of links
-    // calculate differences
-    // for -- remove ones that shouldn't be there anymore
-    // for -- add ones that should be there now
+    
+    // Fetch the current links
+    ii := NewIncludeInstructionsEmpty();
+    ii.Push([]string{linkages.LinkName});
+    cur_links_task := NewWorkFindLinksByRecord(ider, ii);
+    wctx.Push(cur_links_task);
+
+    // remove the ones that shouldn't be there anymore
+    cur_links := cur_links_task.GetResult().Links.GetLinkageByName(linkages.LinkName)
+    OUTER: for _,cur_link := range cur_links.Links {
+        for _,new_link := range linkages.Links {
+            if cur_link.Id == new_link.Id && cur_link.Type == new_link.Type {
+                continue OUTER;
+            }
+        }
+        // if we got to this point, the link exists in the current set but does not exist in the new set, and must be deleted
+        panic("TODO: Asked to delete linkage");
+    }
+    
+    // add ones that should be there now
+    OUTER: for _,new_link := range linkages.Links {
+        for _,cur_link := range cur_links.Links {
+            if cur_link.Id == new_link.Id && cur_link.Type == new_link.Type {
+                continue OUTER;
+            }
+        }
+        // if we got to this point, the link exists in the new set but does not exist in the old set, and must be added
+        panic("TODO: asked to add linkage");
+    }
+    */
 }

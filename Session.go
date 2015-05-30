@@ -13,4 +13,5 @@ type Session interface {
 type SessionData struct {
     API *API
     Request *http.Request
+    TaskContext *TaskContext
 }
