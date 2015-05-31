@@ -106,3 +106,10 @@ Failure() is responsible for calling the appropriate failure handles. This funct
 func(r *Request) Failure() {
     // TODO: hook it up
 }
+
+/**
+Push() is an alias for TaskContext.Push()
+*/
+func(r *Request) Push(t_list ...Task) {
+    r.TaskContext.Push(t_list...);
+}
