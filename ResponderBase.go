@@ -23,10 +23,10 @@ func NewResponderBase(status int, o *Output) *ResponderBase {
 }
 
 func NewResponderBaseErrors(code int, es ...error) *ResponderBase {
-    // TODO: replace this with code to make NewResponderErrors accept a list of OutputError to begin with
-    oes := []OutputError{}
+    // TODO: replace this with code to make NewResponderErrors accept a list of OError to begin with
+    oes := []OError{}
     for _,e := range es {
-        oes = append(oes, OutputError{
+        oes = append(oes, OError{
             Title: e.Error(),
         });
     }

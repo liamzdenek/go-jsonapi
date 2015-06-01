@@ -113,3 +113,13 @@ Push() is an alias for TaskContext.Push()
 func(r *Request) Push(t_list ...Task) {
     r.TaskContext.Push(t_list...);
 }
+
+/**
+GetBaseURL() will provide the URL + URI for any arbitrary request such that curling the output of this function is the root API endpoint for requests to this instance of this framework.
+*/
+func(r *Request) GetBaseURL() string {
+    if r.HttpRequest.URL.Scheme == "" {
+        r.HttpRequest.URL.Scheme = "http";
+    }
+    return r.HttpRequest.URL.Scheme+"://"+r.HttpRequest.Host+r.API.BaseURI;
+}

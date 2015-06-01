@@ -1,5 +1,5 @@
 package jsonapi;
 
 type Authenticator interface {
-    //Authenticate(s Session, permission, id string)
+    Authenticate(r *Request, permission, id string)
 }

@@ -7,3 +7,7 @@ type APIMountedRelationship struct {
     Relationship
     Authenticator
 }
+
+func(amr *APIMountedRelationship) Resolve(r *Request, src *Record, shouldFetch bool, include *IncludeInstructions) (*ORelationship, []*Record) {
+    return nil,nil
+}

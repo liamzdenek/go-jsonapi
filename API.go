@@ -11,18 +11,20 @@ import (
  * as well as all of the glue to step down into more specific functionality
  */
 type API struct {
-    Resources map[string]APIMountedResource
-    Relationships map[string]map[string]APIMountedRelationship
+    Resources map[string]*APIMountedResource
+    Relationships map[string]map[string]*APIMountedRelationship
     Router *httprouter.Router
+    BaseURI string
     Logger Logger
 }
 
 func NewAPI() *API {
     a := &API{
-        Resources: map[string]APIMountedResource{},
-        Relationships: map[string]map[string]APIMountedRelationship{},
+        Resources: map[string]*APIMountedResource{},
+        Relationships: map[string]map[string]*APIMountedRelationship{},
         Router: httprouter.New(),
         Logger: NewLoggerDefault(nil),
+        BaseURI: "/",
     }
     a.InitRouter();
     return a;
@@ -32,7 +34,7 @@ func NewAPI() *API {
 MountResource() will take a given Resource and make it available for requests sent to the given API. Any Resource that is accessible goes through this function
  */
 func (a *API) MountResource(name string, resource Resource, authenticator Authenticator) {
-    a.Resources[name] = APIMountedResource{
+    a.Resources[name] = &APIMountedResource{
         Name: name,
         Resource: resource,
         Authenticator: authenticator,
@@ -50,18 +52,42 @@ func (a *API) MountRelationship(name, srcResourceName, dstResourceName string, r
         panic("Destination resource "+dstResourceName+" for linkage does not exist");
     }
     if _, exists := a.Relationships[srcResourceName]; !exists {
-        a.Relationships[srcResourceName] = make(map[string]APIMountedRelationship);
+        a.Relationships[srcResourceName] = make(map[string]*APIMountedRelationship);
     }
     if(!VerifyRelationship(relationship)) {
         panic("Linkage provided cannot be used as an Id or Ider LinkageBehavior");
     }
-    a.Relationships[srcResourceName][name] = APIMountedRelationship{
+    a.Relationships[srcResourceName][name] = &APIMountedRelationship{
         SrcResourceName: srcResourceName,
         DstResourceName: dstResourceName,
         Name: name,
         Relationship: relationship,
         Authenticator: authenticator,
     };
+}
+
+/**
+GetResource() will return the resource for a given resource string. If the resource does not exist, this function returns a nil pointer.
+*/
+func(a *API) GetResource(name string) *APIMountedResource {
+    return a.Resources[name];
+}
+
+/**
+GetRelationship() will return a single relationship for a given resource string and relationship string. If the resource or relationship does not exist, this function returns a nil pointer.
+*/
+func(a *API) GetRelationship(srcR, linkName string) *APIMountedRelationship {
+    if(a.Relationships[srcR] == nil) {
+        return nil;
+    }
+    return a.Relationships[srcR][linkName]
+}
+
+/**
+GetRelationshipsByResource() will return a list of all of the relationships that the given resource string can link to.
+*/
+func(a *API) GetRelationshipsByResource(resource string) map[string]*APIMountedRelationship {
+    return a.Relationships[resource];
 }
 
 /**

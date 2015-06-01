@@ -5,7 +5,7 @@ type TaskResultRecords interface {
     GetResult() *TaskResultRecordData
 }
 type TaskResultRecordData struct {
-    Result []Record
+    Result []*Record
     Paginator *Paginator
     IsSingle bool
 }

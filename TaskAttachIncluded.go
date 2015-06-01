@@ -28,6 +28,8 @@ func NewTaskAttachIncluded(parent TaskResultRecords, ii *IncludeInstructions, ou
 
 func (w *TaskAttachIncluded) Work(r *Request) {
     parent := w.Parent.GetResult();
+    r.API.Logger.Debugf("PARENT: %v\n", parent);
+    /*
     output_primary := []Record{};
     output_included := []Record{};
     output_linkage := OutputLinkage{};
@@ -79,6 +81,7 @@ func (w *TaskAttachIncluded) Work(r *Request) {
 
     res.Included.Included = &output_included;
     w.ActualOutput = res;
+    */
 }
 
 func (w *TaskAttachIncluded) ResponseWorker(has_paniced bool) {
@@ -90,7 +93,7 @@ func (w *TaskAttachIncluded) ResponseWorker(has_paniced bool) {
 }
 
 func (w *TaskAttachIncluded) Cleanup(r *Request) {
-    r.API.Logger.Printf("TaskAttachIncluded.Cleanup\n");
+    r.API.Logger.Debugf("TaskAttachIncluded.Cleanup\n");
     close(w.Output);
 }
 

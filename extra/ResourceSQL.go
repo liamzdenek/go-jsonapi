@@ -4,8 +4,8 @@ import (
     "database/sql";
     "github.com/russross/meddler";
     "reflect"
-    //"strings"
-    //"fmt"
+    "strings"
+    "fmt"
     //"errors"
     . ".."
 );
@@ -30,11 +30,10 @@ func NewResourceSQL(db *sql.DB, table string, t interface{}) *ResourceSQL {
         Type: reflect.Indirect(reflect.ValueOf(t)).Type(),
     }
 }
-/*
 // TODO: update this to honor sorting
-func(sr *ResourceSQL) FindDefault(s Session, rp RequestParams) ([]Ider, error) {
+func(sr *ResourceSQL) FindDefault(r *Request, rp RequestParams) ([]*Record, error) {
     p := rp.Paginator;
-    a := s.GetData().API;
+    a := r.API;
     vs := reflect.New(reflect.SliceOf(reflect.PtrTo(sr.Type))).Interface()
     offset_and_limit := "";
     if p != nil && (p.MaxPerPage != 0) {
@@ -48,7 +47,7 @@ func(sr *ResourceSQL) FindDefault(s Session, rp RequestParams) ([]Ider, error) {
         sr.Table,
         offset_and_limit,
     )
-    a.Logger.Printf("Query: %#v\n", q);
+    a.Logger.Debugf("Query: %#v\n", q);
     err := meddler.QueryAll(
         sr.DB,
         vs,
@@ -57,12 +56,10 @@ func(sr *ResourceSQL) FindDefault(s Session, rp RequestParams) ([]Ider, error) {
     if(err != nil) {
         return nil, err;
     }
-    return sr.ConvertInterfaceSliceToIderSlice(vs), err
-;
+    return sr.ConvertInterfaceSliceToIderSlice(vs), err;
 }
-*/
 
-func(sr *ResourceSQL) FindOne(r Request, id string) (*Record, error) {
+func(sr *ResourceSQL) FindOne(r *Request, rp RequestParams, id string) (*Record, error) {
     v := reflect.New(sr.Type).Interface();
     err := meddler.QueryRow(sr.DB, v, "SELECT * FROM "+sr.Table+" WHERE id=?", id);
     if err != nil {
@@ -73,8 +70,7 @@ func(sr *ResourceSQL) FindOne(r Request, id string) (*Record, error) {
         Attributes: v,
     }, nil;
 }
-/*
-func(sr *ResourceSQL) FindMany(s Session, rp RequestParams, ids []string) ([]Ider, error) {
+func(sr *ResourceSQL) FindMany(r *Request, rp RequestParams, ids []string) ([]*Record, error) {
     p := rp.Paginator;
     args := []interface{}{};
     for _, id := range ids {
@@ -94,7 +90,7 @@ func(sr *ResourceSQL) FindMany(s Session, rp RequestParams, ids []string) ([]Ide
         offset_and_limit,
     );
 
-    s.GetData().API.Logger.Printf("Query: %#v\n", q);
+    r.API.Logger.Debugf("Query: %#v\n", q);
     //a.Logger.Printf("Args: %#v\n", args);
     err := meddler.QueryAll(
         sr.DB,
@@ -108,6 +104,7 @@ func(sr *ResourceSQL) FindMany(s Session, rp RequestParams, ids []string) ([]Ide
     return sr.ConvertInterfaceSliceToIderSlice(vs), err
 }
 
+/*
 func(sr *ResourceSQL) FindManyByField(s Session, rp RequestParams, field string, value string) ([]Ider, error) {
     p := rp.Paginator;
     vs := reflect.New(reflect.SliceOf(reflect.PtrTo(sr.Type))).Interface();
@@ -167,15 +164,21 @@ func(sr *ResourceSQL) Update(s Session, id string, ider Ider) error {
     panic("NOT IMPLEMENTED");
 }
 
-func (sr *ResourceSQL) ConvertInterfaceSliceToIderSlice(src interface{}) []Ider {
-    res := []Ider{};
+*/
+func (sr *ResourceSQL) ConvertInterfaceSliceToIderSlice(src interface{}) []*Record {
+    res := []*Record{};
 
     ary := reflect.Indirect(reflect.ValueOf(src));
     for i := 0; i < ary.Len(); i++ {
-        res = append(res,ary.Index(i).Interface().(Ider));
+        attr := ary.Index(i).Interface();
+        res = append(res,&Record{
+            Id: GetId(attr),
+            Attributes: attr,
+        });
     }
     return res;
 }
+/*
 
 func (sr *ResourceSQL) GetTableFieldFromStructField(structstr string) (string, error) {
     field, found := sr.Type.FieldByName(structstr);

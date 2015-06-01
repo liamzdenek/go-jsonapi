@@ -1,7 +1,5 @@
 package jsonapi;
 
-import ("net/http";);
-
 type TaskReplyer struct {
     TaskResultOutput TaskResultOutput
     Output chan chan bool

@@ -1,7 +1,5 @@
 package jsonapi;
 
-import ("net/http";);
-
 type TaskSingleLinkResolver struct {
     Context *TaskContext
     Parent TaskResultRecords
@@ -23,21 +21,21 @@ func(t *TaskSingleLinkResolver) Work(r *Request) {
     result := t.Parent.GetResult();
     ii := NewIncludeInstructionsEmpty();
     ii.Push([]string{t.Linkname});
-    data := []Record{};
+    data := []*Record{};
     parent_name := "";
     for _, res := range result.Result {
-        parent_name = res.Type();
-        work := NewWorkFindLinksByRecord(res,ii);
+        parent_name = res.Type;
+        work := NewTaskFindLinksByRecord(res,ii);
         t.Context.Push(work);
-        a.Logger.Printf("WORKRES: %#v\n", work.GetResult().Included);
-        for _, inc := range *work.GetResult().Included {
+        r.API.Logger.Debugf("WORKRES: %#v\n", work.GetResult().Included);
+        for _, inc := range work.GetResult().Included {
             data = append(data, inc);
         }
     }
     isSingle := false;
-    rel := a.RM.GetRelationship(parent_name, t.Linkname);
+    rel := r.API.GetRelationship(parent_name, t.Linkname);
     if(rel != nil) {
-        isSingle = rel.B.IsSingle()
+        isSingle = rel.Relationship.IsSingle()
     }
     t.Result = &TaskResultRecordData{
         Result: data,
