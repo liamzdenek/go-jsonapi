@@ -56,9 +56,6 @@ func(t *TaskFindByIds) Work(r *Request) {
     }
     r.API.Logger.Debugf("GOT DATA: %#v\n", data);
     for _,record := range data {
-        if(record.Type == "") {
-            record.Type = t.Resource;
-        }
         record.PrepareRelationships(r, t.II.GetChild(t.ViaLinkName));
     }
     t.Result = &TaskResultRecordData{

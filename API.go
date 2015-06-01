@@ -13,6 +13,7 @@ import (
 type API struct {
     Resources map[string]*APIMountedResource
     Relationships map[string]map[string]*APIMountedRelationship
+    DefaultResourceWrapper func(*APIMountedResource);
     Router *httprouter.Router
     BaseURI string
     Logger Logger
@@ -25,6 +26,9 @@ func NewAPI() *API {
         Router: httprouter.New(),
         Logger: NewLoggerDefault(nil),
         BaseURI: "/",
+        DefaultResourceWrapper: func(amr *APIMountedResource) {
+            amr.Resource = NewResourceTypeSetter(amr.Resource, amr.Name, true);
+        },
     }
     a.InitRouter();
     return a;
@@ -34,11 +38,15 @@ func NewAPI() *API {
 MountResource() will take a given Resource and make it available for requests sent to the given API. Any Resource that is accessible goes through this function
  */
 func (a *API) MountResource(name string, resource Resource, authenticator Authenticator) {
-    a.Resources[name] = &APIMountedResource{
+    amr := &APIMountedResource{
         Name: name,
         Resource: resource,
         Authenticator: authenticator,
     }
+    if a.DefaultResourceWrapper != nil {
+        a.DefaultResourceWrapper(amr);
+    }
+    a.Resources[name] = amr;
 }
 
 /**

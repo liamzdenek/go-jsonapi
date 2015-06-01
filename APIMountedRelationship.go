@@ -36,7 +36,6 @@ func(amr *APIMountedRelationship) ResolveRecords(r *Request, lb RelationshipLink
     included := []*Record{};
     srcResource := r.API.GetResource(amr.SrcResourceName);
     dstResource := r.API.GetResource(amr.DstResourceName);
-    r.API.Logger.Debugf("CALLING LINKRECORDS: %#v\n", record);
     records := lb.LinkRecords(r,srcResource,dstResource,record);
     for _, record := range records {
         rel.Data = append(rel.Data, record.GetResourceIdentifier());
