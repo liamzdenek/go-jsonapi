@@ -21,39 +21,21 @@ func NewTaskFindLinksByRecord(r *Record, ii *IncludeInstructions) *TaskFindLinks
 }
 
 func (t *TaskFindLinksByRecord) Work(r *Request) {
-    //a.Logger.Printf("GOT RECORD TO FIND LINKS: %#v\n", w.Record.Link);
-    //resource := r.API.GetResource(t.Record.Type);
     result := &TaskFindLinksByRecordResult{
         Relationships: &ORelationships{
             Relationships: []*ORelationship{},
-            RelatedBase: r.GetBaseURL()+t.Record.Type+"/"+t.Record.Id,
         },
         Included: []*Record{},
     }
     for linkname,relationship := range r.API.GetRelationshipsByResource(t.Record.Type) {
         shouldFetch := t.II.ShouldFetch(linkname);
         or, included := relationship.Resolve(r, t.Record, shouldFetch, t.II);
+        or.RelatedBase = r.GetBaseURL()+t.Record.Type+"/"+t.Record.Id;
+        or.RelationshipName = linkname;
         result.Relationships.Relationships = append(result.Relationships.Relationships, or);
         result.Included = append(result.Included, included...);
     }
     t.Result = result;
-    /*
-    linker := NewLinkerDefault(
-        a,
-        s,
-        a.RM.GetResource(w.Record.Type()),
-        w.Record,
-        wctx,
-        r,
-        w.II,
-    );
-    included := &[]Record{}
-    t.Result = &TaskFindLinksByRecordResult{
-        Links: linker.Link(included),
-        Included: included,
-    }
-    */
-    //a.Logger.Printf("GOT RECORD LINKS: %#v\n", w.Result);
 }
 
 func(t *TaskFindLinksByRecord) ResponseWorker(has_paniced bool) {

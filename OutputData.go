@@ -27,7 +27,6 @@ func (o ORecords) MarshalJSON() ([]byte, error) {
 
 type ORelationships struct {
     Relationships []*ORelationship
-    RelatedBase string
 }
 
 type ORelationship struct {
@@ -35,6 +34,35 @@ type ORelationship struct {
     //Links OLinks `json:"links,omitempty"`
     Data []OResourceIdentifier `json:"data"`
     Meta OMeta `json:"meta,omitempty"`
+    RelatedBase string `json:"-"`
+    RelationshipName string `json:"-"`
+}
+
+func(o *ORelationship) MarshalJSON() ([]byte,error) {
+    links := map[string]string{
+        "self":o.RelatedBase+"/relationships/"+o.RelationshipName,
+        "related": o.RelatedBase+"/"+o.RelationshipName,
+    };
+    if(o.IsSingle) {
+        return json.Marshal(struct{
+            Data OResourceIdentifier `json:"data"`
+            Meta OMeta `json:"meta,omitempty"`
+            Links interface{} `json:"links"`
+        }{
+            Data: o.Data[0],
+            Meta: o.Meta,
+            Links: links,
+        });
+    }
+    return json.Marshal(struct{
+        Data []OResourceIdentifier `json:"data"`
+        Meta OMeta `json:"meta,omitempty"`
+        Links interface{} `json:"links"`
+    }{
+        Data: o.Data,
+        Meta: o.Meta,
+        Links: links,
+    });
 }
 
 type OResourceIdentifier struct {
