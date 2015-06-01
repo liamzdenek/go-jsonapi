@@ -6,7 +6,7 @@ import (
     "reflect"
     "strings"
     "fmt"
-    //"errors"
+    "errors"
     . ".."
 );
 
@@ -56,7 +56,7 @@ func(sr *ResourceSQL) FindDefault(r *Request, rp RequestParams) ([]*Record, erro
     if(err != nil) {
         return nil, err;
     }
-    return sr.ConvertInterfaceSliceToIderSlice(vs), err;
+    return sr.ConvertInterfaceSliceToRecordSlice(vs), err;
 }
 
 func(sr *ResourceSQL) FindOne(r *Request, rp RequestParams, id string) (*Record, error) {
@@ -101,11 +101,10 @@ func(sr *ResourceSQL) FindMany(r *Request, rp RequestParams, ids []string) ([]*R
     if(err != nil) {
         return nil, err;
     }
-    return sr.ConvertInterfaceSliceToIderSlice(vs), err
+    return sr.ConvertInterfaceSliceToRecordSlice(vs), err
 }
 
-/*
-func(sr *ResourceSQL) FindManyByField(s Session, rp RequestParams, field string, value string) ([]Ider, error) {
+func(sr *ResourceSQL) FindManyByField(r *Request, rp RequestParams, field, value string) ([]*Record, error) {
     p := rp.Paginator;
     vs := reflect.New(reflect.SliceOf(reflect.PtrTo(sr.Type))).Interface();
     field, err := sr.GetTableFieldFromStructField(field);
@@ -125,7 +124,7 @@ func(sr *ResourceSQL) FindManyByField(s Session, rp RequestParams, field string,
     // better to be safe than sorry
     // dropping in ? instead of field does not work :/
     q := fmt.Sprintf("SELECT * FROM %s WHERE %s=? %s", sr.Table, field, offset_and_limit);
-    s.GetData().API.Logger.Printf("Query: %#v %#v\n", q, value);
+    r.API.Logger.Debugf("Query: %#v %#v\n", q, value);
     err = meddler.QueryAll(
         sr.DB,
         vs,
@@ -133,9 +132,10 @@ func(sr *ResourceSQL) FindManyByField(s Session, rp RequestParams, field string,
         value,
     );
     //a.Logger.Printf("RES: %#v\n", vs);
-    return sr.ConvertInterfaceSliceToIderSlice(vs), err;
+    return sr.ConvertInterfaceSliceToRecordSlice(vs), err;
 }
 
+/*
 func(sr *ResourceSQL) Delete(s Session, id string) error {
     _, err := sr.DB.Exec("DELETE FROM "+sr.Table+" WHERE id=?", id);
     return err;
@@ -165,7 +165,7 @@ func(sr *ResourceSQL) Update(s Session, id string, ider Ider) error {
 }
 
 */
-func (sr *ResourceSQL) ConvertInterfaceSliceToIderSlice(src interface{}) []*Record {
+func (sr *ResourceSQL) ConvertInterfaceSliceToRecordSlice(src interface{}) []*Record {
     res := []*Record{};
 
     ary := reflect.Indirect(reflect.ValueOf(src));
@@ -178,7 +178,6 @@ func (sr *ResourceSQL) ConvertInterfaceSliceToIderSlice(src interface{}) []*Reco
     }
     return res;
 }
-/*
 
 func (sr *ResourceSQL) GetTableFieldFromStructField(structstr string) (string, error) {
     field, found := sr.Type.FieldByName(structstr);
@@ -195,4 +194,3 @@ func (sr *ResourceSQL) GetTableFieldFromStructField(structstr string) (string, e
 
     return realname, nil;
 }
-*/

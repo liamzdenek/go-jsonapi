@@ -1,31 +1,36 @@
 package jsonapi;
 
-//type RelationshipRequirement int;
+type RelationshipRequirement int;
+
+const (
+    Required RelationshipRequirement = iota;
+    NotRequired
+);
 
 // RelationshipBehavior is a "base interface"
 // children: IdRelationshipBehavior or a HasIdRelationshipBehavior
 type Relationship interface {
     IsSingle() bool
-    //VerifyLinks(s Session, ider Ider, linkages *OutputLinkage) error
-    //PreSave(s Session, ider Ider, linkages *OutputLinkage) error
-    //PostSave(s Session, ider Ider, linkages *OutputLinkage) error
+    VerifyLinks(r *Request, rec *Record, rids []*OResourceIdentifier) error
+    PreSave(r *Request, rec *Record, rids []*OResourceIdentifier) error
+    PostSave(r *Request, rec *Record, rids []*OResourceIdentifier) error
 }
 
-type RelationshipLinkId interface{
+type RelationshipLinkIds interface{
     Relationship
-    //LinkId(s Session, srcR, dstR *ResourceManagerResource, src Ider) (ids []string)
+    LinkIds(r *Request, srcR, dstR *APIMountedResource, src *Record) (ids []string)
 }
 
-type RelationshipLinkIder interface{
+type RelationshipLinkRecords interface{
     Relationship
-    //LinkIder(s Session, srcR, dstR *ResourceManagerResource,src Ider) (dst []Ider)
+    LinkRecords(r *Request, srcR, dstR *APIMountedResource, src *Record) (dst []*Record)
 }
 
 func VerifyRelationship(lb Relationship) bool {
     switch lb.(type) {
-        case RelationshipLinkId:
+        case RelationshipLinkIds:
             return true;
-        case RelationshipLinkIder:
+        case RelationshipLinkRecords:
             return true;
         default:
             return false;

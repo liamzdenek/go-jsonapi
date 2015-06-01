@@ -27,3 +27,14 @@ func(r *Record) GetRelationships() *TaskFindLinksByRecordResult {
     }
     return r.relationshipsTask.GetResult();
 }
+
+func(r *Record) GetResourceIdentifier() OResourceIdentifier {
+    return OResourceIdentifier{
+        Id: r.Id,
+        Type: r.Type,
+    }
+}
+
+func(r *Record) Denature() interface{} {
+    return r.Attributes;
+}

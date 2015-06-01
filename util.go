@@ -1,5 +1,7 @@
 package jsonapi;
 
+import ("reflect";);
+
 /**
 Check() will call panic(e) if the error provided is non-nil
 */
@@ -25,4 +27,19 @@ func Catch(f func()) (r interface{}) {
     }();
     f();
     return
+}
+
+func GetField(field string, i interface{}) interface{} {
+    for {
+        if n,ok := i.(Denaturer); ok {
+            i = n.Denature();
+        } else {
+            break;
+        }
+    }
+    return reflect.Indirect(reflect.ValueOf(i)).FieldByName(field).Interface();
+}
+
+func SetField(field string, i interface{}, v interface{}) {
+    reflect.Indirect(reflect.ValueOf(i)).FieldByName(field).Set(reflect.ValueOf(v));
 }

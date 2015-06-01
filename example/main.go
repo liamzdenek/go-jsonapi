@@ -93,7 +93,7 @@ func main() {
     // in the following example, the relationship name is "logged_in_as", and it associates a given
     // "session" with a "user." 
     //
-    // Relationships have a RelationshipBehavior, which is responsible for taking any arbitrary
+    // Relationships have a Relationship Behavior, which is responsible for taking any arbitrary
     // record of the source resource, and converting it into the destination resource. There are
     // no behaviors built in to core, but there are a few in jsonapi/extras
     //
@@ -106,20 +106,20 @@ func main() {
     // * curl -X GET "localhost:3030/session/1/links/logged_in_as
     //   * returns: {"data":{"type":"user","id":"1"}}
     //api.MountRelationship("logged_in_as", "session", "user", // name, src, dest
-    //    NewRelationshipBehaviorFromFieldToId("UserId", Required),
+    //    NewRelationshipFromFieldToId("UserId", Required),
     //    no_auth,
     //);
-    /*
     api.MountRelationship("posts", "user", "post",
-        NewRelationshipBehaviorFromFieldToField("ID", "UserId", Required),
+        NewRelationshipFromFieldToField("ID", "UserId", Required),
         no_auth,
     );
+    /*
     api.MountRelationship("author", "post", "user",
-        NewRelationshipBehaviorFromFieldToId("UserId", Required),
+        NewRelationshipFromFieldToId("UserId", Required),
         no_auth,
     );
     api.MountRelationship("comments", "post", "comment",
-        NewRelationshipBehaviorFromFieldToField("ID", "PostId", Required),
+        NewRelationshipFromFieldToField("ID", "PostId", Required),
         no_auth,
     );
     */

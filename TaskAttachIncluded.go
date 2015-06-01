@@ -43,21 +43,34 @@ func (t *TaskAttachIncluded) Work(r *Request) {
         var next *Record;
         next, queue = queue[0], queue[1:]; // queue pop
 
+        r.API.Logger.Infof("MAIN LOOP HANDLING: %#v\n", next);
         //relationships := next.GetRelationships();
         if(primary_data_count > 0) {
             primary_data_count--;
-            r.API.Logger.Infof("Pushing to primary: %#v\n", next);
             output_primary = append(output_primary, next);
         } else if(next.ShouldInclude) {
             output_included = append(output_included, next);
         }
-
+        rels := next.GetRelationships()
+        queue = append(queue, rels.Included...)
+        next.Relationships = rels.Relationships;
     }
 
-    res.Data = &ORecords{
-        IsSingle: parent_result.IsSingle,
-        Records: output_primary,
-    };
+    if(t.OutputType == OutputTypeResources) {
+        res.Data = &ORecords{
+            IsSingle: parent_result.IsSingle,
+            Records: output_primary,
+        };
+    } else {
+        /*
+        res.Data = &ORelationship{
+            IsSingle: parent_result.IsSingle, // TODO: check this, i don't think it's right?
+            Data: ConvertToResourceIdentifiers(parent
+        }
+        */
+        panic("TODO");
+    }
+    res.Included = output_included;
     t.ActualOutput = res;
     /*
     output_primary := []Record{};

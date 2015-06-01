@@ -9,7 +9,7 @@ type Resource interface {
     FindDefault(r *Request, rp RequestParams) ([]*Record, error)
     FindOne(r *Request, rp RequestParams, id string) (*Record, error)
     FindMany(r *Request, rp RequestParams, ids []string) ([]*Record, error)
-    //FindManyByField(s Session, rp RequestParams, field, value string) ([]Ider, error)
+    FindManyByField(r *Request, rp RequestParams, field, value string) ([]*Record, error)
     // TODO: this iss necessary for optimizations but the backend
     // does not easily support this right now
     //FindManyByFieldWithManyValues(field string, []value string) ([]Ider, error)
