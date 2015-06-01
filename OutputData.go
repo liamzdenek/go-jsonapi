@@ -29,6 +29,14 @@ type ORelationships struct {
     Relationships []*ORelationship
 }
 
+func(o *ORelationships) MarshalJSON() ([]byte, error) {
+    res := map[string]*ORelationship{};
+    for _, relationship := range o.Relationships {
+        res[relationship.RelationshipName] = relationship;
+    }
+    return json.Marshal(res);
+}
+
 type ORelationship struct {
     IsSingle bool `json:"-"`
     //Links OLinks `json:"links,omitempty"`
