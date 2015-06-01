@@ -26,9 +26,39 @@ func NewTaskAttachIncluded(parent TaskResultRecords, ii *IncludeInstructions, ou
     }
 }
 
-func (w *TaskAttachIncluded) Work(r *Request) {
-    parent := w.Parent.GetResult();
-    r.API.Logger.Debugf("PARENT: %v\n", parent);
+func (t *TaskAttachIncluded) Work(r *Request) {
+    parent_result := t.Parent.GetResult();
+    r.API.Logger.Debugf("PARENT: %#v\n", parent_result);
+    res := NewOutput();
+
+    output_primary := []*Record{};
+    output_included := []*Record{};
+
+    queue := parent_result.Records;
+    primary_data_count := len(queue);
+    for {
+        if(len(queue) == 0) {
+            break;
+        }
+        var next *Record;
+        next, queue = queue[0], queue[1:]; // queue pop
+
+        //relationships := next.GetRelationships();
+        if(primary_data_count > 0) {
+            primary_data_count--;
+            r.API.Logger.Infof("Pushing to primary: %#v\n", next);
+            output_primary = append(output_primary, next);
+        } else if(next.ShouldInclude) {
+            output_included = append(output_included, next);
+        }
+
+    }
+
+    res.Data = &ORecords{
+        IsSingle: parent_result.IsSingle,
+        Records: output_primary,
+    };
+    t.ActualOutput = res;
     /*
     output_primary := []Record{};
     output_included := []Record{};

@@ -17,7 +17,7 @@ type UserSession struct{
 }
 
 type User struct{
-    ID int `meddler:"id,pk" jsonapi:"id"`
+    ID int `meddler:"id,pk" jsonapi:"id" json:"-"`
     Name string `meddler:"name" json:"name"`
 }
 

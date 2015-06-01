@@ -14,5 +14,5 @@ func NewAuthenticatorNone() *AuthenticatorNone {
 }
 
 func (an *AuthenticatorNone) Authenticate(r *Request, permission, id string) {
-    //r.API.Logger.Printf("Authenticator request for: %s on ID: %s\n", permission, id);
+    r.API.Logger.Infof("Authenticator request for: %s on ID: %s\n", permission, id);
 }

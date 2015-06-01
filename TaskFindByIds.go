@@ -62,7 +62,7 @@ func(t *TaskFindByIds) Work(r *Request) {
         record.PrepareRelationships(r, t.II.GetChild(t.ViaLinkName));
     }
     t.Result = &TaskResultRecordData{
-        Result: data,
+        Records: data,
         Paginator: t.Paginator,
         IsSingle: len(t.Ids) == 1,
     }

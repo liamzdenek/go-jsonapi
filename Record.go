@@ -1,11 +1,16 @@
 package jsonapi;
 
 type Record struct {
-    Type string `jsonapi:"type"`
-    Id string `jsonapi:"id"`
-    Attributes interface{} `jsonapi:"attributes,omitempty"`
-    Meta OMeta `jsonapi:"meta,omitempty"`
-    //Links
+    // exposed fields
+    Type string `json:"type"`
+    Id string `json:"id"`
+    Attributes interface{} `json:"attributes,omitempty"`
+    //Links //TODO
+    Relationships *ORelationships `json:"relationships,omitempty"`
+    Meta OMeta `json:"meta,omitempty"`
+    
+    // internal fields for tracking
+    ShouldInclude bool `json:"-"`
     relationshipsTask *TaskFindLinksByRecord `json:"-"`
 }
 

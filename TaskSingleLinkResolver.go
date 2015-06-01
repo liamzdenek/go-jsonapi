@@ -23,7 +23,7 @@ func(t *TaskSingleLinkResolver) Work(r *Request) {
     ii.Push([]string{t.Linkname});
     data := []*Record{};
     parent_name := "";
-    for _, res := range result.Result {
+    for _, res := range result.Records {
         parent_name = res.Type;
         work := NewTaskFindLinksByRecord(res,ii);
         t.Context.Push(work);
@@ -38,7 +38,7 @@ func(t *TaskSingleLinkResolver) Work(r *Request) {
         isSingle = rel.Relationship.IsSingle()
     }
     t.Result = &TaskResultRecordData{
-        Result: data,
+        Records: data,
         IsSingle: isSingle,
     };
 }

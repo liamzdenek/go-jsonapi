@@ -1,5 +1,7 @@
 package jsonapi;
 
+import ("encoding/json");
+
 /*
 OData is an interface used to represent the various forms of the primary data in the Output object. Currently, OutputData is an empty interface, so the use of this is purely syntactical. As of writing, the objects written in this file alongside OutputData are intended to be used as OutputData.
 */
@@ -10,7 +12,17 @@ ORecords is a struct that satisfies OData, and represents a list of potentially 
 */
 type ORecords struct {
     IsSingle bool
-    Records []Record
+    Records []*Record
+}
+
+func (o ORecords) MarshalJSON() ([]byte, error) {
+    if o.IsSingle {
+        if(len(o.Records) == 0) {
+            return json.Marshal(nil);
+        }
+        return json.Marshal(o.Records[0]);
+    }
+    return json.Marshal(o.Records);
 }
 
 type ORelationships struct {
