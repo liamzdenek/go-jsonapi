@@ -39,6 +39,7 @@ func(t *TaskFindByIds) Work(r *Request) {
     };
 
     var err error;
+    r.API.Logger.Debugf("Got IDs: %#v\n", t.Ids);
     if(len(t.Ids) == 0) {
         data,err = resource.Resource.FindDefault(r,rp)
     } else if(len(t.Ids) == 1) {

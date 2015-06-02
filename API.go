@@ -107,6 +107,7 @@ func (a *API) ServeHTTP(w http.ResponseWriter,r *http.Request) {
 InitRouter() prepares the internal httprouter object with all of the desired routes. This is called automatically. You should never have to call this unless you wish to muck around with the httprouter
 */
 func (a *API) InitRouter() {
+    a.Router.GET("/:resource", a.Wrap(a.EntryFindDefault));
     a.Router.GET("/:resource/:id", a.Wrap(a.EntryFindRecordByResourceAndId));
     a.Router.GET("/:resource/:id/:linkname", a.Wrap(a.EntryFindRelationshipsByResourceId));
     a.Router.GET("/:resource/:id/:linkname/:secondlinkname", a.Wrap(a.EntryFindRelationshipByNameAndResourceId));

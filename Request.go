@@ -84,7 +84,7 @@ func(r *Request) HandlePanic(raw interface{}) (is_valid bool){
             return false, true;
         }
     }();
-    if(should_print_stack) {
+    if(true || should_print_stack) {
         const size = 64 << 10
         buf := make([]byte, size)
         buf = buf[:runtime.Stack(buf, false)]
