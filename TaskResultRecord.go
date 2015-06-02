@@ -9,3 +9,4 @@ type TaskResultRecordData struct {
     Paginator *Paginator
     IsSingle bool
 }
+

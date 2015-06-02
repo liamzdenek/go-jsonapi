@@ -37,6 +37,15 @@ func(o *ORelationships) MarshalJSON() ([]byte, error) {
     return json.Marshal(res);
 }
 
+func(o *ORelationships) GetRelationshipByName(name string) *ORelationship {
+    for _, relationship := range o.Relationships {
+        if relationship.RelationshipName == name {
+            return relationship;
+        }
+    }
+    return nil
+}
+
 type ORelationship struct {
     IsSingle bool `json:"-"`
     //Links OLinks `json:"links,omitempty"`
