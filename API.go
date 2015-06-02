@@ -108,6 +108,7 @@ InitRouter() prepares the internal httprouter object with all of the desired rou
 */
 func (a *API) InitRouter() {
     a.Router.GET("/:resource", a.Wrap(a.EntryFindDefault));
+    a.Router.DELETE("/:resource/:id", a.Wrap(a.EntryDelete));
     a.Router.GET("/:resource/:id", a.Wrap(a.EntryFindRecordByResourceAndId));
     a.Router.GET("/:resource/:id/:linkname", a.Wrap(a.EntryFindRelationshipsByResourceId));
     a.Router.GET("/:resource/:id/:linkname/:secondlinkname", a.Wrap(a.EntryFindRelationshipByNameAndResourceId));

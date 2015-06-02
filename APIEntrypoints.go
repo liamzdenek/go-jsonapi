@@ -63,3 +63,9 @@ func(a *API) CentralFindRouter(r *Request, resourcestr, idstr string, preroute [
     r.API.Logger.Infof("Main Waiting\n");
     replyer.Wait();
 }
+
+func(a *API) EntryDelete(r *Request) {
+    deleter := NewTaskDelete(r.Params.ByName("resource"), r.Params.ByName("id"));
+    r.Push(deleter);
+    deleter.Wait();
+}
