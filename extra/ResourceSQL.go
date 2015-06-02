@@ -36,7 +36,7 @@ func(sr *ResourceSQL) FindDefault(r *Request, rp RequestParams) ([]*Record, erro
     a := r.API;
     vs := reflect.New(reflect.SliceOf(reflect.PtrTo(sr.Type))).Interface()
     offset_and_limit := "";
-    if p != nil && (p.MaxPerPage != 0) {
+    if p.ShouldPaginate {
         offset_and_limit = fmt.Sprintf("LIMIT %d OFFSET %d",
             p.MaxPerPage,
             p.CurPage * p.MaxPerPage,
@@ -78,10 +78,10 @@ func(sr *ResourceSQL) FindMany(r *Request, rp RequestParams, ids []string) ([]*R
     }
     vs := reflect.New(reflect.SliceOf(reflect.PtrTo(sr.Type))).Interface()
     offset_and_limit := "";
-    if p != nil {
+    if p.ShouldPaginate {
         offset_and_limit = fmt.Sprintf("LIMIT %d OFFSET %d",
-            (*p).MaxPerPage,
-            (*p).CurPage * (*p).MaxPerPage,
+            p.MaxPerPage,
+            p.CurPage * p.MaxPerPage,
         );
     }
     q := fmt.Sprintf(
@@ -101,6 +101,7 @@ func(sr *ResourceSQL) FindMany(r *Request, rp RequestParams, ids []string) ([]*R
     if(err != nil) {
         return nil, err;
     }
+    r.API.Logger.Debugf("QUERY RES: %#v\n", vs);
     return sr.ConvertInterfaceSliceToRecordSlice(vs), err
 }
 
@@ -112,10 +113,10 @@ func(sr *ResourceSQL) FindManyByField(r *Request, rp RequestParams, field, value
         return nil, err;
     }
     offset_and_limit := "";
-    if p != nil {
+    if p.ShouldPaginate {
         offset_and_limit = fmt.Sprintf("LIMIT %d OFFSET %d",
-            (*p).MaxPerPage,
-            (*p).CurPage * (*p).MaxPerPage,
+            p.MaxPerPage,
+            p.CurPage * p.MaxPerPage,
         );
     }
     // TODO: find a way to parameterize field in this query
@@ -131,7 +132,7 @@ func(sr *ResourceSQL) FindManyByField(r *Request, rp RequestParams, field, value
         q,
         value,
     );
-    //a.Logger.Printf("RES: %#v\n", vs);
+    r.API.Logger.Debugf("RES: %#v\n", vs);
     return sr.ConvertInterfaceSliceToRecordSlice(vs), err;
 }
 

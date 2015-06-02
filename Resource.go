@@ -1,8 +1,7 @@
 package jsonapi;
 
 type RequestParams struct {
-    Paginator *Paginator
-
+    Paginator Paginator
 }
 
 type Resource interface {

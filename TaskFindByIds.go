@@ -7,10 +7,10 @@ type TaskFindByIds struct {
     Result *TaskResultRecordData
     II *IncludeInstructions
     ViaLinkName string
-    Paginator *Paginator
+    Paginator Paginator
 }
 
-func NewTaskFindByIds(resource string, ids []string, ii *IncludeInstructions, vln string, Paginator *Paginator) *TaskFindByIds {
+func NewTaskFindByIds(resource string, ids []string, ii *IncludeInstructions, vln string, Paginator Paginator) *TaskFindByIds {
     return &TaskFindByIds{
         Output: make(chan chan *TaskResultRecordData),
         Ids: ids,
@@ -60,7 +60,7 @@ func(t *TaskFindByIds) Work(r *Request) {
     }
     t.Result = &TaskResultRecordData{
         Records: data,
-        Paginator: t.Paginator,
+        Paginator: &t.Paginator,
         IsSingle: len(t.Ids) == 1,
     }
 }

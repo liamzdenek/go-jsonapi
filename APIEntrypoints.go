@@ -13,6 +13,25 @@ func(a *API) EntryFindRecordByResourceAndId(r *Request) {
     );
 }
 
+func(a *API) EntryFindRelationshipsByResourceId(r *Request) {
+    a.CentralFindRouter(r,
+        r.Params.ByName("resource"),
+        r.Params.ByName("id"),
+        []string{r.Params.ByName("linkname")},
+        OutputTypeResources, "",
+    );
+}
+
+func(a *API) EntryFindRelationshipByNameAndResourceId(r *Request) {
+    a.CentralFindRouter(r,
+        r.Params.ByName("resource"),
+        r.Params.ByName("id"),
+        []string{},
+        OutputTypeLinkages,
+        r.Params.ByName("secondlinkname"),
+    );
+}
+
 func(a *API) CentralFindRouter(r *Request, resourcestr, idstr string, preroute []string, outputtype OutputType, linkname string) {
     ii := r.IncludeInstructions;
     ids := strings.Split(idstr,",");

@@ -1,7 +1,6 @@
 package jsonapi;
 
 type TaskSingleLinkResolver struct {
-    Context *TaskContext
     Parent TaskResultRecords
     Linkname string
     Output chan chan *TaskResultRecordData
@@ -26,7 +25,7 @@ func(t *TaskSingleLinkResolver) Work(r *Request) {
     for _, res := range result.Records {
         parent_name = res.Type;
         work := NewTaskFindLinksByRecord(res,ii);
-        t.Context.Push(work);
+        r.Push(work);
         r.API.Logger.Debugf("WORKRES: %#v\n", work.GetResult().Included);
         for _, inc := range work.GetResult().Included {
             data = append(data, inc);
