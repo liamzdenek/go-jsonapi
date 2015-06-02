@@ -44,7 +44,7 @@ func(l *RelationshipFromFieldToField) LinkRecords(r *Request, srcR *APIMountedRe
     //dstrmr := rmr.RM.GetResource(rmr.DstR);
     dst = []*Record{}
     for _, id := range ids {
-        newdst, err := dstR.Resource.FindManyByField(r, RequestParams{}, l.DstFieldName, id);
+        newdst, err := dstR.Resource.FindManyByField(r, RequestParams{}, l.DstFieldName, id.Id);
         if(err != nil) {
             a.Logger.Errorf("RelationshipFromFieldToField got an error from FindManyByField for %s: %s", dstR.Name, err);
         }

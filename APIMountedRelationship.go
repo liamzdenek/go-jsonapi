@@ -25,7 +25,27 @@ func(amr *APIMountedRelationship) Resolve(r *Request, src *Record, shouldFetch b
 }
 
 func(amr *APIMountedRelationship) ResolveIds(r *Request, lb RelationshipLinkIds, record *Record, include *IncludeInstructions) (*ORelationship, []*Record) {
-    panic("TODO");
+    rel := &ORelationship{
+        IsSingle: lb.IsSingle(),
+    }
+    included := []*Record{};
+    srcResource := r.API.GetResource(amr.SrcResourceName);
+    ids := lb.LinkIds(r,srcResource,amr,record);
+    shouldFetch := include.ShouldFetch(amr.Name);
+    for _, id := range ids {
+        rel.Data = append(rel.Data, id);
+        if(shouldFetch) {
+            dstResource := r.API.GetResource(id.Type)
+            one, err := dstResource.FindOne(r, RequestParams{}, id.Id);
+            if err != nil {
+                panic(err);
+            }
+            one.ShouldInclude = include.ShouldInclude(amr.Name);
+            r.API.Logger.Debugf("SHOULD INCLUDE: %s %v\n", amr.Name, one.ShouldInclude);
+            included = append(included, one);
+        }
+    }
+    return rel,included;
 }
 
 func(amr *APIMountedRelationship) ResolveRecords(r *Request, lb RelationshipLinkRecords, record *Record, include *IncludeInstructions) (*ORelationship, []*Record) {
@@ -36,7 +56,11 @@ func(amr *APIMountedRelationship) ResolveRecords(r *Request, lb RelationshipLink
     srcResource := r.API.GetResource(amr.SrcResourceName);
     records := lb.LinkRecords(r,srcResource,amr,record);
     for _, record := range records {
+        record.PrepareRelationships(r, include.GetChild(amr.Name));
         rel.Data = append(rel.Data, record.GetResourceIdentifier());
+        record.ShouldInclude = include.ShouldInclude(amr.Name);
+        r.API.Logger.Debugf("SHOULD INCLUDE: %s %v\n", amr.Name, record.ShouldInclude);
+        included = append(included, record);
     }
     return rel,included;
 }

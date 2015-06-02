@@ -26,7 +26,7 @@ func(t *TaskSingleLinkResolver) Work(r *Request) {
         parent_name = res.Type;
         work := NewTaskFindLinksByRecord(res,ii);
         r.Push(work);
-        r.API.Logger.Debugf("WORKRES: %#v\n", work.GetResult().Included);
+        r.API.Logger.Debugf("WORKRES: %#v %#v\n", work.GetResult().Relationships.Relationships[0], work.GetResult().Included);
         for _, inc := range work.GetResult().Included {
             data = append(data, inc);
         }

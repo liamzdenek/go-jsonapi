@@ -29,12 +29,20 @@ func (t *TaskFindLinksByRecord) Work(r *Request) {
     }
     for linkname,relationship := range r.API.GetRelationshipsByResource(t.Record.Type) {
         shouldFetch := t.II.ShouldFetch(linkname);
+        r.API.Logger.Debugf("SHOULDFETCH: %#v %#v %v %v\n",linkname,t.II, shouldFetch, t.II.ShouldInclude(linkname));
         or, included := relationship.Resolve(r, t.Record, shouldFetch, t.II);
         or.RelatedBase = r.GetBaseURL()+t.Record.Type+"/"+t.Record.Id;
         or.RelationshipName = linkname;
         result.Relationships.Relationships = append(result.Relationships.Relationships, or);
+        if t.II.ShouldInclude(linkname) {
+            for _, record := range included {
+                record.PrepareRelationships(r,t.II.GetChild(linkname));
+                record.ShouldInclude = true;
+            }
+        }
         result.Included = append(result.Included, included...);
     }
+
     t.Result = result;
 }
 

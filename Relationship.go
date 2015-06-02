@@ -19,7 +19,7 @@ type Relationship interface {
 
 type RelationshipLinkIds interface{
     Relationship
-    LinkIds(r *Request, srcR *APIMountedResource, rel *APIMountedRelationship, src *Record) (ids []string)
+    LinkIds(r *Request, srcR *APIMountedResource, rel *APIMountedRelationship, src *Record) (ids []OResourceIdentifier)
 }
 
 type RelationshipLinkRecords interface{

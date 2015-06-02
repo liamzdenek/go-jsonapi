@@ -22,7 +22,7 @@ func NewResourceTypeSetter(parent Resource, name string, setEmptyOnly bool) *Res
 
 func(rts *ResourceTypeSetter) Set(records *[]*Record) {
     for _, record := range *records {
-        if !rts.SetEmptyOnly || record.Type == "" {
+        if record != nil && (!rts.SetEmptyOnly || record.Type == "") {
             record.Type = rts.Name;
         }
     }

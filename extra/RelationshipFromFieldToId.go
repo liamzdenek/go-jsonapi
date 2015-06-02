@@ -34,15 +34,15 @@ func(l *RelationshipFromFieldToId) PostMount(a *API) {
     }
 }
 
-func(l *RelationshipFromFieldToId) LinkIds(r *Request, srcR *APIMountedResource, amr *APIMountedRelationship, src *Record) (ids []string) {
+func(l *RelationshipFromFieldToId) LinkIds(r *Request, srcR *APIMountedResource, amr *APIMountedRelationship, src *Record) (ids []OResourceIdentifier) {
     r.API.Logger.Debugf("REFLECT FIELDS: %#v\n", src);
     v := reflect.ValueOf(GetField(l.SrcFieldName, src));
     k := v.Kind()
     switch k { // TODO: fill this out
     case reflect.String:
-        ids = append(ids, v.String());
+        ids = append(ids, NewResourceIdentifier(v.String(),l.DstResourceName));
     case reflect.Int:
-        ids = append(ids, strconv.FormatInt(v.Int(), 10))
+        ids = append(ids, NewResourceIdentifier(strconv.FormatInt(v.Int(), 10),l.DstResourceName));
     default:
         panic("OneToOneLinkage does not support the kind "+k.String());
     }

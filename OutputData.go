@@ -77,3 +77,10 @@ type OResourceIdentifier struct {
     Id string `json:"id"`
     Type string `json:"type"`
 }
+
+func NewResourceIdentifier(id, typ string) OResourceIdentifier {
+    return OResourceIdentifier{
+        Id: id,
+        Type: typ,
+    }
+}

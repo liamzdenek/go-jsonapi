@@ -46,9 +46,11 @@ func (t *TaskAttachIncluded) Work(r *Request) {
         r.API.Logger.Infof("MAIN LOOP HANDLING: %#v\n", next);
         //relationships := next.GetRelationships();
         if(primary_data_count > 0) {
+            r.API.Logger.Infof("MAIN LOOP INCLUDING PRIMARY: %#v\n", next);
             primary_data_count--;
             output_primary = append(output_primary, next);
         } else if(next.ShouldInclude) {
+            r.API.Logger.Infof("MAIN LOOP INCLUDING: %#v\n", next);
             output_included = append(output_included, next);
         }
         rels := next.GetRelationships()
