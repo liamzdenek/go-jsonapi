@@ -13,25 +13,34 @@ func init() {
 
 type RelationshipFromFieldToField struct {
     SrcFieldName string
+    DstResourceName string
     DstFieldName string
     Required RelationshipRequirement
     FromFieldToId *RelationshipFromFieldToId
 }
 
-func NewRelationshipFromFieldToField(srcFieldName, dstFieldName string, required RelationshipRequirement) *RelationshipFromFieldToField {
+func NewRelationshipFromFieldToField(dstResourceName, srcFieldName, dstFieldName string, required RelationshipRequirement) *RelationshipFromFieldToField {
     return &RelationshipFromFieldToField{
         SrcFieldName: srcFieldName,
+        DstResourceName: dstResourceName,
         DstFieldName: dstFieldName,
         Required: required,
-        FromFieldToId: NewRelationshipFromFieldToId(srcFieldName, required),
+        FromFieldToId: NewRelationshipFromFieldToId(dstResourceName, srcFieldName, required),
     }
 }
 
 func(l *RelationshipFromFieldToField) IsSingle() (bool) { return false; }
 
-func(l *RelationshipFromFieldToField) LinkRecords(r *Request, srcR, dstR *APIMountedResource, src *Record) (dst []*Record) {
+func(l *RelationshipFromFieldToField) PostMount(a *API) {
+    if a.GetResource(l.DstResourceName) == nil {
+        panic("RelationshipFromFieldToId cannot be mounted to an API with a DstResourceName that does not exist");
+    }
+}
+
+func(l *RelationshipFromFieldToField) LinkRecords(r *Request, srcR *APIMountedResource, amr *APIMountedRelationship, src *Record) (dst []*Record) {
     a := r.API;
-    ids := l.FromFieldToId.LinkIds(r,srcR, dstR, src);
+    ids := l.FromFieldToId.LinkIds(r,srcR,amr, src);
+    dstR := a.GetResource(l.DstResourceName);
     //dstrmr := rmr.RM.GetResource(rmr.DstR);
     dst = []*Record{}
     for _, id := range ids {

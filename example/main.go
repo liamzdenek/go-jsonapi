@@ -105,24 +105,24 @@ func main() {
     //
     // * curl -X GET "localhost:3030/session/1/links/logged_in_as
     //   * returns: {"data":{"type":"user","id":"1"}}
-    //api.MountRelationship("logged_in_as", "session", "user", // name, src, dest
-    //    NewRelationshipFromFieldToId("UserId", Required),
-    //    no_auth,
-    //);
-    api.MountRelationship("posts", "user", "post",
-        NewRelationshipFromFieldToField("ID", "UserId", Required),
-        no_auth,
-    );
     /*
-    api.MountRelationship("author", "post", "user",
-        NewRelationshipFromFieldToId("UserId", Required),
-        no_auth,
-    );
-    api.MountRelationship("comments", "post", "comment",
-        NewRelationshipFromFieldToField("ID", "PostId", Required),
+    api.MountRelationship("logged_in_as", "session", // name, src, dest
+        NewRelationshipFromFieldToId("user", "UserId", Required),
         no_auth,
     );
     */
+    api.MountRelationship("posts", "user",
+        NewRelationshipFromFieldToField("post", "ID", "UserId", Required),
+        no_auth,
+    );
+    api.MountRelationship("author", "post",
+        NewRelationshipFromFieldToId("user", "UserId", Required),
+        no_auth,
+    );
+    api.MountRelationship("comments", "post",
+        NewRelationshipFromFieldToField("comment", "ID", "PostId", Required),
+        no_auth,
+    );
 
     // For requests with a resource as the primary "data" (aka, not a /:resource/:id/links/:linkname request),
     // you may specify ?include=[includefmt] to include the data for additional links. For example:

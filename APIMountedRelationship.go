@@ -4,14 +4,13 @@ import("errors";)
 
 type APIMountedRelationship struct {
     SrcResourceName string
-    DstResourceName string
     Name string
     Relationship
     Authenticator
 }
 
 func(amr *APIMountedRelationship) Resolve(r *Request, src *Record, shouldFetch bool, include *IncludeInstructions) (*ORelationship, []*Record) {
-    amr.Authenticator.Authenticate(r,"relationship.FindAll."+amr.SrcResourceName+"."+amr.Name+"."+amr.DstResourceName, src.Id);
+    amr.Authenticator.Authenticate(r,"relationship.FindAll."+amr.SrcResourceName+"."+amr.Name, src.Id);
     if lb, found := amr.Relationship.(RelationshipLinkRecords); shouldFetch && found {
         return amr.ResolveRecords(r, lb, src, include);
     }
@@ -35,8 +34,7 @@ func(amr *APIMountedRelationship) ResolveRecords(r *Request, lb RelationshipLink
     };
     included := []*Record{};
     srcResource := r.API.GetResource(amr.SrcResourceName);
-    dstResource := r.API.GetResource(amr.DstResourceName);
-    records := lb.LinkRecords(r,srcResource,dstResource,record);
+    records := lb.LinkRecords(r,srcResource,amr,record);
     for _, record := range records {
         rel.Data = append(rel.Data, record.GetResourceIdentifier());
     }

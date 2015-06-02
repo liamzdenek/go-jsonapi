@@ -9,6 +9,7 @@ import(
 
 type RelationshipFromFieldToId struct {
     SrcFieldName string
+    DstResourceName string
     Required RelationshipRequirement
 }
 
@@ -18,14 +19,22 @@ func init() {
     _ = t;
 }
 
-func NewRelationshipFromFieldToId(srcFieldName string, required RelationshipRequirement) *RelationshipFromFieldToId {
+func NewRelationshipFromFieldToId(dstResourceName, srcFieldName string, required RelationshipRequirement) *RelationshipFromFieldToId {
     return &RelationshipFromFieldToId{
         SrcFieldName: srcFieldName,
+        DstResourceName: dstResourceName,
     }
 }
+
 func(l *RelationshipFromFieldToId) IsSingle() (bool) { return true; }
 
-func(l *RelationshipFromFieldToId) LinkIds(r *Request, srcR, dstR *APIMountedResource, src *Record) (ids []string) {
+func(l *RelationshipFromFieldToId) PostMount(a *API) {
+    if a.GetResource(l.DstResourceName) == nil {
+        panic("RelationshipFromFieldToId cannot be mounted to an API with a DstResourceName that does not exist");
+    }
+}
+
+func(l *RelationshipFromFieldToId) LinkIds(r *Request, srcR *APIMountedResource, amr *APIMountedRelationship, src *Record) (ids []string) {
     r.API.Logger.Debugf("REFLECT FIELDS: %#v\n", src);
     v := reflect.ValueOf(GetField(l.SrcFieldName, src));
     k := v.Kind()

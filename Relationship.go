@@ -11,6 +11,7 @@ const (
 // children: IdRelationshipBehavior or a HasIdRelationshipBehavior
 type Relationship interface {
     IsSingle() bool
+    PostMount(a *API)
     VerifyLinks(r *Request, rec *Record, rids []*OResourceIdentifier) error
     PreSave(r *Request, rec *Record, rids []*OResourceIdentifier) error
     PostSave(r *Request, rec *Record, rids []*OResourceIdentifier) error
@@ -18,12 +19,12 @@ type Relationship interface {
 
 type RelationshipLinkIds interface{
     Relationship
-    LinkIds(r *Request, srcR, dstR *APIMountedResource, src *Record) (ids []string)
+    LinkIds(r *Request, srcR *APIMountedResource, rel *APIMountedRelationship, src *Record) (ids []string)
 }
 
 type RelationshipLinkRecords interface{
     Relationship
-    LinkRecords(r *Request, srcR, dstR *APIMountedResource, src *Record) (dst []*Record)
+    LinkRecords(r *Request, srcR *APIMountedResource, rel *APIMountedRelationship, src *Record) (dst []*Record)
 }
 
 func VerifyRelationship(lb Relationship) bool {
