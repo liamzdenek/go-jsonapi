@@ -43,3 +43,20 @@ func GetField(field string, i interface{}) interface{} {
 func SetField(field string, i interface{}, v interface{}) {
     reflect.Indirect(reflect.ValueOf(i)).FieldByName(field).Set(reflect.ValueOf(v));
 }
+
+/*
+func ParseJSONHelper(v *Record, raw []byte, t reflect.Type) (*Record, error) {
+    if v == nil {
+        v = reflect.New(t).Interface().(Ider);
+    }
+    rp := NewRecordParserSimple(v);
+    err := json.Unmarshal(raw, rp);
+    if(err != nil) {
+        return nil, nil, nil, nil, err;
+    }
+    if(rp.Data.Relationships == nil) {
+        fmt.Printf("GOT NO RELATIONSHIPS\n");
+        rp.Data.Relationships = &OutputLinkageSet{};
+    }
+    return v.(Ider), rp.Data.Id, &rp.Data.Type, rp.Relationships(), nil;
+}*/

@@ -13,8 +13,8 @@ type Resource interface {
     // TODO: this iss necessary for optimizations but the backend
     // does not easily support this right now
     //FindManyByFieldWithManyValues(field string, []value string) ([]Ider, error)
-    //Delete(s Session, id string) error
-    //ParseJSON(s Session, ider_src Ider, raw []byte) (ider Ider, id *string, rtype *string, links *OutputLinkageSet, err error)
-    //Create(s Session, ider Ider, id *string) (status RecordCreatedStatus, err error)
-    //Update(s Session, id string, ider Ider) error
+    Delete(r *Request, id string) error
+    ParseJSON(r *Request, src *Record, raw []byte) (dst *Record, err error)
+    //Create(r *Request, record *Record) (status RecordCreatedStatus, err error)
+    Update(r *Request, record *Record) error
 }

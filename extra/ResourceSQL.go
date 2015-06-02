@@ -135,18 +135,20 @@ func(sr *ResourceSQL) FindManyByField(r *Request, rp RequestParams, field, value
     return sr.ConvertInterfaceSliceToRecordSlice(vs), err;
 }
 
-/*
-func(sr *ResourceSQL) Delete(s Session, id string) error {
+func(sr *ResourceSQL) Delete(r *Request, id string) error {
     _, err := sr.DB.Exec("DELETE FROM "+sr.Table+" WHERE id=?", id);
     return err;
 }
 
 
-func(sr *ResourceSQL) ParseJSON(s Session, ider Ider, raw []byte) (Ider, *string, *string, *OutputLinkageSet, error) {
-    return ParseJSONHelper(ider, raw, sr.Type);
+func(sr *ResourceSQL) ParseJSON(r *Request, src *Record, raw []byte) (*Record, error) {
+    r.API.Logger.Criticalf("NOT IMPLEMENTED PARSE JSON: %s\n", raw);
+    panic("");
+    //return ParseJSONHelper(src, raw, sr.Type);
 }
 
-func(sr *ResourceSQL) Create(s Session, ider Ider, id *string) (RecordCreatedStatus, error) {
+/*
+func(sr *ResourceSQL) Create(r *Request, src *Record, id *string) (RecordCreatedStatus, error) {
     sqlctx := sr.CastSession(s);
     s.GetData().API.Logger.Printf("CREATE GOT CONTEXT: %#v\n", sqlctx);
     if(id != nil) {
@@ -156,15 +158,15 @@ func(sr *ResourceSQL) Create(s Session, ider Ider, id *string) (RecordCreatedSta
     if err != nil {
         return StatusFailed, err;
     }
-    err = meddler.Insert(tx, sr.Table, ider)
+    err = meddler.Insert(tx, sr.Table, src)
     return StatusCreated, err;
 }
+*/
 
-func(sr *ResourceSQL) Update(s Session, id string, ider Ider) error {
+func(sr *ResourceSQL) Update(r *Request, rec *Record) error {
     panic("NOT IMPLEMENTED");
 }
 
-*/
 func (sr *ResourceSQL) ConvertInterfaceSliceToRecordSlice(src interface{}) []*Record {
     res := []*Record{};
 

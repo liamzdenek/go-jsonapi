@@ -50,3 +50,24 @@ func(rts *ResourceTypeSetter) FindManyByField(r *Request, rp RequestParams, fiel
     rts.Set(&records);
     return records, err;
 }
+
+func(rts *ResourceTypeSetter) Delete(r *Request, id string) error {
+    return rts.Parent.Delete(r,id)
+}
+
+func(rts *ResourceTypeSetter) ParseJSON(r *Request, src *Record, raw []byte) (*Record, error) {
+    rec, err := rts.Parent.ParseJSON(r, src, raw);
+    rts.Set(&[]*Record{rec});
+    return rec, err;
+}
+/*
+func(rts *ResourceTypeSetter) Create(r *Request, record *Record) (RecordCreatedStatus, error) {
+    rts.Set(&[]*Record{record});
+    return rts.Parent.Create(r, record);
+}
+*/
+
+func(rts *ResourceTypeSetter) Update(r *Request, record *Record) error {
+    rts.Set(&[]*Record{record});
+    return rts.Parent.Update(r, record);
+}
