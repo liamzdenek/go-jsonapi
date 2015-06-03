@@ -148,11 +148,10 @@ func(sr *ResourceSQL) ParseJSON(r *Request, src *Record, raw []byte) (*Record, e
     //return ParseJSONHelper(src, raw, sr.Type);
 }
 
-/*
-func(sr *ResourceSQL) Create(r *Request, src *Record, id *string) (RecordCreatedStatus, error) {
-    sqlctx := sr.CastSession(s);
-    s.GetData().API.Logger.Printf("CREATE GOT CONTEXT: %#v\n", sqlctx);
-    if(id != nil) {
+func(sr *ResourceSQL) Create(r *Request, src *Record) (RecordCreatedStatus, error) {
+    sqlctx := sr.CastSession(r);
+    r.API.Logger.Debugf("CREATE GOT CONTEXT: %#v\n", sqlctx);
+    if(src.Id != "") {
         return StatusFailed, errors.New("ResourceSQL does not support specifying an ID for Create() requests."); // TODO: it should
     }
     tx, err := sqlctx.GetSQLTransaction(sr.DB)
@@ -162,7 +161,6 @@ func(sr *ResourceSQL) Create(r *Request, src *Record, id *string) (RecordCreated
     err = meddler.Insert(tx, sr.Table, src)
     return StatusCreated, err;
 }
-*/
 
 func(sr *ResourceSQL) Update(r *Request, rec *Record) error {
     panic("NOT IMPLEMENTED");

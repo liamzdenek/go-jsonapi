@@ -60,12 +60,11 @@ func(rts *ResourceTypeSetter) ParseJSON(r *Request, src *Record, raw []byte) (*R
     rts.Set(&[]*Record{rec});
     return rec, err;
 }
-/*
+
 func(rts *ResourceTypeSetter) Create(r *Request, record *Record) (RecordCreatedStatus, error) {
     rts.Set(&[]*Record{record});
     return rts.Parent.Create(r, record);
 }
-*/
 
 func(rts *ResourceTypeSetter) Update(r *Request, record *Record) error {
     rts.Set(&[]*Record{record});

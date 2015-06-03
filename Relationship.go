@@ -12,9 +12,9 @@ const (
 type Relationship interface {
     IsSingle() bool
     PostMount(a *API)
-    VerifyLinks(r *Request, rec *Record, rids []*OResourceIdentifier) error
-    PreSave(r *Request, rec *Record, rids []*OResourceIdentifier) error
-    PostSave(r *Request, rec *Record, rids []*OResourceIdentifier) error
+    VerifyLinks(r *Request, rec *Record, rids []OResourceIdentifier) error
+    PreSave(r *Request, rec *Record, rids []OResourceIdentifier) error
+    PostSave(r *Request, rec *Record, rids []OResourceIdentifier) error
 }
 
 type RelationshipLinkIds interface{

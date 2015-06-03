@@ -16,19 +16,17 @@ func NewResponderErrorResourceDoesNotExist(relname string) *ResponderBase {
 }
 
 // TODO: rip this out and replace it with multiple responder functions... this function should not be internally resonsible for determining success or failure
-/*
-func NewResponderRecordCreate(resource_str string, ider Ider, createdStatus RecordCreatedStatus, err error) *ResponderBase {
+func NewResponderRecordCreate(resource_str string, rec *Record, createdStatus RecordCreatedStatus, err error) *ResponderBase {
     if(createdStatus & StatusCreated == 0) { // failure
         return NewResponderBaseErrors(500, err);
     } else {
         rb := NewResponderBase(201, nil);
-        rb.CB = func(a *API, s Session, r *http.Request) {
-            rb.PushHeader("Location", a.GetBaseURL(r)+resource_str+"/"+GetId(ider));
+        rb.CB = func(r *Request) {
+            rb.PushHeader("Location", r.GetBaseURL()+resource_str+"/"+rec.Id);
         }
         return rb;
     }
 }
-*/
 
 func NewResponderResourceSuccessfullyDeleted() *ResponderBase {
     return NewResponderBase(204, nil);

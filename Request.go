@@ -19,6 +19,7 @@ type Request struct {
     Params httprouter.Params
     IncludeInstructions *IncludeInstructions
     TaskContext *TaskContext
+    PromiseStorage *PromiseStorage
 }
 
 /**
@@ -31,6 +32,7 @@ func NewRequest(a *API, httpreq *http.Request, httpres http.ResponseWriter, para
         HttpResponseWriter: httpres,
         Params: params,
         IncludeInstructions: NewIncludeInstructionsFromRequest(httpreq),
+        PromiseStorage: NewPromiseStorage(),
     }
     req.TaskContext = NewTaskContext(req);
     return req;
@@ -41,6 +43,7 @@ Defer() should be called in a defer call at the same point that a Request is ini
 */
 func(r *Request) Defer() {
     defer r.TaskContext.Cleanup();
+    defer r.PromiseStorage.Defer();
 }
 
 /**

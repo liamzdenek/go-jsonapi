@@ -49,7 +49,7 @@ func(l *RelationshipFromFieldToId) LinkIds(r *Request, srcR *APIMountedResource,
     return ids;
 }
 
-func(l *RelationshipFromFieldToId) VerifyLinks(r *Request, record *Record, linkages []*OResourceIdentifier) error {
+func(l *RelationshipFromFieldToId) VerifyLinks(r *Request, record *Record, linkages []OResourceIdentifier) error {
     a := r.API;
     a.Logger.Infof("Verify links %#v\n",linkages);
     isEmpty := linkages == nil || len(linkages) == 0;
@@ -61,10 +61,10 @@ func(l *RelationshipFromFieldToId) VerifyLinks(r *Request, record *Record, linka
     }
     return nil;
 }
-func(l *RelationshipFromFieldToId) PreSave(r *Request, record *Record, linkages []*OResourceIdentifier) error {
+func(l *RelationshipFromFieldToId) PreSave(r *Request, record *Record, linkages []OResourceIdentifier) error {
     a := r.API;
     a.Logger.Debugf("PreSave\n");
-    if(len(linkages) == 0 || linkages[0] == nil) {
+    if(len(linkages) == 0) {
         return errors.New("RelationshipFromFieldToId requires the relationship to be provided when modifying this relationship");
     }
     str, err := strconv.Atoi(linkages[0].Id);
@@ -74,7 +74,7 @@ func(l *RelationshipFromFieldToId) PreSave(r *Request, record *Record, linkages 
     SetField(l.SrcFieldName, record, str);
     return nil;
 }
-func(l *RelationshipFromFieldToId) PostSave(r *Request, record *Record, linkages []*OResourceIdentifier) error {
+func(l *RelationshipFromFieldToId) PostSave(r *Request, record *Record, linkages []OResourceIdentifier) error {
     a := r.API;
     a.Logger.Debugf("Post create\n");
     return nil;

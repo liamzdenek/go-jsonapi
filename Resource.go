@@ -14,6 +14,6 @@ type Resource interface {
     //FindManyByFieldWithManyValues(field string, []value string) ([]Ider, error)
     Delete(r *Request, id string) error
     ParseJSON(r *Request, src *Record, raw []byte) (dst *Record, err error)
-    //Create(r *Request, record *Record) (status RecordCreatedStatus, err error)
+    Create(r *Request, record *Record) (status RecordCreatedStatus, err error)
     Update(r *Request, record *Record) error
 }

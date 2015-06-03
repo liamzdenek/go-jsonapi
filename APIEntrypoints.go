@@ -69,3 +69,9 @@ func(a *API) EntryDelete(r *Request) {
     r.Push(deleter);
     deleter.Wait();
 }
+
+func(a *API) EntryCreate(r *Request) {
+    creater := NewTaskCreate(r.Params.ByName("resource"), r.Params.ByName("id"));
+    r.Push(creater);
+    creater.Wait();
+}
