@@ -3,27 +3,35 @@ package jsonapi;
 import ("reflect";)
 
 type PromiseStorage struct {
-    Promises []Promise
-    ChanPush chan Promise
-    ChanGet chan PromiseStorageGet
+    Promises map[reflect.Type]chan PromiseStorageLease
+    ChanGet chan PromiseStorageLease
 }
 
-type PromiseStorageGet struct {
+type PromiseStorageLease struct {
     Type reflect.Type
-    ChanResponse chan Promise
+    Initialize func() Promise
+    ChanResponse chan LeasedPromise
+}
+
+type LeasedPromise struct {
+    Promise
+    ChanRelease chan bool
+}
+
+func (sp *LeasedPromise) Release() {
+    close(sp.ChanRelease);
 }
 
 func NewPromiseStorage() *PromiseStorage {
     ps := &PromiseStorage{
-        ChanPush: make(chan Promise),
-        ChanGet: make(chan PromiseStorageGet),
+        Promises: make(map[reflect.Type]chan PromiseStorageLease),
+        ChanGet: make(chan PromiseStorageLease),
     };
     ps.Worker();
     return ps;
 }
 
 func(ps *PromiseStorage) Defer() {
-    close(ps.ChanPush);
     close(ps.ChanGet);
 }
 
@@ -31,11 +39,29 @@ func(ps *PromiseStorage) Worker() {
     go func() {
         for {
             select {
-            case p := <-ps.ChanPush:
-                ps.Promises = append(ps.Promises, p);
             case p := <-ps.ChanGet:
-                //ps.Promises
+                req, ok := ps.Promises[p.Type];
+                if  !ok {
+                    req = ps.PromiseWorker(p.Initialize());
+                    ps.Promises[p.Type] = req;
+                }
+                req <- p;
             }
         }
     }();
+}
+
+func (ps *PromiseStorage) PromiseWorker(p Promise) chan PromiseStorageLease {
+    leasechan := make(chan PromiseStorageLease);
+    go func() {
+        for leasereq := range leasechan {
+            leased := LeasedPromise{
+                Promise: p,
+                ChanRelease: make(chan bool),
+            };
+            leasereq.ChanResponse <- leased;
+            <-leased.ChanRelease;
+        }
+    }()
+    return leasechan;
 }
