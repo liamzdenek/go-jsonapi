@@ -10,17 +10,42 @@ import (
     . ".."
 );
 
+func init() {
+    // safety check to make sure ResourceSQL is a Resource
+    var t Resource;
+    t = &ResourceSQL{};
+    _ = t;
+}
+
 type ResourceSQL struct{
     DB *sql.DB
     Table string
     Type reflect.Type
 }
 
-func init() {
-    // safety check to make sure ResourceSQL is a Resource
-    var t Resource;
-    t = &ResourceSQL{};
-    _ = t;
+type ResourceSQLPromise struct {
+    Transactions map[*sql.DB]*sql.Tx;
+}
+
+func(rsp *ResourceSQLPromise) GetSQLTransaction(db *sql.DB) (*sql.Tx, error) {
+
+    if tx, ok := rsp.Transactions[db]; ok && tx != nil {
+        return tx, nil;
+    }
+    res,err := db.Begin();
+    if err != nil {
+        return nil, err;
+    }
+    rsp.Transactions[db] = res;
+    return res, nil;
+}
+
+func(rsp *ResourceSQLPromise) Failure(r *Request) {
+
+}
+
+func(rsp *ResourceSQLPromise) Success(r *Request) {
+
 }
 
 func NewResourceSQL(db *sql.DB, table string, t interface{}) *ResourceSQL {
@@ -30,6 +55,16 @@ func NewResourceSQL(db *sql.DB, table string, t interface{}) *ResourceSQL {
         Type: reflect.Indirect(reflect.ValueOf(t)).Type(),
     }
 }
+
+func (sr *ResourceSQL) GetPromise(r *Request) (LeasedPromise, *ResourceSQLPromise) {
+    v := r.PromiseStorage.Get(&ResourceSQLPromise{}, func() Promise {
+        return &ResourceSQLPromise{
+            Transactions: make(map[*sql.DB]*sql.Tx),
+        };
+    });
+    return v, v.Promise.(*ResourceSQLPromise);
+}
+
 // TODO: update this to honor sorting
 func(sr *ResourceSQL) FindDefault(r *Request, rp RequestParams) ([]*Record, error) {
     p := rp.Paginator;
@@ -149,12 +184,13 @@ func(sr *ResourceSQL) ParseJSON(r *Request, src *Record, raw []byte) (*Record, e
 }
 
 func(sr *ResourceSQL) Create(r *Request, src *Record) (RecordCreatedStatus, error) {
-    sqlctx := sr.CastSession(r);
-    r.API.Logger.Debugf("CREATE GOT CONTEXT: %#v\n", sqlctx);
+    lp, psql := sr.GetPromise(r);
+    defer lp.Release();
+    r.API.Logger.Debugf("CREATE GOT CONTEXT: %#v\n", psql);
     if(src.Id != "") {
         return StatusFailed, errors.New("ResourceSQL does not support specifying an ID for Create() requests."); // TODO: it should
     }
-    tx, err := sqlctx.GetSQLTransaction(sr.DB)
+    tx, err := psql.GetSQLTransaction(sr.DB)
     if err != nil {
         return StatusFailed, err;
     }

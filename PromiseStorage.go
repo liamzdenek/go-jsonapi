@@ -35,15 +35,29 @@ func(ps *PromiseStorage) Defer() {
     close(ps.ChanGet);
 }
 
+func(ps *PromiseStorage) Get(typ Promise, init func() Promise) LeasedPromise {
+    lease := PromiseStorageLease{
+        Type: reflect.TypeOf(typ),
+        Initialize: init,
+        ChanResponse: make(chan LeasedPromise),
+    };
+    ps.ChanGet <- lease;
+    return <-lease.ChanResponse
+}
+
 func(ps *PromiseStorage) Worker() {
     go func() {
-        for {
+        OUTER: for {
             select {
-            case p := <-ps.ChanGet:
+            case p, chanok := <-ps.ChanGet:
+                if !chanok {
+                    break OUTER;
+                }
                 req, ok := ps.Promises[p.Type];
                 if  !ok {
                     req = ps.PromiseWorker(p.Initialize());
                     ps.Promises[p.Type] = req;
+                    defer close(req);
                 }
                 req <- p;
             }
