@@ -1,6 +1,6 @@
 package jsonapi;
 
-import ("reflect";);
+import ("reflect";"encoding/json");
 
 /**
 Check() will call panic(e) if the error provided is non-nil
@@ -44,19 +44,17 @@ func SetField(field string, i interface{}, v interface{}) {
     reflect.Indirect(reflect.ValueOf(i)).FieldByName(field).Set(reflect.ValueOf(v));
 }
 
-/*
 func ParseJSONHelper(v *Record, raw []byte, t reflect.Type) (*Record, error) {
-    if v == nil {
-        v = reflect.New(t).Interface().(Ider);
+    if v.Attributes == nil {
+        v.Attributes = reflect.New(t).Interface();
     }
-    rp := NewRecordParserSimple(v);
-    err := json.Unmarshal(raw, rp);
+    err := json.Unmarshal(raw, v);
     if(err != nil) {
-        return nil, nil, nil, nil, err;
+        return nil, err;
     }
     if(rp.Data.Relationships == nil) {
         fmt.Printf("GOT NO RELATIONSHIPS\n");
         rp.Data.Relationships = &OutputLinkageSet{};
     }
     return v.(Ider), rp.Data.Id, &rp.Data.Type, rp.Relationships(), nil;
-}*/
+}

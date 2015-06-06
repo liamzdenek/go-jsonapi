@@ -178,9 +178,7 @@ func(sr *ResourceSQL) Delete(r *Request, id string) error {
 
 
 func(sr *ResourceSQL) ParseJSON(r *Request, src *Record, raw []byte) (*Record, error) {
-    r.API.Logger.Criticalf("NOT IMPLEMENTED PARSE JSON: %s\n", raw);
-    panic("");
-    //return ParseJSONHelper(src, raw, sr.Type);
+    return ParseJSONHelper(src, raw, sr.Type);
 }
 
 func(sr *ResourceSQL) Create(r *Request, src *Record) (RecordCreatedStatus, error) {

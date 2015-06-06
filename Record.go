@@ -4,7 +4,7 @@ type Record struct {
     // exposed fields
     Type string `json:"type"`
     Id string `json:"id"`
-    Attributes interface{} `json:"attributes,omitempty"`
+    Attributes RecordAttributes `json:"attributes,omitempty"`
     //Links //TODO
     Relationships *ORelationships `json:"relationships,omitempty"`
     Meta OMeta `json:"meta,omitempty"`
@@ -38,3 +38,5 @@ func(r *Record) GetResourceIdentifier() OResourceIdentifier {
 func(r *Record) Denature() interface{} {
     return r.Attributes;
 }
+
+type RecordAttributes interface{}
