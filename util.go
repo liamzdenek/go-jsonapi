@@ -52,9 +52,5 @@ func ParseJSONHelper(v *Record, raw []byte, t reflect.Type) (*Record, error) {
     if(err != nil) {
         return nil, err;
     }
-    if(rp.Data.Relationships == nil) {
-        fmt.Printf("GOT NO RELATIONSHIPS\n");
-        rp.Data.Relationships = &OutputLinkageSet{};
-    }
-    return v.(Ider), rp.Data.Id, &rp.Data.Type, rp.Relationships(), nil;
+    return v, nil;
 }
