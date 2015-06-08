@@ -31,3 +31,7 @@ func NewResponderRecordCreate(resource_str string, rec *Record, createdStatus Re
 func NewResponderResourceSuccessfullyDeleted() *ResponderBase {
     return NewResponderBase(204, nil);
 }
+
+func NewResponderForbidden(e error) *ResponderBase {
+    return NewResponderBaseErrors(403, e);
+}

@@ -4,6 +4,7 @@ import(
     "reflect"
     "strconv"
     "errors"
+    "fmt"
     . ".." // jsonapi
 );
 
@@ -49,19 +50,19 @@ func(l *RelationshipFromFieldToId) LinkIds(r *Request, srcR *APIMountedResource,
     return ids;
 }
 
-func(l *RelationshipFromFieldToId) VerifyLinks(r *Request, record *Record, linkages []OResourceIdentifier) error {
+func(l *RelationshipFromFieldToId) VerifyLinks(r *Request, record *Record, amr *APIMountedRelationship, linkages []OResourceIdentifier) error {
     a := r.API;
     a.Logger.Infof("Verify links %#v\n",linkages);
     isEmpty := linkages == nil || len(linkages) == 0;
     if(isEmpty && l.Required == Required) {
-        return errors.New("Linkage is empty but is required");
+        return errors.New(fmt.Sprintf("Linkage '%s' is empty but is required",amr.Name));
     }
     if(!isEmpty && len(linkages) != 1) {
         return errors.New("RelationshipFromFieldToId requires exactly one link");
     }
     return nil;
 }
-func(l *RelationshipFromFieldToId) PreSave(r *Request, record *Record, linkages []OResourceIdentifier) error {
+func(l *RelationshipFromFieldToId) PreSave(r *Request, record *Record, amr *APIMountedRelationship, linkages []OResourceIdentifier) error {
     a := r.API;
     a.Logger.Debugf("PreSave\n");
     if(len(linkages) == 0) {
@@ -74,7 +75,7 @@ func(l *RelationshipFromFieldToId) PreSave(r *Request, record *Record, linkages 
     SetField(l.SrcFieldName, record, str);
     return nil;
 }
-func(l *RelationshipFromFieldToId) PostSave(r *Request, record *Record, linkages []OResourceIdentifier) error {
+func(l *RelationshipFromFieldToId) PostSave(r *Request, record *Record, amr *APIMountedRelationship, linkages []OResourceIdentifier) error {
     a := r.API;
     a.Logger.Debugf("Post create\n");
     return nil;

@@ -1,6 +1,6 @@
 package jsonapi;
 
-import ("reflect";"encoding/json");
+import ("reflect";"encoding/json";"fmt");
 
 /**
 Check() will call panic(e) if the error provided is non-nil
@@ -45,10 +45,19 @@ func SetField(field string, i interface{}, v interface{}) {
 }
 
 func ParseJSONHelper(v *Record, raw []byte, t reflect.Type) (*Record, error) {
+    if v == nil {
+        v = &Record{}
+    }
     if v.Attributes == nil {
         v.Attributes = reflect.New(t).Interface();
     }
-    err := json.Unmarshal(raw, v);
+    rp := &RecordParserSimple{
+        Data: v,
+    };
+    fmt.Printf("UNMARSHAL: %s\n",raw);
+    err := json.Unmarshal(raw, rp);
+    fmt.Printf("UNMARSHAL: %#v\n",rp.Data);
+    fmt.Printf("UNMARSHAL: %#v\n",rp.Data.Attributes);
     if(err != nil) {
         return nil, err;
     }

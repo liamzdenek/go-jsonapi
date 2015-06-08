@@ -3,6 +3,7 @@ package jsonapie;
 import(
     . ".."
     "errors"
+    "fmt"
 );
 
 func init() {
@@ -53,18 +54,18 @@ func(l *RelationshipFromFieldToField) LinkRecords(r *Request, srcR *APIMountedRe
     return dst;
 }
 
-func(l *RelationshipFromFieldToField) VerifyLinks(r *Request, rec *Record, linkages []OResourceIdentifier) error {
+func(l *RelationshipFromFieldToField) VerifyLinks(r *Request, rec *Record, amr *APIMountedRelationship, linkages []OResourceIdentifier) error {
     isEmpty := linkages == nil || len(linkages) == 0;
     if(isEmpty && l.Required == Required) {
-        return errors.New("Linkage is empty but is required");
+        return errors.New(fmt.Sprintf("Linkage '%s' is empty but is required",amr.Name));
     }
     return nil;
     //return l.FromFieldToId.VerifyLinks(s,ider,linkages);
 }
-func(l *RelationshipFromFieldToField) PreSave(r *Request, rec *Record, linkages []OResourceIdentifier) error {
+func(l *RelationshipFromFieldToField) PreSave(r *Request, rec *Record, amr *APIMountedRelationship, linkages []OResourceIdentifier) error {
     return nil; // no PreSave as we need Ider to be flushed to DB before we can use its ID
 }
-func(l *RelationshipFromFieldToField) PostSave(r *Request, rec *Record, linkages []OResourceIdentifier) error {
+func(l *RelationshipFromFieldToField) PostSave(r *Request, rec *Record, amr *APIMountedRelationship,linkages []OResourceIdentifier) error {
     panic("TODO");
     /*
     id := GetId(ider);

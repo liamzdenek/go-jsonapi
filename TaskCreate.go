@@ -46,13 +46,14 @@ func(t *TaskCreate) Work(r *Request) {
     rels := r.API.GetRelationshipsByResource(resource_str);
     for relname, rel := range rels {
         relnew := record.Relationships.GetRelationshipByName(relname);
-        //a.Logger.Printf("Linkage: %#v\n", linkage);
         if(relnew == nil) {
-            // user attempted to speify a relationship that does not exist
-            panic("TODO: This");
+            relnew = &ORelationship{
+                RelationshipName: relname,
+            };
+            record.Relationships.Relationships = append(record.Relationships.Relationships, relnew);
         }
         rel.Authenticator.Authenticate(r,"relationship.Create."+rel.SrcResourceName+"."+rel.Name, "");
-        err := rel.Relationship.VerifyLinks(r,record,relnew.Data);
+        err := rel.Relationship.VerifyLinks(r,record,rel,relnew.Data);
         if err != nil {
             Reply(NewResponderRecordCreate(resource_str, nil, StatusFailed, err));
         }
@@ -61,7 +62,7 @@ func(t *TaskCreate) Work(r *Request) {
     // the record before it's inserted
     for relname,rel := range rels {
         relnew := record.Relationships.GetRelationshipByName(relname);
-        err := rel.Relationship.PreSave(r,record,relnew.Data);
+        err := rel.Relationship.PreSave(r,record,rel,relnew.Data);
         if err != nil {
             Reply(NewResponderRecordCreate(resource_str, nil, StatusFailed, err));
         }
@@ -71,7 +72,7 @@ func(t *TaskCreate) Work(r *Request) {
     if(err == nil && createdStatus & StatusCreated != 0) {
         for relname,rel := range rels {
             relnew := record.Relationships.GetRelationshipByName(relname);
-            err = rel.Relationship.PostSave(r,record,relnew.Data);
+            err = rel.Relationship.PostSave(r,record,rel,relnew.Data);
             if err != nil {
                 Reply(NewResponderRecordCreate(resource_str, nil, StatusFailed, err));
             }

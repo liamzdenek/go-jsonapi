@@ -112,7 +112,7 @@ func main() {
     );
     */
     api.MountRelationship("posts", "user",
-        NewRelationshipFromFieldToField("post", "ID", "UserId", Required),
+        NewRelationshipFromFieldToField("post", "ID", "UserId", NotRequired),
         no_auth,
     );
     api.MountRelationship("author", "post",
