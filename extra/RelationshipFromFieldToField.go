@@ -66,20 +66,20 @@ func(l *RelationshipFromFieldToField) PreSave(r *Request, rec *Record, amr *APIM
     return nil; // no PreSave as we need Ider to be flushed to DB before we can use its ID
 }
 func(l *RelationshipFromFieldToField) PostSave(r *Request, rec *Record, amr *APIMountedRelationship,linkages []OResourceIdentifier) error {
-/*    id := rec.Id;
-    a := r.API;
-    resource := a.GetResource(l.DstFieldName);
+    //id := rec.Id;
+    //resource := a.GetResource(l.DstFieldName);
+    //a := r.API;
     
     // Fetch the current links
     ii := NewIncludeInstructionsEmpty();
-    ii.Push([]string{linkages.LinkName});
-    cur_links_task := NewWorkFindLinksByRecord(ider, ii);
+    ii.Push([]string{amr.Name});
+    cur_links_task := NewTaskFindLinksByRecord(rec, ii);
     r.Push(cur_links_task);
 
     // remove the ones that shouldn't be there anymore
-    cur_links := cur_links_task.GetResult().Links.GetLinkageByName(linkages.LinkName)
-    OUTER: for _,cur_link := range cur_links.Links {
-        for _,new_link := range linkages.Links {
+    cur_links := cur_links_task.GetResult().Relationships.GetRelationshipByName(amr.Name)
+    OUTER: for _,cur_link := range cur_links.Data {
+        for _,new_link := range linkages {
             if cur_link.Id == new_link.Id && cur_link.Type == new_link.Type {
                 continue OUTER;
             }
@@ -89,13 +89,14 @@ func(l *RelationshipFromFieldToField) PostSave(r *Request, rec *Record, amr *API
     }
     
     // add ones that should be there now
-    OUTER: for _,new_link := range linkages.Links {
-        for _,cur_link := range cur_links.Links {
+    OUTER2: for _,new_link := range linkages {
+        for _,cur_link := range cur_links.Data {
             if cur_link.Id == new_link.Id && cur_link.Type == new_link.Type {
-                continue OUTER;
+                continue OUTER2;
             }
         }
         // if we got to this point, the link exists in the new set but does not exist in the old set, and must be added
         panic("TODO: asked to add linkage");
-    }*/
+    }
+    return nil;
 }
