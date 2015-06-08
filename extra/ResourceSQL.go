@@ -28,7 +28,6 @@ type ResourceSQLPromise struct {
 }
 
 func(rsp *ResourceSQLPromise) GetSQLTransaction(db *sql.DB) (*sql.Tx, error) {
-
     if tx, ok := rsp.Transactions[db]; ok && tx != nil {
         return tx, nil;
     }
@@ -41,11 +40,19 @@ func(rsp *ResourceSQLPromise) GetSQLTransaction(db *sql.DB) (*sql.Tx, error) {
 }
 
 func(rsp *ResourceSQLPromise) Failure(r *Request) {
-
+    r.API.Logger.Infof("ResourceSQLPromise Failure\n");
+    for _,tx := range rsp.Transactions {
+        err := tx.Rollback();
+        Check(err);
+    }
 }
 
 func(rsp *ResourceSQLPromise) Success(r *Request) {
-
+    r.API.Logger.Infof("ResourceSQLPromise Success\n");
+    for _,tx := range rsp.Transactions {
+        err := tx.Commit();
+        Check(err);
+    }
 }
 
 func NewResourceSQL(db *sql.DB, table string, t interface{}) *ResourceSQL {
@@ -192,7 +199,11 @@ func(sr *ResourceSQL) Create(r *Request, src *Record) (RecordCreatedStatus, erro
     if err != nil {
         return StatusFailed, err;
     }
-    err = meddler.Insert(tx, sr.Table, src)
+    SetId(src.Attributes, src.Id);
+    err = meddler.Insert(tx, sr.Table, src.Attributes)
+    if err != nil {
+        return StatusFailed, err;
+    }
     return StatusCreated, err;
 }
 

@@ -66,18 +66,15 @@ func(l *RelationshipFromFieldToField) PreSave(r *Request, rec *Record, amr *APIM
     return nil; // no PreSave as we need Ider to be flushed to DB before we can use its ID
 }
 func(l *RelationshipFromFieldToField) PostSave(r *Request, rec *Record, amr *APIMountedRelationship,linkages []OResourceIdentifier) error {
-    panic("TODO");
-    /*
-    id := GetId(ider);
-    a := s.GetData().API;
-    wctx := s.GetData().TaskContext;
-    resource := a.RM.GetResource(l.DstFieldName);
+/*    id := rec.Id;
+    a := r.API;
+    resource := a.GetResource(l.DstFieldName);
     
     // Fetch the current links
     ii := NewIncludeInstructionsEmpty();
     ii.Push([]string{linkages.LinkName});
     cur_links_task := NewWorkFindLinksByRecord(ider, ii);
-    wctx.Push(cur_links_task);
+    r.Push(cur_links_task);
 
     // remove the ones that shouldn't be there anymore
     cur_links := cur_links_task.GetResult().Links.GetLinkageByName(linkages.LinkName)
@@ -100,6 +97,5 @@ func(l *RelationshipFromFieldToField) PostSave(r *Request, rec *Record, amr *API
         }
         // if we got to this point, the link exists in the new set but does not exist in the old set, and must be added
         panic("TODO: asked to add linkage");
-    }
-    */
+    }*/
 }

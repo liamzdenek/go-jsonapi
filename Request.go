@@ -20,6 +20,7 @@ type Request struct {
     IncludeInstructions *IncludeInstructions
     TaskContext *TaskContext
     PromiseStorage *PromiseStorage
+    hasCompleted bool
 }
 
 /**
@@ -44,6 +45,9 @@ Defer() should be called in a defer call at the same point that a Request is ini
 func(r *Request) Defer() {
     defer r.TaskContext.Cleanup();
     defer r.PromiseStorage.Defer();
+    if(!r.hasCompleted) {
+        panic("Did not call either Failure or Success before Defer");
+    }
 }
 
 /**
@@ -100,14 +104,37 @@ func(r *Request) HandlePanic(raw interface{}) (is_valid bool){
 Success() is responsible for calling the appropriate succcess handles. This function should never be called outside of a Responder 
 */
 func(r *Request) Success() {
-    //TODO: hook it up
+    r.API.Logger.Infof("Calling Promise Success\n");
+    r.finalizePromises(true);
 }
 
 /**
 Failure() is responsible for calling the appropriate failure handles. This function should never be called outside of a Responder
 */
 func(r *Request) Failure() {
-    // TODO: hook it up
+    r.API.Logger.Infof("Calling Promise Failure\n");
+    r.finalizePromises(false);
+}
+
+func(r *Request) finalizePromises(success bool) {
+    if(r.hasCompleted) {
+        panic("Success or Failure can only be called once per request");
+    }
+    r.hasCompleted = true;
+    for t,_ := range r.PromiseStorage.Promises {
+        get := PromiseStorageLease{
+            Type: t,
+            ChanResponse: make(chan LeasedPromise),
+        }
+        r.PromiseStorage.ChanGet <- get;
+        leased := <-get.ChanResponse;
+        if(success) {
+            leased.Promise.Success(r);
+        } else {
+            leased.Promise.Failure(r);
+        }
+        leased.Release();
+    }
 }
 
 /**
