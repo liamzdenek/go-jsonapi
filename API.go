@@ -119,8 +119,10 @@ func (a *API) InitRouter() {
 
     // Record Delete
     a.Router.DELETE("/:resource/:id", a.Wrap(a.EntryDelete));
+    //a.Router.DELETE("/:resource", a.Wrap(a.EntryDelete));
 
     // Record Update
+    a.Router.PATCH("/:resource/:id", a.Wrap(a.EntryUpdate));
 }
 
 /**

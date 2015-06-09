@@ -15,6 +15,8 @@ type Relationship interface {
     VerifyLinks(r *Request, rec *Record, amr *APIMountedRelationship, rids []OResourceIdentifier) error
     PreSave(r *Request, rec *Record, amr *APIMountedRelationship, rids []OResourceIdentifier) error
     PostSave(r *Request, rec *Record, amr *APIMountedRelationship, rids []OResourceIdentifier) error
+    //PreDelete(r *Request, rec *Record, amr *APIMountedRelationship) error
+    //PostDelete(r *Request, rec *Record, amr *APIMountedRelationship) error
 }
 
 type RelationshipLinkIds interface{

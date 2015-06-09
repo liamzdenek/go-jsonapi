@@ -85,7 +85,7 @@ func(l *RelationshipFromFieldToField) PostSave(r *Request, rec *Record, amr *API
             }
         }
         // if we got to this point, the link exists in the current set but does not exist in the new set, and must be deleted
-        panic("TODO: Asked to delete linkage");
+        panic("TODO: Asked to delete relationship");
     }
     
     // add ones that should be there now
@@ -96,7 +96,7 @@ func(l *RelationshipFromFieldToField) PostSave(r *Request, rec *Record, amr *API
             }
         }
         // if we got to this point, the link exists in the new set but does not exist in the old set, and must be added
-        panic("TODO: asked to add linkage");
+        panic("TODO: asked to add relationship");
     }
     return nil;
 }

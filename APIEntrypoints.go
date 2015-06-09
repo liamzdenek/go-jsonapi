@@ -75,3 +75,9 @@ func(a *API) EntryCreate(r *Request) {
     r.Push(creater);
     creater.Wait();
 }
+
+func(a *API) EntryUpdate(r *Request) {
+    creater := NewTaskUpdate(r.Params.ByName("resource"), r.Params.ByName("id"));
+    r.Push(creater);
+    creater.Wait();
+}
