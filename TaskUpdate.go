@@ -54,17 +54,17 @@ func(t *TaskUpdate) Work(r *Request) {
     }
 
     for _,relationship := range record.Relationships.Relationships {
-        rel := r.API.GetRelationship(resource_str, relationship.Name);
-        err := rel.Behavior.VerifyLinks(r, record);
+        rel := r.API.GetRelationship(resource_str, relationship.RelationshipName);
+        err := rel.Relationship.VerifyLinks(r, record, rel, relationship.Data);
         if err != nil {
             // TODO: A server MUST return 403 Forbidden in response to an unsupported request to update a resource or relationship. -- i don't know if this is the right behavior for this condition
-            Reply(NewResponderBaseErrors(403, errors.New(fmt.Sprintf("Verification of new links for relationship %s failed: %s", linkage.LinkName, err))));
+            Reply(NewResponderBaseErrors(403, errors.New(fmt.Sprintf("Verification of new links for relationship %s failed: %s", relationship.RelationshipName, err))));
         }
     }
 
-    for _,linkage := range linkages.Linkages {
-        rel := a.RM.GetRelationship(resource_str, linkage.LinkName);
-        a.Logger.Printf("CALLING PRE SAVE %s %s\n", resource_str, linkage.LinkName);
+    for _,relationship := range record.Relationships.Relationships {
+        rel := r.API.GetRelationship(resource_str, relationship.RelationshipName);
+        a.Logger.Printf("CALLING PRE SAVE %s %s\n", resource_str, relationship.RelationshipName);
         err := rel.B.PreSave(s, record, linkage);
         if err != nil {
             // TODO: A server MUST return 403 Forbidden in response to an unsupported request to update a resource or relationship. -- i don't know if this is the right behavior for this condition
