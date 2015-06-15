@@ -53,6 +53,10 @@ func(t *TaskUpdate) Work(r *Request) {
         Reply(NewResponderBaseErrors(409, errors.New(fmt.Sprintf("The ID provided \"%s\" does not match the ID provided in the url \"%s\"", record.Id, t.Id))));
     }
 
+    if record.Relationships == nil {
+        record.Relationships = &ORelationships{};
+    }
+
     for _,relationship := range record.Relationships.Relationships {
         rel := r.API.GetRelationship(resource_str, relationship.RelationshipName);
         err := rel.Relationship.VerifyLinks(r, record, rel, relationship.Data);
@@ -64,26 +68,26 @@ func(t *TaskUpdate) Work(r *Request) {
 
     for _,relationship := range record.Relationships.Relationships {
         rel := r.API.GetRelationship(resource_str, relationship.RelationshipName);
-        a.Logger.Printf("CALLING PRE SAVE %s %s\n", resource_str, relationship.RelationshipName);
-        err := rel.B.PreSave(s, record, linkage);
+        r.API.Logger.Debugf("CALLING PRE SAVE %s %s\n", resource_str, relationship.RelationshipName);
+        err := rel.Relationship.PreSave(r, record, rel, relationship.Data);
         if err != nil {
             // TODO: A server MUST return 403 Forbidden in response to an unsupported request to update a resource or relationship. -- i don't know if this is the right behavior for this condition
-            Reply(NewResponderBaseErrors(400, errors.New(fmt.Sprintf("Could not PreSave relationship %s: %s", linkage.LinkName, err))));
+            Reply(NewResponderBaseErrors(400, errors.New(fmt.Sprintf("Could not PreSave relationship %s: %s", relationship.RelationshipName, err))));
         }
     }
 
-    err = resource.R.Update(s,t.Id,record);
+    err = resource.Resource.Update(r,record);
     if(err != nil) {
         Reply(NewResponderBaseErrors(500, errors.New(fmt.Sprintf("Could not update resource: %s", err))));
     }
     
-    a.Logger.Printf("UPDATE WAS CALLED\n");
-    for _,linkage := range linkages.Linkages {
-        rel := a.RM.GetRelationship(resource_str, linkage.LinkName);
-        err := rel.B.PostSave(s, record, linkage);
+    r.API.Logger.Infof("UPDATE WAS CALLED\n");
+    for _,relationship := range record.Relationships.Relationships {
+        rel := r.API.GetRelationship(resource_str, relationship.RelationshipName);
+        err := rel.Relationship.PostSave(r, record, rel, relationship.Data);
         if err != nil {
             // TODO: A server MUST return 403 Forbidden in response to an unsupported request to update a resource or relationship. -- i don't know if this is the right behavior for this condition
-            Reply(NewResponderBaseErrors(400, errors.New(fmt.Sprintf("Could not PostSave relationship %s: %s", linkage.LinkName, err))));
+            Reply(NewResponderBaseErrors(400, errors.New(fmt.Sprintf("Could not PostSave relationship %s: %s", relationship.RelationshipName, err))));
         }
     }
 

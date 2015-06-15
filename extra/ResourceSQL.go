@@ -208,7 +208,19 @@ func(sr *ResourceSQL) Create(r *Request, src *Record) (RecordCreatedStatus, erro
 }
 
 func(sr *ResourceSQL) Update(r *Request, rec *Record) error {
-    panic("NOT IMPLEMENTED");
+    lp, psql := sr.GetPromise(r);
+    defer lp.Release();
+    if rec.Attributes != nil {
+        SetId(rec.Attributes, rec.Id);
+    } else {
+        // TODO: should this panic? is it possible to UPDATE with a nil ID?
+    }
+    tx, err := psql.GetSQLTransaction(sr.DB);
+    if err != nil {
+        return err;
+    }
+    r.API.Logger.Debugf("Fields: %#v\n", rec.Attributes);
+    return meddler.Update(tx, sr.Table, rec.Attributes);
 }
 
 func (sr *ResourceSQL) ConvertInterfaceSliceToRecordSlice(src interface{}) []*Record {
