@@ -1,4 +1,4 @@
-package jsonapie;
+package resource;
 
 import (
     "database/sql";
@@ -11,23 +11,23 @@ import (
 );
 
 func init() {
-    // safety check to make sure ResourceSQL is a Resource
+    // safety check to make sure SQL is a Resource
     var t Resource;
-    t = &ResourceSQL{};
+    t = &SQL{};
     _ = t;
 }
 
-type ResourceSQL struct{
+type SQL struct{
     DB *sql.DB
     Table string
     Type reflect.Type
 }
 
-type ResourceSQLPromise struct {
+type SQLPromise struct {
     Transactions map[*sql.DB]*sql.Tx;
 }
 
-func(rsp *ResourceSQLPromise) GetSQLTransaction(db *sql.DB) (*sql.Tx, error) {
+func(rsp *SQLPromise) GetSQLTransaction(db *sql.DB) (*sql.Tx, error) {
     if tx, ok := rsp.Transactions[db]; ok && tx != nil {
         return tx, nil;
     }
@@ -39,40 +39,40 @@ func(rsp *ResourceSQLPromise) GetSQLTransaction(db *sql.DB) (*sql.Tx, error) {
     return res, nil;
 }
 
-func(rsp *ResourceSQLPromise) Failure(r *Request) {
-    r.API.Logger.Infof("ResourceSQLPromise Failure\n");
+func(rsp *SQLPromise) Failure(r *Request) {
+    r.API.Logger.Infof("SQLPromise Failure\n");
     for _,tx := range rsp.Transactions {
         err := tx.Rollback();
         Check(err);
     }
 }
 
-func(rsp *ResourceSQLPromise) Success(r *Request) {
-    r.API.Logger.Infof("ResourceSQLPromise Success\n");
+func(rsp *SQLPromise) Success(r *Request) {
+    r.API.Logger.Infof("SQLPromise Success\n");
     for _,tx := range rsp.Transactions {
         err := tx.Commit();
         Check(err);
     }
 }
 
-func NewResourceSQL(db *sql.DB, table string, t interface{}) *ResourceSQL {
-    return &ResourceSQL{
+func NewSQL(db *sql.DB, table string, t interface{}) *SQL {
+    return &SQL{
         DB: db,
         Table: table,
         Type: reflect.Indirect(reflect.ValueOf(t)).Type(),
     }
 }
 
-func (sr *ResourceSQL) GetPromise(r *Request) (LeasedPromise, *ResourceSQLPromise) {
-    v := r.PromiseStorage.Get(&ResourceSQLPromise{}, func() Promise {
-        return &ResourceSQLPromise{
+func (sr *SQL) GetPromise(r *Request) (LeasedPromise, *SQLPromise) {
+    v := r.PromiseStorage.Get(&SQLPromise{}, func() Promise {
+        return &SQLPromise{
             Transactions: make(map[*sql.DB]*sql.Tx),
         };
     });
-    return v, v.Promise.(*ResourceSQLPromise);
+    return v, v.Promise.(*SQLPromise);
 }
 
-func(sr *ResourceSQL) GetIdFieldName(v interface{}) string {
+func(sr *SQL) GetIdFieldName(v interface{}) string {
     if v == nil {
         v = reflect.New(sr.Type).Interface();
     }
@@ -86,7 +86,7 @@ func(sr *ResourceSQL) GetIdFieldName(v interface{}) string {
 }
 
 // TODO: update this to honor sorting
-func(sr *ResourceSQL) FindDefault(r *Request, rp RequestParams) ([]*Record, error) {
+func(sr *SQL) FindDefault(r *Request, rp RequestParams) ([]*Record, error) {
     p := rp.Paginator;
     a := r.API;
     vs := reflect.New(reflect.SliceOf(reflect.PtrTo(sr.Type))).Interface()
@@ -117,7 +117,7 @@ func(sr *ResourceSQL) FindDefault(r *Request, rp RequestParams) ([]*Record, erro
     return sr.ConvertInterfaceSliceToRecordSlice(vs), err;
 }
 
-func(sr *ResourceSQL) FindOne(r *Request, rp RequestParams, id string) (*Record, error) {
+func(sr *SQL) FindOne(r *Request, rp RequestParams, id string) (*Record, error) {
     v := reflect.New(sr.Type).Interface();
     id_sql_name := sr.GetIdFieldName(v);
     err := meddler.QueryRow(sr.DB, v, "SELECT * FROM "+sr.Table+" WHERE "+id_sql_name+"=?", id);
@@ -132,7 +132,7 @@ func(sr *ResourceSQL) FindOne(r *Request, rp RequestParams, id string) (*Record,
         Attributes: v,
     }, nil;
 }
-func(sr *ResourceSQL) FindMany(r *Request, rp RequestParams, ids []string) ([]*Record, error) {
+func(sr *SQL) FindMany(r *Request, rp RequestParams, ids []string) ([]*Record, error) {
     p := rp.Paginator;
     args := []interface{}{};
     for _, id := range ids {
@@ -172,7 +172,7 @@ func(sr *ResourceSQL) FindMany(r *Request, rp RequestParams, ids []string) ([]*R
     return sr.ConvertInterfaceSliceToRecordSlice(vs), err
 }
 
-func(sr *ResourceSQL) FindManyByField(r *Request, rp RequestParams, field, value string) ([]*Record, error) {
+func(sr *SQL) FindManyByField(r *Request, rp RequestParams, field, value string) ([]*Record, error) {
     p := rp.Paginator;
     vs := reflect.New(reflect.SliceOf(reflect.PtrTo(sr.Type))).Interface();
     field, err := sr.GetTableFieldFromStructField(field);
@@ -206,23 +206,23 @@ func(sr *ResourceSQL) FindManyByField(r *Request, rp RequestParams, field, value
     return sr.ConvertInterfaceSliceToRecordSlice(vs), err;
 }
 
-func(sr *ResourceSQL) Delete(r *Request, id string) error {
+func(sr *SQL) Delete(r *Request, id string) error {
     id_sql_name := sr.GetIdFieldName(nil);
     _, err := sr.DB.Exec("DELETE FROM "+sr.Table+" WHERE "+id_sql_name+"=?", id);
     return err;
 }
 
 
-func(sr *ResourceSQL) ParseJSON(r *Request, src *Record, raw []byte) (*Record, error) {
+func(sr *SQL) ParseJSON(r *Request, src *Record, raw []byte) (*Record, error) {
     return ParseJSONHelper(src, raw, sr.Type);
 }
 
-func(sr *ResourceSQL) Create(r *Request, src *Record) (RecordCreatedStatus, error) {
+func(sr *SQL) Create(r *Request, src *Record) (RecordCreatedStatus, error) {
     lp, psql := sr.GetPromise(r);
     defer lp.Release();
     r.API.Logger.Debugf("CREATE GOT CONTEXT: %#v\n", psql);
     if(src.Id != "") {
-        return StatusFailed, errors.New("ResourceSQL does not support specifying an ID for Create() requests."); // TODO: it should
+        return StatusFailed, errors.New("SQL does not support specifying an ID for Create() requests."); // TODO: it should
     }
     tx, err := psql.GetSQLTransaction(sr.DB)
     if err != nil {
@@ -236,7 +236,7 @@ func(sr *ResourceSQL) Create(r *Request, src *Record) (RecordCreatedStatus, erro
     return StatusCreated, err;
 }
 
-func(sr *ResourceSQL) Update(r *Request, rec *Record) error {
+func(sr *SQL) Update(r *Request, rec *Record) error {
     lp, psql := sr.GetPromise(r);
     defer lp.Release();
     if rec.Attributes != nil {
@@ -252,7 +252,7 @@ func(sr *ResourceSQL) Update(r *Request, rec *Record) error {
     return meddler.Update(tx, sr.Table, rec.Attributes);
 }
 
-func (sr *ResourceSQL) ConvertInterfaceSliceToRecordSlice(src interface{}) []*Record {
+func (sr *SQL) ConvertInterfaceSliceToRecordSlice(src interface{}) []*Record {
     res := []*Record{};
 
     ary := reflect.Indirect(reflect.ValueOf(src));
@@ -266,7 +266,7 @@ func (sr *ResourceSQL) ConvertInterfaceSliceToRecordSlice(src interface{}) []*Re
     return res;
 }
 
-func (sr *ResourceSQL) GetTableFieldFromStructField(structstr string) (string, error) {
+func (sr *SQL) GetTableFieldFromStructField(structstr string) (string, error) {
     field, found := sr.Type.FieldByName(structstr);
     if(!found) {
         return "", errors.New("Field \""+structstr+"\" does not exist on "+sr.Type.Name());

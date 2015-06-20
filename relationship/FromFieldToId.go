@@ -1,4 +1,4 @@
-package jsonapie;
+package relationship;
 
 import(
     "reflect"
@@ -8,34 +8,34 @@ import(
     . ".." // jsonapi
 );
 
-type RelationshipFromFieldToId struct {
+type FromFieldToId struct {
     SrcFieldName string
     DstResourceName string
     Required RelationshipRequirement
 }
 
 func init() {
-    // safety check to make sure RelationshipFromFieldToId is a Relationship and a RelationshipLinkId
-    var t RelationshipLinkIds = &RelationshipFromFieldToId{};
+    // safety check to make sure FromFieldToId is a Relationship and a RelationshipLinkId
+    var t RelationshipLinkIds = &FromFieldToId{};
     _ = t;
 }
 
-func NewRelationshipFromFieldToId(dstResourceName, srcFieldName string, required RelationshipRequirement) *RelationshipFromFieldToId {
-    return &RelationshipFromFieldToId{
+func NewFromFieldToId(dstResourceName, srcFieldName string, required RelationshipRequirement) *FromFieldToId {
+    return &FromFieldToId{
         SrcFieldName: srcFieldName,
         DstResourceName: dstResourceName,
     }
 }
 
-func(l *RelationshipFromFieldToId) IsSingle() (bool) { return true; }
+func(l *FromFieldToId) IsSingle() (bool) { return true; }
 
-func(l *RelationshipFromFieldToId) PostMount(a *API) {
+func(l *FromFieldToId) PostMount(a *API) {
     if a.GetResource(l.DstResourceName) == nil {
-        panic("RelationshipFromFieldToId cannot be mounted to an API with a DstResourceName that does not exist");
+        panic("FromFieldToId cannot be mounted to an API with a DstResourceName that does not exist");
     }
 }
 
-func(l *RelationshipFromFieldToId) LinkIds(r *Request, srcR *APIMountedResource, amr *APIMountedRelationship, src *Record) (ids []OResourceIdentifier) {
+func(l *FromFieldToId) LinkIds(r *Request, srcR *APIMountedResource, amr *APIMountedRelationship, src *Record) (ids []OResourceIdentifier) {
     r.API.Logger.Debugf("REFLECT FIELDS: %#v\n", src);
     v := reflect.ValueOf(GetField(l.SrcFieldName, src));
     k := v.Kind()
@@ -50,7 +50,7 @@ func(l *RelationshipFromFieldToId) LinkIds(r *Request, srcR *APIMountedResource,
     return ids;
 }
 
-func(l *RelationshipFromFieldToId) VerifyLinks(r *Request, record *Record, amr *APIMountedRelationship, linkages []OResourceIdentifier) error {
+func(l *FromFieldToId) VerifyLinks(r *Request, record *Record, amr *APIMountedRelationship, linkages []OResourceIdentifier) error {
     a := r.API;
     a.Logger.Infof("Verify links %#v\n",linkages);
     isEmpty := linkages == nil || len(linkages) == 0;
@@ -58,15 +58,15 @@ func(l *RelationshipFromFieldToId) VerifyLinks(r *Request, record *Record, amr *
         return errors.New(fmt.Sprintf("Linkage '%s' is empty but is required",amr.Name));
     }
     if(!isEmpty && len(linkages) != 1) {
-        return errors.New("RelationshipFromFieldToId requires exactly one link");
+        return errors.New("FromFieldToId requires exactly one link");
     }
     return nil;
 }
-func(l *RelationshipFromFieldToId) PreSave(r *Request, record *Record, amr *APIMountedRelationship, linkages []OResourceIdentifier) error {
+func(l *FromFieldToId) PreSave(r *Request, record *Record, amr *APIMountedRelationship, linkages []OResourceIdentifier) error {
     a := r.API;
     a.Logger.Debugf("PreSave\n");
     if(len(linkages) == 0) {
-        return errors.New("RelationshipFromFieldToId requires the relationship to be provided when modifying this relationship");
+        return errors.New("FromFieldToId requires the relationship to be provided when modifying this relationship");
     }
     str, err := strconv.Atoi(linkages[0].Id);
     if err != nil {
@@ -75,7 +75,7 @@ func(l *RelationshipFromFieldToId) PreSave(r *Request, record *Record, amr *APIM
     SetField(l.SrcFieldName, record, str);
     return nil;
 }
-func(l *RelationshipFromFieldToId) PostSave(r *Request, record *Record, amr *APIMountedRelationship, linkages []OResourceIdentifier) error {
+func(l *FromFieldToId) PostSave(r *Request, record *Record, amr *APIMountedRelationship, linkages []OResourceIdentifier) error {
     a := r.API;
     a.Logger.Debugf("Post create\n");
     return nil;
