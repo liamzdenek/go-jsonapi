@@ -37,11 +37,11 @@ func NewAPI(baseuri string) *API {
 /**
 MountResource() will take a given Resource and make it available for requests sent to the given API. Any Resource that is accessible goes through this function
  */
-func (a *API) MountResource(name string, resource Resource, authenticator Authenticator) {
+func (a *API) MountResource(name string, resource Resource, authenticators ...Authenticator) {
     amr := &APIMountedResource{
         Name: name,
         Resource: resource,
-        Authenticator: authenticator,
+        Authenticator: NewAuthenticatorMany(authenticators...),
     }
     if a.DefaultResourceWrapper != nil {
         a.DefaultResourceWrapper(amr);

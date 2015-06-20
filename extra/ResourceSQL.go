@@ -72,6 +72,19 @@ func (sr *ResourceSQL) GetPromise(r *Request) (LeasedPromise, *ResourceSQLPromis
     return v, v.Promise.(*ResourceSQLPromise);
 }
 
+func(sr *ResourceSQL) GetIdFieldName(v interface{}) string {
+    if v == nil {
+        v = reflect.New(sr.Type).Interface();
+    }
+    _, id_field := GetIdField(v);
+    id_sql_name := id_field.Name;
+    if meddler_tag := id_field.Tag.Get("meddler"); len(meddler_tag) > 0 {
+        parts := strings.Split(meddler_tag,",");
+        id_sql_name = parts[0];
+    }
+    return id_sql_name;
+}
+
 // TODO: update this to honor sorting
 func(sr *ResourceSQL) FindDefault(r *Request, rp RequestParams) ([]*Record, error) {
     p := rp.Paginator;
@@ -95,6 +108,9 @@ func(sr *ResourceSQL) FindDefault(r *Request, rp RequestParams) ([]*Record, erro
         vs,
         q,
     );
+    if err == sql.ErrNoRows {
+        return nil, nil;
+    }
     if(err != nil) {
         return nil, err;
     }
@@ -103,7 +119,11 @@ func(sr *ResourceSQL) FindDefault(r *Request, rp RequestParams) ([]*Record, erro
 
 func(sr *ResourceSQL) FindOne(r *Request, rp RequestParams, id string) (*Record, error) {
     v := reflect.New(sr.Type).Interface();
-    err := meddler.QueryRow(sr.DB, v, "SELECT * FROM "+sr.Table+" WHERE id=?", id);
+    id_sql_name := sr.GetIdFieldName(v);
+    err := meddler.QueryRow(sr.DB, v, "SELECT * FROM "+sr.Table+" WHERE "+id_sql_name+"=?", id);
+    if err == sql.ErrNoRows {
+        return nil, nil;
+    }
     if err != nil {
         return nil, err;
     }
@@ -126,9 +146,11 @@ func(sr *ResourceSQL) FindMany(r *Request, rp RequestParams, ids []string) ([]*R
             p.CurPage * p.MaxPerPage,
         );
     }
+    id_sql_name := sr.GetIdFieldName(nil);
     q := fmt.Sprintf(
-        "SELECT * FROM %s WHERE id IN(?"+strings.Repeat(",?", len(ids)-1)+") %s",
+        "SELECT * FROM %s WHERE %s IN(?"+strings.Repeat(",?", len(ids)-1)+") %s",
         sr.Table,
+        id_sql_name,
         offset_and_limit,
     );
 
@@ -140,6 +162,9 @@ func(sr *ResourceSQL) FindMany(r *Request, rp RequestParams, ids []string) ([]*R
         q,
         args...,
     );
+    if err == sql.ErrNoRows {
+        return nil, nil;
+    }
     if(err != nil) {
         return nil, err;
     }
@@ -174,12 +199,16 @@ func(sr *ResourceSQL) FindManyByField(r *Request, rp RequestParams, field, value
         q,
         value,
     );
+    if err == sql.ErrNoRows {
+        return nil, nil;
+    }
     r.API.Logger.Debugf("RES: %#v\n", vs);
     return sr.ConvertInterfaceSliceToRecordSlice(vs), err;
 }
 
 func(sr *ResourceSQL) Delete(r *Request, id string) error {
-    _, err := sr.DB.Exec("DELETE FROM "+sr.Table+" WHERE id=?", id);
+    id_sql_name := sr.GetIdFieldName(nil);
+    _, err := sr.DB.Exec("DELETE FROM "+sr.Table+" WHERE "+id_sql_name+"=?", id);
     return err;
 }
 

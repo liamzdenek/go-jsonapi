@@ -14,7 +14,8 @@ func GetId(ider interface{}) string {
     if manual, ok := ider.(Ider); ok {
         return manual.Id();
     }
-    val := GetIdField(ider).Interface();
+    field, _ := GetIdField(ider)
+    val := field.Interface();
     if str, ok := val.(string); ok {
         return str;
     }
@@ -28,7 +29,7 @@ func GetId(ider interface{}) string {
 }
 
 func SetId(ider interface{}, id string) error {
-    f := GetIdField(ider);
+    f, _ := GetIdField(ider);
     //t := f.Type()
     if _, ok := f.Interface().(string); ok {
         f.Set(reflect.ValueOf(id));
@@ -37,11 +38,11 @@ func SetId(ider interface{}, id string) error {
     return errors.New("SetId does not have a mapping for converting between these types");
 }
 
-func GetIdField(ider interface{}) (reflect.Value) {
+func GetIdField(ider interface{}) (reflect.Value, reflect.StructField) {
     return GetFieldByTag(ider, "id");
 }
 
-func GetFieldByTag(ider interface{}, realtag string) (reflect.Value) {
+func GetFieldByTag(ider interface{}, realtag string) (reflect.Value, reflect.StructField) {
     val := reflect.Indirect(reflect.ValueOf(ider))
     typ := val.Type();
     fields := val.NumField();
@@ -49,7 +50,7 @@ func GetFieldByTag(ider interface{}, realtag string) (reflect.Value) {
         tags := strings.Split(typ.Field(i).Tag.Get("jsonapi"),",");
         for _,tag := range tags {
             if(tag == realtag) {
-                return val.Field(i);
+                return val.Field(i), typ.Field(i);
             }
         }
     }

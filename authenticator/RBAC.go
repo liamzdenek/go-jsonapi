@@ -66,16 +66,16 @@ func (a *RBACAuthenticator) Authenticate(r *Request, permission, id string) {
 
 	for _, record := range user_permissions {
 		user_permission := record.Attributes.(*RBACUserPermissionLookup)
-        fmt.Printf("USER GOT PERMISSION: %#v\n", user_permission);
+        r.API.Logger.Debugf("USER GOT PERMISSION: %#v\n", user_permission);
 		if user_permission.PermissionId == records[0].Id {
 			if !user_permission.HasPermission {
-				panic("User does not have this permission 1")
+				panic(InsufficientPermissions())
 			}
 			return
 		}
 	}
 
 	if !default_permission {
-		panic("User does not have this permission 2")
+		panic(InsufficientPermissions())
 	}
 }

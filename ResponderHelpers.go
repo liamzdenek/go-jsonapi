@@ -39,3 +39,17 @@ func NewResponderForbidden(e error) *ResponderBase {
 func NewResponderUnimplemented(e error) *ResponderBase {
     return NewResponderBaseErrors(501, e);
 }
+
+func Unimplemented() *ResponderBase {
+    err := "This endpoint is not implemented and will not be implemented."
+    return NewResponderUnimplemented(errors.New(err));
+}
+
+func InsufficientPermissions() *ResponderBase {
+    return NewResponderBaseErrors(403, errors.New("You do not have the required permission for this endpoint."));
+}
+
+func TODO() *ResponderBase {
+    err := "This endpoint is not yet implemented."
+    return NewResponderUnimplemented(errors.New(err));
+}
