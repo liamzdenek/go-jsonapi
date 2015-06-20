@@ -19,13 +19,13 @@ type API struct {
     Logger Logger
 }
 
-func NewAPI() *API {
+func NewAPI(baseuri string) *API {
     a := &API{
         Resources: map[string]*APIMountedResource{},
         Relationships: map[string]map[string]*APIMountedRelationship{},
         Router: httprouter.New(),
         Logger: NewLoggerDefault(nil),
-        BaseURI: "/",
+        BaseURI: baseuri,
         DefaultResourceWrapper: func(amr *APIMountedResource) {
             amr.Resource = NewResourceTypeSetter(amr.Resource, amr.Name, true);
         },
@@ -108,21 +108,21 @@ InitRouter() prepares the internal httprouter object with all of the desired rou
 */
 func (a *API) InitRouter() {
     // Resource and Relationship Read-only Operations
-    a.Router.GET("/:resource", a.Wrap(a.EntryFindDefault));
-    a.Router.GET("/:resource/:id", a.Wrap(a.EntryFindRecordByResourceAndId));
-    a.Router.GET("/:resource/:id/:linkname", a.Wrap(a.EntryFindRelationshipsByResourceId));
-    a.Router.GET("/:resource/:id/:linkname/:secondlinkname", a.Wrap(a.EntryFindRelationshipByNameAndResourceId));
+    a.Router.GET(a.BaseURI+":resource", a.Wrap(a.EntryFindDefault));
+    a.Router.GET(a.BaseURI+":resource/:id", a.Wrap(a.EntryFindRecordByResourceAndId));
+    a.Router.GET(a.BaseURI+":resource/:id/:linkname", a.Wrap(a.EntryFindRelationshipsByResourceId));
+    a.Router.GET(a.BaseURI+":resource/:id/:linkname/:secondlinkname", a.Wrap(a.EntryFindRelationshipByNameAndResourceId));
 
     // Record Create
-    a.Router.POST("/:resource", a.Wrap(a.EntryCreate));
-    a.Router.POST("/:resource/:id", a.Wrap(a.EntryCreate));
+    a.Router.POST(a.BaseURI+":resource", a.Wrap(a.EntryCreate));
+    a.Router.POST(a.BaseURI+":resource/:id", a.Wrap(a.EntryCreate));
 
     // Record Delete
-    a.Router.DELETE("/:resource/:id", a.Wrap(a.EntryDelete));
-    //a.Router.DELETE("/:resource", a.Wrap(a.EntryDelete));
+    a.Router.DELETE(a.BaseURI+":resource/:id", a.Wrap(a.EntryDelete));
+    //a.Router.DELETE(a.BaseURI+":resource", a.Wrap(a.EntryDelete));
 
     // Record Update
-    a.Router.PATCH("/:resource/:id", a.Wrap(a.EntryUpdate));
+    a.Router.PATCH(a.BaseURI+":resource/:id", a.Wrap(a.EntryUpdate));
 }
 
 /**

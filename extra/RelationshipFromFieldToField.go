@@ -63,40 +63,23 @@ func(l *RelationshipFromFieldToField) VerifyLinks(r *Request, rec *Record, amr *
     //return l.FromFieldToId.VerifyLinks(s,ider,linkages);
 }
 func(l *RelationshipFromFieldToField) PreSave(r *Request, rec *Record, amr *APIMountedRelationship, linkages []OResourceIdentifier) error {
-    return nil; // no PreSave as we need Ider to be flushed to DB before we can use its ID
-}
-func(l *RelationshipFromFieldToField) PostSave(r *Request, rec *Record, amr *APIMountedRelationship,linkages []OResourceIdentifier) error {
-    //id := rec.Id;
-    //resource := a.GetResource(l.DstFieldName);
-    //a := r.API;
-    
     // Fetch the current links
     ii := NewIncludeInstructionsEmpty();
     ii.Push([]string{amr.Name});
     cur_links_task := NewTaskFindLinksByRecord(rec, ii);
     r.Push(cur_links_task);
+    cur := cur_links_task.GetResult().Relationships.GetRelationshipByName(amr.Name)
 
-    // remove the ones that shouldn't be there anymore
-    cur_links := cur_links_task.GetResult().Relationships.GetRelationshipByName(amr.Name)
-    OUTER: for _,cur_link := range cur_links.Data {
-        for _,new_link := range linkages {
-            if cur_link.Id == new_link.Id && cur_link.Type == new_link.Type {
-                continue OUTER;
-            }
-        }
-        // if we got to this point, the link exists in the current set but does not exist in the new set, and must be deleted
-        panic("TODO: Asked to delete relationship");
-    }
-    
-    // add ones that should be there now
-    OUTER2: for _,new_link := range linkages {
-        for _,cur_link := range cur_links.Data {
-            if cur_link.Id == new_link.Id && cur_link.Type == new_link.Type {
-                continue OUTER2;
-            }
-        }
-        // if we got to this point, the link exists in the new set but does not exist in the old set, and must be added
-        panic("TODO: asked to add relationship");
+    add, remove := GetRelationshipDifferences(cur.Data,linkages);
+    if len(add) > 0 || len(remove) > 0 {
+        panic(NewResponderUnimplemented(errors.New(
+            fmt.Sprintf("RelationshipFromFieldToField is a read-only relationship, and cannot be updated directly. If you wish to modify this relationship, you must either set the Source field on this record, '%s'. Or, you must set the value of the Target field, '%s', on the target Records of the target Resource, '%s'.", l.SrcFieldName, l.DstFieldName, l.DstResourceName),
+        )));
+    } else {
+        panic("No differences");
     }
     return nil;
+}
+func(l *RelationshipFromFieldToField) PostSave(r *Request, rec *Record, amr *APIMountedRelationship,linkages []OResourceIdentifier) error {
+    return nil; 
 }

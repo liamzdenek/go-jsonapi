@@ -35,3 +35,7 @@ func NewResponderResourceSuccessfullyDeleted() *ResponderBase {
 func NewResponderForbidden(e error) *ResponderBase {
     return NewResponderBaseErrors(403, e);
 }
+
+func NewResponderUnimplemented(e error) *ResponderBase {
+    return NewResponderBaseErrors(501, e);
+}

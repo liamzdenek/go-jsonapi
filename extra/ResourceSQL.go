@@ -240,7 +240,7 @@ func (sr *ResourceSQL) ConvertInterfaceSliceToRecordSlice(src interface{}) []*Re
 func (sr *ResourceSQL) GetTableFieldFromStructField(structstr string) (string, error) {
     field, found := sr.Type.FieldByName(structstr);
     if(!found) {
-        return "", errors.New("Field "+structstr+" does not exist on "+sr.Type.Name());
+        return "", errors.New("Field \""+structstr+"\" does not exist on "+sr.Type.Name());
     }
     realname := field.Name;
 

@@ -52,10 +52,12 @@ func(t *TaskUpdate) Work(r *Request) {
     if(record.Id != "" && record.Id != t.Id) {
         Reply(NewResponderBaseErrors(409, errors.New(fmt.Sprintf("The ID provided \"%s\" does not match the ID provided in the url \"%s\"", record.Id, t.Id))));
     }
+    r.API.Logger.Debugf("UPDATE got relationships: %#v\n", record.Relationships.Relationships);
 
     if record.Relationships == nil {
         record.Relationships = &ORelationships{};
     }
+
 
     for _,relationship := range record.Relationships.Relationships {
         rel := r.API.GetRelationship(resource_str, relationship.RelationshipName);

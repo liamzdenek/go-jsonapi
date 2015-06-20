@@ -3,6 +3,8 @@ package main;
 import (
     . ".."
     . "../extra"
+    . "../oauth2"
+    "../authenticator"
     "net/http"
     "fmt"
     //"strconv"
@@ -34,20 +36,25 @@ type Comment struct {
     Text string `meddler:"text"`
 }
 
+type SimpleGetLoggedInAs struct {}
+
+func(s *SimpleGetLoggedInAs) GetUserId(r *Request) *string {
+    user_id := "9";
+    return &user_id;
+}
+
 func main() {
+    base_oauth := "/auth/";
+    base_api := "/api/";
+
     db, err := sql.Open("mysql", "root@/tasky");
     if err != nil {
         panic(err);
     }
 
-    api := NewAPI();
+    api := NewAPI(base_api);
 
-    // initialize our authentication scheme. The authenticator is where you put code to
-    // permit or refuse access to certain resources or linkages based on whatever rules
-    // for example, a resource might be admin-only, or retrieving a certain link might
-    // depend on any arbitrary condition
-    // AuthenticatorNone() is the only built in authenticator. Every request is granted.
-    no_auth := NewAuthenticatorNone();
+    oauth2 := NewOAuth2(base_oauth);
 
     // Resources are one of the primary concepts in jsonapi. A resource defines CRUD primitives for
     // retrieving, manipulating, and parsing the underlying data. There are no resources built in to core,
@@ -62,6 +69,18 @@ func main() {
     //resource_session.Push("1", &UserSession{ID: "1", UserId: 1, Created:&now});
     //resource_session.Push("2", &UserSession{ID: "2", UserId: 2, Created:&now});
     //resource_session.Push("3", &UserSession{ID: "3", UserId: 17, Created:&now});
+
+    // initialize our authentication scheme. The authenticator is where you put code to
+    // permit or refuse access to certain resources or linkages based on whatever rules
+    // for example, a resource might be admin-only, or retrieving a certain link might
+    // depend on any arbitrary condition
+    // AuthenticatorNone() is the only built in authenticator. Every request is granted.
+    no_auth := NewAuthenticatorNone();
+    rbac := authenticator.NewRBAC(
+        NewResourceSQL(db, "rbac_permissions", &authenticator.RBACPermissionLookup{}),
+        NewResourceSQL(db, "rbac_user_permissions", &authenticator.RBACUserPermissionLookup{}),
+        &SimpleGetLoggedInAs{},
+    );
 
     // Resources can be easily wrapped with common functionality,
     // such as caching, or pagination. These are designed
@@ -85,7 +104,7 @@ func main() {
     // TODO: write real docs about how all of this works
     api.MountResource("user", resource_user, no_auth);
     api.MountResource("post", resource_post_paginator, no_auth);
-    api.MountResource("comment", resource_comment_cache, no_auth);
+    api.MountResource("comment", resource_comment_cache, rbac.Require("canComment"));
     //api.MountResource("session", resource_session, no_auth);
 
     // Relationships are the other large concept in addition to Resources. Each relationship
@@ -134,7 +153,9 @@ func main() {
 
     // that's it! start the API
     fmt.Printf("Listening\n");
-    err = http.ListenAndServe(":3030", api);
+    http.Handle(base_oauth, oauth2);
+    http.Handle(base_api, api);
+    err = http.ListenAndServe(":3030", nil);
     if err != nil {
         panic(err);
     }

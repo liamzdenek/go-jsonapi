@@ -56,10 +56,38 @@ func ParseJSONHelper(v *Record, raw []byte, t reflect.Type) (*Record, error) {
     };
     fmt.Printf("UNMARSHAL: %s\n",raw);
     err := json.Unmarshal(raw, rp);
+    fmt.Printf("UNMARSHAL: %#v\n",rp);
     fmt.Printf("UNMARSHAL: %#v\n",rp.Data);
+    fmt.Printf("UNMARSHAL: %#v\n",rp.Data.Relationships);
     fmt.Printf("UNMARSHAL: %#v\n",rp.Data.Attributes);
     if(err != nil) {
         return nil, err;
     }
     return v, nil;
+}
+
+func GetRelationshipDifferences(src, dst []OResourceIdentifier) (add, remove []OResourceIdentifier) {
+    OUTER: for _,srcrid := range src {
+        for _,dstrid := range dst {
+            if srcrid.Id == dstrid.Id && srcrid.Type == dstrid.Type {
+                continue OUTER;
+            }
+        }
+        // if we got to this point, the link exists in the current set but does not exist in the new set, and must be deleted
+        remove = append(remove, srcrid);
+        panic("REMOVE");
+    }
+    
+    // add ones that should be there now
+    OUTER2: for _,dstrid := range dst {
+        for _,srcrid := range src {
+            if srcrid.Id == dstrid.Id && srcrid.Type == dstrid.Type {
+                continue OUTER2;
+            }
+        }
+        // if we got to this point, the link exists in the new set but does not exist in the old set, and must be added
+        add = append(add, dstrid);
+        panic("ADD");
+    }
+    return
 }
