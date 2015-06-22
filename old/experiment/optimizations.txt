@@ -1,0 +1,36 @@
+SOURCE
+
+SELECT * FROM a WHERE a.key = [value];
+SELECT * FROM b WHERE b.key = [a.key2 retrieved from prior query];
+
+DST
+
+SELECT *
+FROM a
+JOIN b
+    ON(b.key = a.key2)
+WHERE a.key = [value];
+
+
+type Future interface {
+    Task
+    ShouldCombine(Future) bool
+    Combine(Future) error
+}
+
+type FutureValue interface {
+    Parent Future
+    Column string 
+}
+
+type SQLParameter struct {
+    Column string
+    Value FutureValue
+}
+
+type FutureSQLSelect struct {
+    Table string
+    Parameters []SQLParameter
+    Children []*FutureSQLSelect
+    Limit, Offset uint
+}
