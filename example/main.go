@@ -3,7 +3,7 @@ package main;
 import (
     . ".."
     "../resource"
-    "../relationship"
+    //"../relationship"
     //. "../oauth2"
     //"../authenticator"
     "net/http"
@@ -66,12 +66,10 @@ func main() {
     api.MountResource("comment", resource_comment, rbac.Require("canComment"));
     api.MountResource("login", resource_login);
 
-    */
     api.MountRelationship("posts", "user",
         relationship.NewFromFieldToField("post", "ID", "UserId", NotRequired),
         no_auth,
     );
-    /*
     api.MountRelationship("author", "post",
         relationship.NewFromFieldToId("user", "UserId", Required),
         no_auth,

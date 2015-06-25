@@ -12,11 +12,10 @@ const (
 type Relationship interface {
     IsSingle() bool
     PostMount(a *API)
-    VerifyLinks(r *Request, rec *Record, amr *APIMountedRelationship, rids []OResourceIdentifier) error
-    PreSave(r *Request, rec *Record, amr *APIMountedRelationship, rids []OResourceIdentifier) error
-    PostSave(r *Request, rec *Record, amr *APIMountedRelationship, rids []OResourceIdentifier) error
-    Link(r *Request, srcR *APIMountedResource, rel *APIMountedRelationship, src Future) Future
-    //PreDelete(r *Request, rec *Record, amr *APIMountedRelationship) error
-    //PostDelete(r *Request, rec *Record, amr *APIMountedRelationship) error
+    //VerifyLinks(r *Request, rec *Record, amr *APIMountedRelationship, rids []OResourceIdentifier) error
+    //PreSave(r *Request, rec *Record, amr *APIMountedRelationship, rids []OResourceIdentifier) error
+    //PostSave(r *Request, rec *Record, amr *APIMountedRelationship, rids []OResourceIdentifier) error
+    GetTargetFuture() Future
+    Link(r *Request, input *FutureResponse) (output []FutureRequestKind)
 }
 

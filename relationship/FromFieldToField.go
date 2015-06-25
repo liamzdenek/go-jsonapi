@@ -1,5 +1,6 @@
 package relationship;
 
+/*
 import(
     . ".."
     "errors"
@@ -83,3 +84,4 @@ func(l *FromFieldToField) PreSave(r *Request, rec *Record, amr *APIMountedRelati
 func(l *FromFieldToField) PostSave(r *Request, rec *Record, amr *APIMountedRelationship,linkages []OResourceIdentifier) error {
     return nil; 
 }
+*/

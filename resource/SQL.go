@@ -67,10 +67,13 @@ type FutureSQL struct {
     Limit, Offset uint
 }
 
-func(f *FutureSQL) PrepareQuery() string {
+func(f *FutureSQL) PrepareQuery() (query string, is_single bool) {
     q_params := "";
 
     for i, param := range f.Parameters {
+        if param.Column == f.Resource.GetIdFieldName(nil) {
+            is_single = true;
+        }
         verb := "AND ";
         if(i == 0) {
             verb = "WHERE ";
@@ -78,15 +81,16 @@ func(f *FutureSQL) PrepareQuery() string {
         q_params = fmt.Sprintf("%s%s%s=? ",q_params,verb,param.Column);
     }
 
-    query := fmt.Sprintf("SELECT * FROM %s %s", f.Resource.Table, q_params);
-    return query;
+    query = fmt.Sprintf("SELECT * FROM %s %s", f.Resource.Table, q_params);
+    return;
 }
 
-func(f *FutureSQL) Work(c chan *FutureRequest) {
+func(f *FutureSQL) Work(pf *PreparedFuture) {
     go func() {
-        for req := range c {
+        fmt.Printf("FutureSQL Work");
+        for req := range pf.Input {
             vs := reflect.New(reflect.SliceOf(reflect.PtrTo(f.Resource.Type))).Interface()
-            query := f.PrepareQuery();
+            query, is_single := f.PrepareQuery();
             err := meddler.QueryAll(
                 f.Resource.DB,
                 vs,
@@ -101,8 +105,11 @@ func(f *FutureSQL) Work(c chan *FutureRequest) {
             }
             req.Response <- &FutureResponse{
                 IsSuccess: true,
-                Success: map[Future][]*Record{
-                    f: f.Resource.ConvertInterfaceSliceToRecordSlice(vs),
+                Success: map[Future]FutureResponseKind{
+                    f: FutureResponseKindRecords{
+                        IsSingle: is_single,
+                        Records: f.Resource.ConvertInterfaceSliceToRecordSlice(vs),
+                    },
                 },
             };
         }

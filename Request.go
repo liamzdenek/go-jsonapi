@@ -57,6 +57,12 @@ func(r *Request) Send(obj interface{}) {
     r.HttpResponseWriter.Write(str);
 }
 
+func(r *Request) CatchPanic() {
+    if raw := recover(); raw != nil {
+        r.HandlePanic(raw);
+    }
+}
+
 /**
 HandlePanic() is responsible for interpreting the object that was paniced, and replying with the appropriate answer.
 */
@@ -88,11 +94,11 @@ func(r *Request) HandlePanic(raw interface{}) (is_valid bool){
             return false, true;
         }
     }();
-    if(true || should_print_stack) {
+    if(should_print_stack) {
         const size = 64 << 10
         buf := make([]byte, size)
         buf = buf[:runtime.Stack(buf, false)]
-        r.API.Logger.Infof("jsonapi: panic %v\n%s", raw, buf);
+        r.API.Logger.Infof("jsonapi: panic %#v\n%s", raw, buf);
     }
     return is_valid;
 }

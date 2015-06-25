@@ -42,17 +42,20 @@ func(a *API) EntryFindRelationshipByNameAndResourceId(r *Request) {
 
 func(a *API) CentralFindRouter(r *Request, resourcestr, idstr string, preroute []string, outputtype OutputType, linkname string) {
     resource := a.GetResource(resourcestr);
-    ft := NewFutureTree(resource.GetFuture(), resource);
+    pf := &PreparedFuture{
+        Future: resource.GetFuture(),
+        Relationship: nil,
+    }
+    fl := NewFutureList();
 
-
-    req := &FutureRequest{
-        Request: r,
-        Kind: FutureRequestKindFindByIds{
-            Ids: strings.Split(idstr, ","),
-        },
-    };
-    ft.BuildIncludeInstructions(r);
-    ft.Takeover(r, req);
+    req := NewFutureRequest(r, FutureRequestKindFindByIds{
+        Ids: strings.Split(idstr, ","),
+    });
+    fl.PushFuture(pf);
+    fl.PushRequest(pf,req);
+    fl.Build(r, resource, true).PrimaryData = pf.Future;
+    fl.Takeover(r);
+    defer fl.Defer();
 
     /*
     ids := []string{};
