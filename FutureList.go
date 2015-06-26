@@ -150,7 +150,7 @@ func(fl *FutureList) HandleInput(pf *PreparedFuture, req *FutureRequest) {
         //fmt.Printf("Sending Request: %#v\n", req);
         pf.Input <- req;
         //fmt.Printf("Getting response...\n");
-        res := <-req.Response;
+        res := req.GetResponse();
         //fmt.Printf("Got Response: %#v\n", res);
         if !res.IsSuccess {
             // TODO()

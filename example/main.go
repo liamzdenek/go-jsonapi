@@ -12,7 +12,24 @@ import (
     _ "github.com/go-sql-driver/mysql"
     "database/sql"
     "runtime"
+    //"time"
 );
+
+/*
+func init() {
+    go func() {
+        counter := 0;
+        for {
+            time.Sleep(time.Second);
+            fmt.Printf("GOROUTINES: %#v\n", runtime.NumGoroutine());
+            counter++;
+            if counter > 10 {
+                panic("10 seconds has passed");
+            }
+        }
+    }();
+}
+*/
 
 type User struct{
     ID int `meddler:"id,pk" jsonapi:"id" json:"-"`

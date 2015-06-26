@@ -22,12 +22,22 @@ func NewFutureRequest(r *Request, kind FutureRequestKind) *FutureRequest {
     }
 }
 
-func(fr *FutureRequest) SendResponse(pf *PreparedFuture, res *FutureResponse) {
+func(fr *FutureRequest) SendResponse(res *FutureResponse) {
     select {
     case fr.Response <- res:
-    case <-pf.FutureList.Request.Done.Wait():
+    case <-fr.Request.Done.Wait():
         panic(&FutureRequestedPanic{});
     }
+}
+
+
+func(fr *FutureRequest) GetResponse() (res *FutureResponse){
+    select {
+    case res = <-fr.Response:
+    case <-fr.Request.Done.Wait():
+        panic(&FutureRequestedPanic{});
+    }
+    return
 }
 
 type FutureResponse struct {

@@ -99,13 +99,13 @@ func(f *FutureSQL) Work(pf *PreparedFuture) {
             query,
         );
         if err != nil {
-            req.SendResponse(pf,&FutureResponse{
+            req.SendResponse(&FutureResponse{
                 IsSuccess: false,
                 Failure: []OError{ErrorToOError(err)},
             });
             continue;
         }
-        req.SendResponse(pf,&FutureResponse{
+        req.SendResponse(&FutureResponse{
             IsSuccess: true,
             Success: map[Future]FutureResponseKind{
                 f: FutureResponseKindRecords{
