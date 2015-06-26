@@ -12,6 +12,8 @@ type FutureRequest struct {
     Kind FutureRequestKind
 }
 
+type FutureRequestedPanic struct{}
+
 func NewFutureRequest(r *Request, kind FutureRequestKind) *FutureRequest {
     return &FutureRequest{
         Request: r,
@@ -20,10 +22,18 @@ func NewFutureRequest(r *Request, kind FutureRequestKind) *FutureRequest {
     }
 }
 
+func(fr *FutureRequest) SendResponse(pf *PreparedFuture, res *FutureResponse) {
+    select {
+    case fr.Response <- res:
+    case <-pf.FutureList.Request.Done.Wait():
+        panic(&FutureRequestedPanic{});
+    }
+}
+
 type FutureResponse struct {
     IsSuccess bool
     Success map[Future]FutureResponseKind
-    Failure []*OError
+    Failure []OError
 }
 
 type FutureResponseKind interface{}
@@ -34,6 +44,9 @@ type FutureResponseKindRecords struct{
 
 type FutureRequestKind interface{}
 
+type FutureRequestKindFailure struct {
+    Response *FutureResponse
+}
 type FutureRequestKindIdentity struct {
     Response *FutureResponse
 }

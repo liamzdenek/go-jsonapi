@@ -7,6 +7,7 @@ import (
     "fmt"
     "runtime"
     "encoding/json"
+    "sync"
 );
 
 /**
@@ -20,6 +21,32 @@ type Request struct {
     IncludeInstructions *IncludeInstructions
     PromiseStorage *PromiseStorage
     hasCompleted bool
+    Done *Done
+    Responder chan Responder
+}
+
+type Done struct{
+    sync.Mutex
+    Chan chan bool 
+    HasClosed bool
+}
+
+func NewDone() *Done {
+    return &Done{
+        Chan: make(chan bool),
+    }
+}
+
+func(d *Done) Close() {
+    d.Lock();
+    defer d.Unlock();
+    if !d.HasClosed {
+        close(d.Chan);
+    }
+}
+
+func(d *Done) Wait() chan bool {
+    return d.Chan
 }
 
 /**
@@ -33,8 +60,30 @@ func NewRequest(a *API, httpreq *http.Request, httpres http.ResponseWriter, para
         Params: params,
         IncludeInstructions: NewIncludeInstructionsFromRequest(httpreq),
         PromiseStorage: NewPromiseStorage(),
+        Responder: make(chan Responder),
+        Done: NewDone(),
     }
+    req.ResponderWorker();
     return req;
+}
+
+func(r *Request) ResponderWorker() {
+    go func() {
+        defer r.Done.Close();
+        defer close(r.Responder);
+        select {
+        case <-r.Done.Wait():
+        case re := <-r.Responder:
+            re.Respond(r);
+        }
+    }()
+}
+
+func(r *Request) Respond(re Responder) {
+    select {
+    case r.Responder <- re:
+    default:
+    }
 }
 
 /**
@@ -53,7 +102,7 @@ Send() is responsible for converting a given *Output object to json, and sending
 func(r *Request) Send(obj interface{}) {
     str, err := json.Marshal(obj);
     Check(err);
-    r.API.Logger.Debugf("WRITING: %s\n", str);
+    //r.API.Logger.Debugf("WRITING: %s TO %#v\n", str, r);
     r.HttpResponseWriter.Write(str);
 }
 
@@ -66,32 +115,40 @@ func(r *Request) CatchPanic() {
 /**
 HandlePanic() is responsible for interpreting the object that was paniced, and replying with the appropriate answer.
 */
-func(r *Request) HandlePanic(raw interface{}) (is_valid bool){
-    r.API.Logger.Infof("Caught panic: %#v\n", raw);
-    is_valid, should_print_stack := func() (bool, bool){
+func(r *Request) HandlePanic(raw interface{}){
+    re,_ := r.InternalHandlePanic(raw);
+    select {
+    case r.Responder <- re:
+    default:
+    }
+}
+
+func(r *Request) InternalHandlePanic(raw interface{}) (re Responder, is_valid bool) {
+    //r.API.Logger.Infof("Caught panic: %#v\n", raw);
+    re, is_valid, should_print_stack := func() (Responder, bool, bool){
         switch raw_type := raw.(type) {
         case Responder:
-            r.API.Logger.Infof("Responding\n");
-            raw_type.Respond(r);
-            return true, false;
+            return raw_type, true, false;
         case *Output:
-            r.API.Logger.Infof("Responder output\n");
             rb := NewResponderBase(200,raw_type);
-            rb.Respond(r);
-            return true, false;
+            return rb, true, false;
+        case []OError:
+            o := NewOutput();
+            o.Errors = raw_type;
+            re := NewResponderBase(500, o);
+            return re, true, false;
         case error:
             r.API.Logger.Errorf("Panic(error) is deprecated as it is always ambiguous. You probably intend to use panic(NewResponderError()) instead\n");
             re := NewResponderBaseErrors(500, raw_type);
-            re.Respond(r);
-            return true, true;
+            return re, true, true;
         case string:
             r.API.Logger.Errorf("Panic(string) is deprecated as it is always ambiguous. You probably intend to use panic(NewResponderError()) instead\n");
             re := NewResponderBaseErrors(500,errors.New(raw_type));
-            re.Respond(r);
-            return true, true;
+            return re, true, true;
         default:
+            r.API.Logger.Errorf("Panic(unknown type/%T) should be avoided as we cannot display a proper error to the user\n",raw_type);
             r.HttpResponseWriter.Write([]byte(fmt.Sprintf("Internal error handling request. Improper object sent to response method: %#v\n", r)));
-            return false, true;
+            return nil, false, true;
         }
     }();
     if(should_print_stack) {
@@ -100,14 +157,14 @@ func(r *Request) HandlePanic(raw interface{}) (is_valid bool){
         buf = buf[:runtime.Stack(buf, false)]
         r.API.Logger.Infof("jsonapi: panic %#v\n%s", raw, buf);
     }
-    return is_valid;
-}
+    return re,is_valid;
 
+}
 /**
 Success() is responsible for calling the appropriate succcess handles. This function should never be called outside of a Responder 
 */
 func(r *Request) Success() {
-    r.API.Logger.Infof("Calling Promise Success\n");
+    //r.API.Logger.Infof("Calling Promise Success\n");
     r.finalizePromises(true);
 }
 
@@ -115,7 +172,7 @@ func(r *Request) Success() {
 Failure() is responsible for calling the appropriate failure handles. This function should never be called outside of a Responder
 */
 func(r *Request) Failure() {
-    r.API.Logger.Infof("Calling Promise Failure\n");
+    //r.API.Logger.Infof("Calling Promise Failure\n");
     r.finalizePromises(false);
 }
 

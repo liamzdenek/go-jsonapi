@@ -1,9 +1,8 @@
 package jsonapi;
 
-import "sync";
-import "fmt"
 
 type FutureList struct{
+    Request *Request
     Unabridged []*PreparedFuture
     Optimized []*PreparedFuture
     Requests map[*PreparedFuture][]*FutureRequest
@@ -11,16 +10,36 @@ type FutureList struct{
 }
 
 type PreparedFuture struct {
+    FutureList *FutureList
     Parents []*PreparedFuture
     Future Future
     Input chan *FutureRequest
     Relationship Relationship
     CombinedWith []*PreparedFuture
+    Current *FutureRequest
     //IsIncluded, IsPrimaryData bool
 }
 
-func NewFutureList() *FutureList {
+func(pf *PreparedFuture) GetNext() (req *FutureRequest, should_break bool) {
+    select {
+    case <-pf.FutureList.Request.Done.Wait():
+        panic(&FutureRequestedPanic{});
+    case req, should_break = <-pf.Input:
+    }
+    should_break = !should_break;
+    pf.Current = req;
+    /*
+    switch failure := req.(type) {
+    case FutureRequestKindFailure:
+        should_break = true;
+        req.Response <- failure.Response;
+    }*/
+    return
+}
+
+func NewFutureList(r *Request) *FutureList {
     return &FutureList{
+        Request: r,
         Unabridged: []*PreparedFuture{},
         Optimized: []*PreparedFuture{},
         Requests: map[*PreparedFuture][]*FutureRequest{},
@@ -28,6 +47,7 @@ func NewFutureList() *FutureList {
 }
 
 func (fl *FutureList) PushFuture(pf *PreparedFuture) {
+    pf.FutureList = fl;
     fl.Unabridged = append(fl.Unabridged, pf);
 }
 
@@ -38,21 +58,21 @@ func (fl *FutureList) PushRequest(pf *PreparedFuture, req *FutureRequest) {
     fl.Requests[pf] = append(fl.Requests[pf], req);
 }
 
-func(fl *FutureList) Build(r *Request, amr *APIMountedResource, should_include_root bool) *FutureOutput{
+func(fl *FutureList) Build(amr *APIMountedResource, should_include_root bool) *FutureOutput{
     fo := &FutureOutput{};
     output := &PreparedFuture{
         Future: fo,
         Relationship: &RelationshipIdentity{},
     }
     for node, _ := range fl.Requests {
-        fl.recurseBuild(r, node, amr, r.IncludeInstructions, output, should_include_root);
+        fl.recurseBuild(node, amr, fl.Request.IncludeInstructions, output, should_include_root);
     }
     fl.PushFuture(output);
     return fo;
 }
 
-func(fl *FutureList) recurseBuild(r *Request, node *PreparedFuture, amr *APIMountedResource, ii *IncludeInstructions, output *PreparedFuture, should_include_root bool) {
-    rels := r.API.GetRelationshipsByResource(amr.Name);
+func(fl *FutureList) recurseBuild(node *PreparedFuture, amr *APIMountedResource, ii *IncludeInstructions, output *PreparedFuture, should_include_root bool) {
+    rels := fl.Request.API.GetRelationshipsByResource(amr.Name);
     if should_include_root {
         output.Parents = append(output.Parents, node);
     }
@@ -69,7 +89,7 @@ func(fl *FutureList) recurseBuild(r *Request, node *PreparedFuture, amr *APIMoun
             if should_include {
                 panic("SHOULD INCLUDE");
             }
-            fl.recurseBuild(r, prepared, r.API.GetResource(rel.DstResourceName), ii.GetChild(rel.Name), output, should_include);
+            fl.recurseBuild(prepared, fl.Request.API.GetResource(rel.DstResourceName), ii.GetChild(rel.Name), output, should_include);
         }
     }
 }
@@ -83,15 +103,13 @@ func(fl *FutureList) Optimize() {
     fl.Optimized = fl.Unabridged;
 }
 
-func(fl *FutureList) Run(r *Request) {
-    for _,prepfuture := range fl.Optimized {
+func(fl *FutureList) Run() {
+    for _,tprepfuture := range fl.Optimized {
+        prepfuture := tprepfuture;
         prepfuture.Input = make(chan *FutureRequest);
-        go func(prepfuture *PreparedFuture) {
-            defer r.CatchPanic();
-            fmt.Printf("RUNNING: %#v\n", prepfuture);
-            fmt.Printf("RUNNING: %T\n", prepfuture.Future);
+        fl.Go(func() {
             prepfuture.Future.Work(prepfuture);
-        }(prepfuture);
+        });
     }
 }
 
@@ -101,28 +119,39 @@ func(fl *FutureList) Defer() {
     }
 }
 
-func(fl *FutureList) Takeover(r *Request) {
+func(fl *FutureList) Takeover() {
     fl.Optimize();
-    fl.Run(r);
-    wg := &sync.WaitGroup{};
+    fl.Run();
     for pf,requests := range fl.Requests {
         for _,request := range requests {
-            fl.HandleInput(r, wg, pf, request);
+            fl.HandleInput(pf, request);
         }
     }
-    wg.Wait();
+    <-fl.Request.Done.Wait()
 }
 
-func(fl *FutureList) HandleInput(r *Request, wg *sync.WaitGroup, pf *PreparedFuture, req *FutureRequest) {
-    wg.Add(1);
+func(fl *FutureList) CatchPanic() {
+    if raw := recover(); raw != nil {
+        if _, ok := raw.(*FutureRequestedPanic); !ok {
+            fl.Request.HandlePanic(raw);
+        }
+    }
+}
+
+func(fl *FutureList) Go(f func()) {
     go func() {
-        defer r.CatchPanic();
-        defer wg.Done();
-        fmt.Printf("Sending Request: %#v\n", req);
+        defer fl.CatchPanic();
+        f();
+    }();
+}
+
+func(fl *FutureList) HandleInput(pf *PreparedFuture, req *FutureRequest) {
+    fl.Go(func() {
+        //fmt.Printf("Sending Request: %#v\n", req);
         pf.Input <- req;
-        fmt.Printf("Getting response...\n");
+        //fmt.Printf("Getting response...\n");
         res := <-req.Response;
-        fmt.Printf("Got Response: %#v\n", res);
+        //fmt.Printf("Got Response: %#v\n", res);
         if !res.IsSuccess {
             // TODO()
             panic(res.Failure);
@@ -131,19 +160,17 @@ func(fl *FutureList) HandleInput(r *Request, wg *sync.WaitGroup, pf *PreparedFut
             for future,_ := range res.Success {
                 for _, parent := range prepfuture.Parents {
                     if parent.Future == future {
-                        reqs := prepfuture.Relationship.Link(r, res);
-                        for _,rawreq := range reqs {
-                            req := &FutureRequest{
-                                Request: r,
-                                Response: make(chan *FutureResponse),
-                                Kind: rawreq,
-                            };
-                            fl.HandleInput(r,wg,prepfuture, req);
-                        }
+                        rawreq := prepfuture.Relationship.Link(fl.Request, res);
+                        req := &FutureRequest{
+                            Request: fl.Request,
+                            Response: make(chan *FutureResponse),
+                            Kind: rawreq,
+                        };
+                        fl.HandleInput(prepfuture, req);
                         continue OUTER;
                     }
                 }
             }
         }
-    }()
+    });
 }

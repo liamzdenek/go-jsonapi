@@ -46,15 +46,15 @@ func(a *API) CentralFindRouter(r *Request, resourcestr, idstr string, preroute [
         Future: resource.GetFuture(),
         Relationship: nil,
     }
-    fl := NewFutureList();
+    fl := NewFutureList(r);
 
     req := NewFutureRequest(r, FutureRequestKindFindByIds{
         Ids: strings.Split(idstr, ","),
     });
     fl.PushFuture(pf);
     fl.PushRequest(pf,req);
-    fl.Build(r, resource, true).PrimaryData = pf.Future;
-    fl.Takeover(r);
+    fl.Build(resource, true).PrimaryData = pf.Future;
+    fl.Takeover();
     defer fl.Defer();
 
     /*

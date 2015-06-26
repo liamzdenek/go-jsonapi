@@ -14,18 +14,17 @@ func(fo *FutureOutput) Combine(f Future) error { panic("This should never be cal
 
 func(fo *FutureOutput) Work(pf *PreparedFuture) {
     reply_todo := []*FutureRequest{};
-    defer func() {
-        for _,reply := range reply_todo {
-            reply.Response <- &FutureResponse{
-                IsSuccess: true,
-            }
-        }
-    }()
+    should_break := false;
     responses := map[Future]FutureResponseKind{};
     need := pf.Parents;
-    OUTER:for rawreq := range pf.Input {
+    OUTER:for {
+        var rawreq *FutureRequest;
+        rawreq, should_break = pf.GetNext();
+        if should_break {
+            return;
+        }
+        //fmt.Printf("GOT RAW REQ: %#v\n", rawreq);
         reply_todo = append(reply_todo, rawreq);
-        fmt.Printf("GOT RAW REQ: %#v\n", rawreq);
         switch req := rawreq.Kind.(type) {
         case *FutureRequestKindIdentity:
             if !req.Response.IsSuccess {
@@ -39,7 +38,7 @@ func(fo *FutureOutput) Work(pf *PreparedFuture) {
                     }
                 }
             }
-            fmt.Printf("STILL NEED: %#v\n", need);
+            //fmt.Printf("STILL NEED: %#v\n", need);
             if len(need) == 0 {
                 break OUTER;
             }
@@ -48,7 +47,7 @@ func(fo *FutureOutput) Work(pf *PreparedFuture) {
         }
     }
 
-    fmt.Printf("OUTPUT GOT DATA: %#v\n", responses);
+    //fmt.Printf("OUTPUT GOT DATA: %#v\n", responses);
     
     output := NewOutput();
     output_primary := []*Record{};

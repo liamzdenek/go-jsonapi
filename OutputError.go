@@ -11,8 +11,8 @@ type OError struct {
     Meta interface{} `json:"meta,omitempty"`
 }
 
-func ErrorToOError(err error) *OError {
-    return &OError {
+func ErrorToOError(err error) OError {
+    return OError {
         Title: err.Error(),
     }
 }

@@ -11,6 +11,7 @@ import (
     //"strconv"
     _ "github.com/go-sql-driver/mysql"
     "database/sql"
+    "runtime"
 );
 
 type User struct{
@@ -32,6 +33,8 @@ type Comment struct {
 }
 
 func main() {
+
+    runtime.GOMAXPROCS(runtime.NumCPU() * 4)
     //base_oauth := "/auth/";
     base_api := "/api/";
 

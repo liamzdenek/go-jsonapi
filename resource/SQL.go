@@ -86,34 +86,35 @@ func(f *FutureSQL) PrepareQuery() (query string, is_single bool) {
 }
 
 func(f *FutureSQL) Work(pf *PreparedFuture) {
-    go func() {
-        fmt.Printf("FutureSQL Work");
-        for req := range pf.Input {
-            vs := reflect.New(reflect.SliceOf(reflect.PtrTo(f.Resource.Type))).Interface()
-            query, is_single := f.PrepareQuery();
-            err := meddler.QueryAll(
-                f.Resource.DB,
-                vs,
-                query,
-            );
-            if err != nil {
-                req.Response <- &FutureResponse{
-                    IsSuccess: false,
-                    Failure: []*OError{ErrorToOError(err)},
-                };
-                continue;
-            }
-            req.Response <- &FutureResponse{
-                IsSuccess: true,
-                Success: map[Future]FutureResponseKind{
-                    f: FutureResponseKindRecords{
-                        IsSingle: is_single,
-                        Records: f.Resource.ConvertInterfaceSliceToRecordSlice(vs),
-                    },
-                },
-            };
+    for {
+        req, should_break := pf.GetNext();
+        if should_break {
+            break;
         }
-    }();
+        vs := reflect.New(reflect.SliceOf(reflect.PtrTo(f.Resource.Type))).Interface()
+        query, is_single := f.PrepareQuery();
+        err := meddler.QueryAll(
+            f.Resource.DB,
+            vs,
+            query,
+        );
+        if err != nil {
+            req.SendResponse(pf,&FutureResponse{
+                IsSuccess: false,
+                Failure: []OError{ErrorToOError(err)},
+            });
+            continue;
+        }
+        req.SendResponse(pf,&FutureResponse{
+            IsSuccess: true,
+            Success: map[Future]FutureResponseKind{
+                f: FutureResponseKindRecords{
+                    IsSingle: is_single,
+                    Records: f.Resource.ConvertInterfaceSliceToRecordSlice(vs),
+                },
+            },
+        });
+    }
 }
 
 func(f *FutureSQL) ShouldCombine(n Future) bool { return false; }
