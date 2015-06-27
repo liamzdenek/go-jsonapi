@@ -22,12 +22,12 @@ func(a *API) EntryFindRecordByResourceAndId(r *Request) {
 }
 
 func(a *API) EntryFindRelationshipsByResourceId(r *Request) {
-    /*a.CentralFindRouter(r,
+    a.CentralFindRouter(r,
         r.Params.ByName("resource"),
         r.Params.ByName("id"),
         []string{r.Params.ByName("linkname")},
         OutputTypeResources, "",
-    );*/
+    );
 }
 
 func(a *API) EntryFindRelationshipByNameAndResourceId(r *Request) {
@@ -57,7 +57,7 @@ func(a *API) CentralFindRouter(r *Request, resourcestr, idstr string, preroute [
     });
     fl.PushFuture(pf);
     fl.PushRequest(pf,req);
-    fl.Build(resource, true).PrimaryData = pf.Future;
+    fl.Build(pf, resource, true).PrimaryData = pf.Future;
     fl.Takeover();
     defer fl.Defer();
 

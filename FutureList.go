@@ -52,15 +52,13 @@ func (fl *FutureList) PushRequest(pf *PreparedFuture, req *FutureRequest) {
     fl.Requests[pf] = append(fl.Requests[pf], req);
 }
 
-func(fl *FutureList) Build(amr *APIMountedResource, should_include_root bool) *FutureOutput{
+func(fl *FutureList) Build(node *PreparedFuture, amr *APIMountedResource, should_include_root bool) *FutureOutput{
     fo := &FutureOutput{};
     output := &PreparedFuture{
         Future: fo,
         Relationship: &RelationshipIdentity{},
     }
-    for node, _ := range fl.Requests {
-        fl.recurseBuild(node, amr, fl.Request.IncludeInstructions, output, should_include_root);
-    }
+    fl.recurseBuild(node, amr, fl.Request.IncludeInstructions, output, should_include_root);
     fl.PushFuture(output);
     return fo;
 }

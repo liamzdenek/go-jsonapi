@@ -86,7 +86,7 @@ func(f *FutureSQL) WorkFindByIds(pf *PreparedFuture, req *FutureRequest, k *Futu
     parameters := []SQLExpression{};
     forced_single := false;
     if len(k.Ids) > 0 {
-        forced_single = true;
+        forced_single = len(k.Ids) == 1;
         id_field := f.Resource.GetIdFieldName(nil);
         for _, id := range k.Ids {
             parameters = append(parameters, &SQLEquals{
