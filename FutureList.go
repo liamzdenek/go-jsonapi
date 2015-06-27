@@ -1,5 +1,6 @@
 package jsonapi;
 
+import "fmt"
 
 type FutureList struct{
     Request *Request
@@ -72,7 +73,7 @@ func(fl *FutureList) recurseBuild(node *PreparedFuture, amr *APIMountedResource,
         should_fetch := ii.ShouldFetch(rel.Name);
         should_include := ii.ShouldInclude(rel.Name);
         if should_fetch || should_include {
-            target_future := rel.Relationship.GetTargetFuture();
+            target_future := fl.Request.API.GetResource(rel.DstResourceName).GetFuture();
             prepared := &PreparedFuture{
                 Parents: []*PreparedFuture{node},
                 Future: target_future,
@@ -139,16 +140,19 @@ func(fl *FutureList) Go(f func()) {
 
 func(fl *FutureList) HandleInput(pf *PreparedFuture, req *FutureRequest) {
     fl.Go(func() {
-        //fmt.Printf("Sending Request: %#v\n", req);
+        fmt.Printf("Sending Request: %#v\n", req);
         pf.Input <- req;
-        //fmt.Printf("Getting response...\n");
+        fmt.Printf("Getting response...\n");
         res := req.GetResponse();
-        //fmt.Printf("Got Response: %#v\n", res);
+        fmt.Printf("Got Response: %#v\n", res);
+        if !res.IsSuccess {
+            panic(res.Failure);
+        }
         OUTER:for _,prepfuture := range fl.Optimized {
-            for future,_ := range res.Success {
+            for future,future_output := range res.Success {
                 for _, parent := range prepfuture.Parents {
                     if parent.Future == future {
-                        rawreq := prepfuture.Relationship.Link(fl.Request, res);
+                        rawreq := prepfuture.Relationship.Link(fl.Request, pf, prepfuture, future_output);
                         req := &FutureRequest{
                             Request: fl.Request,
                             Response: make(chan *FutureResponse),

@@ -58,7 +58,8 @@ type FutureRequestKindFailure struct {
     Response *FutureResponse
 }
 type FutureRequestKindIdentity struct {
-    Response *FutureResponse
+    Response FutureResponseKind
+    Future
 }
 type FutureRequestKindFindByIds struct{
     Ids []string

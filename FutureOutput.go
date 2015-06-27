@@ -23,19 +23,14 @@ func(fo *FutureOutput) Work(pf *PreparedFuture) {
         if should_break {
             return;
         }
-        //fmt.Printf("GOT RAW REQ: %#v\n", rawreq);
+        fmt.Printf("GOT RAW REQ: %#v\n", rawreq);
         reply_todo = append(reply_todo, rawreq);
         switch req := rawreq.Kind.(type) {
         case *FutureRequestKindIdentity:
-            if !req.Response.IsSuccess {
-                panic(TODO());
-            }
-            for future, response := range req.Response.Success {
-                responses[future] = response;
-                for i, child := range need {
-                    if(child.Future == future) {
-                        need = append(need[:i], need[i+1:]...);
-                    }
+            responses[req.Future] = req.Response;
+            for i, child := range need {
+                if(child.Future == req.Future) {
+                    need = append(need[:i], need[i+1:]...);
                 }
             }
             //fmt.Printf("STILL NEED: %#v\n", need);
@@ -57,7 +52,7 @@ func(fo *FutureOutput) Work(pf *PreparedFuture) {
 
     for future, reskind := range responses {
         switch res := reskind.(type) {
-        case FutureResponseKindRecords:
+        case *FutureResponseKindRecords:
             if future == fo.PrimaryData {
                 is_single = res.IsSingle;
                 output_primary = append(output_primary, res.Records...);

@@ -52,7 +52,7 @@ func (a *API) MountResource(name string, resource Resource, authenticators ...Au
 /**
 MountRelationship() will take a given Relationship and make it available for requests sent to the given API. This also requires providing a source and destination Resource string. These resources must have already been mounted with MountResource() or this function will panic.
  */
-func (a *API) MountRelationship(name, srcResourceName,dstResourceName string, relationship Relationship, authenticator Authenticator) {
+func (a *API) MountRelationship(name, srcResourceName,dstResourceName string, relationship Relationship, authenticators ...Authenticator) {
     if _, exists := a.Resources[srcResourceName]; !exists {
         panic("Source resource "+srcResourceName+" for linkage does not exist");
     }
@@ -67,7 +67,7 @@ func (a *API) MountRelationship(name, srcResourceName,dstResourceName string, re
         DstResourceName: dstResourceName,
         Name: name,
         Relationship: relationship,
-        Authenticator: authenticator,
+        Authenticator: NewAuthenticatorMany(authenticators...),
     };
     a.Relationships[srcResourceName][name] = amr;
     amr.PostMount(a);

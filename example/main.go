@@ -3,7 +3,7 @@ package main;
 import (
     . ".."
     "../resource"
-    //"../relationship"
+    "../relationship"
     //. "../oauth2"
     //"../authenticator"
     "net/http"
@@ -50,7 +50,6 @@ type Comment struct {
 }
 
 func main() {
-
     runtime.GOMAXPROCS(runtime.NumCPU() * 4)
     //base_oauth := "/auth/";
     base_api := "/api/";
@@ -88,15 +87,14 @@ func main() {
 
     api.MountRelationship("posts", "user",
         relationship.NewFromFieldToField("post", "ID", "UserId", NotRequired),
-        no_auth,
     );
-    api.MountRelationship("author", "post",
-        relationship.NewFromFieldToId("user", "UserId", Required),
-        no_auth,
+    */
+    api.MountRelationship("author", "post", "user",
+        relationship.NewFromFieldToId("UserId"),
     );
+    /*
     api.MountRelationship("comments", "post",
         relationship.NewFromFieldToField("comment", "ID", "PostId", Required),
-        no_auth,
     );
     */
 

@@ -57,6 +57,18 @@ func(a *API) CentralFindRouter(r *Request, resourcestr, idstr string, preroute [
     });
     fl.PushFuture(pf);
     fl.PushRequest(pf,req);
+
+    for _,pre := range preroute {
+        relationship := a.GetRelationship(resource.Name, pre);
+        resource = a.GetResource(relationship.DstResourceName);
+        pf = &PreparedFuture{
+            Future: resource.GetFuture(),
+            Relationship: relationship,
+            Parents: []*PreparedFuture{pf},
+        };
+        fl.PushFuture(pf);
+    }
+
     fl.Build(pf, resource, true).PrimaryData = pf.Future;
     fl.Takeover();
     defer fl.Defer();

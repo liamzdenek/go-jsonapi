@@ -116,7 +116,7 @@ func(f *FutureSQL) WorkFindByIds(pf *PreparedFuture, req *FutureRequest, k *Futu
     req.SendResponse(&FutureResponse{
         IsSuccess: true,
         Success: map[Future]FutureResponseKind{
-            f: FutureResponseKindRecords{
+            f: &FutureResponseKindRecords{
                 IsSingle: forced_single || is_single,
                 Records: f.Resource.ConvertInterfaceSliceToRecordSlice(vs),
             },
