@@ -13,12 +13,12 @@ func(a *API) EntryFindDefault(r *Request) {
 }
 
 func(a *API) EntryFindRecordByResourceAndId(r *Request) {
-    /*a.CentralFindRouter(r,
+    a.CentralFindRouter(r,
         r.Params.ByName("resource"),
         r.Params.ByName("id"),
         []string{},
         OutputTypeResources, "",
-    );*/
+    );
 }
 
 func(a *API) EntryFindRelationshipsByResourceId(r *Request) {
@@ -48,8 +48,12 @@ func(a *API) CentralFindRouter(r *Request, resourcestr, idstr string, preroute [
     }
     fl := NewFutureList(r);
 
-    req := NewFutureRequest(r, FutureRequestKindFindByIds{
-        Ids: strings.Split(idstr, ","),
+    var ids []string;
+    if len(idstr) > 0 {
+        ids = strings.Split(idstr, ",");
+    }
+    req := NewFutureRequest(r, &FutureRequestKindFindByIds{
+        Ids: ids,
     });
     fl.PushFuture(pf);
     fl.PushRequest(pf,req);

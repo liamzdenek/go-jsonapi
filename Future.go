@@ -65,7 +65,3 @@ type FutureRequestKindFindByIds struct{
 }
 type FutureRequestKindFindManyByField struct{}
 
-type FutureValue struct{
-    Parent Future
-    Field string
-}

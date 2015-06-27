@@ -55,34 +55,73 @@ func(rsp *SQLPromise) Success(r *Request) {
     }
 }
 
-type SQLParameter struct {
-    Column string
-    Value FutureValue
-}
 
 type FutureSQL struct {
     Resource *SQL
-    Parameters []SQLParameter
     Children []*FutureSQL
     Limit, Offset uint
 }
 
-func(f *FutureSQL) PrepareQuery() (query string, is_single bool) {
-    q_params := "";
-
-    for i, param := range f.Parameters {
-        if param.Column == f.Resource.GetIdFieldName(nil) {
-            is_single = true;
+func(f *FutureSQL) PrepareQuery(parameters ...SQLExpression) (query string, arguments []interface{}, is_single bool) {
+    q := &SQLQuery{
+        Query: "SELECT * FROM %s ",
+        FmtArguments: []interface{}{f.Resource.Table},
+    };
+    if len(parameters) > 0 {
+        params := NewSQLWhere(
+            NewSQLAnd(
+                parameters...,
+            ),
+        );
+        if params != nil {
+            params.Express(q);
         }
-        verb := "AND ";
-        if(i == 0) {
-            verb = "WHERE ";
-        }
-        q_params = fmt.Sprintf("%s%s%s=? ",q_params,verb,param.Column);
     }
+    query = q.PrepareQuery();
+    fmt.Printf("Got query: %s\n", query);
+    return query, q.SqlArguments, false; // TODO
+}
 
-    query = fmt.Sprintf("SELECT * FROM %s %s", f.Resource.Table, q_params);
-    return;
+func(f *FutureSQL) WorkFindByIds(pf *PreparedFuture, req *FutureRequest, k *FutureRequestKindFindByIds) {
+    parameters := []SQLExpression{};
+    forced_single := false;
+    if len(k.Ids) > 0 {
+        forced_single = true;
+        id_field := f.Resource.GetIdFieldName(nil);
+        for _, id := range k.Ids {
+            parameters = append(parameters, &SQLEquals{
+                Field: id_field,
+                Value: id,
+            });
+        }
+        parameters = []SQLExpression{
+            NewSQLOr(parameters...),
+        }
+    }
+    vs := reflect.New(reflect.SliceOf(reflect.PtrTo(f.Resource.Type))).Interface()
+    query, queryargs, is_single := f.PrepareQuery(parameters...);
+    err := meddler.QueryAll(
+        f.Resource.DB,
+        vs,
+        query,
+        queryargs...,
+    );
+    if err != nil {
+        req.SendResponse(&FutureResponse{
+            IsSuccess: false,
+            Failure: []OError{ErrorToOError(err)},
+        });
+        return;
+    }
+    req.SendResponse(&FutureResponse{
+        IsSuccess: true,
+        Success: map[Future]FutureResponseKind{
+            f: FutureResponseKindRecords{
+                IsSingle: forced_single || is_single,
+                Records: f.Resource.ConvertInterfaceSliceToRecordSlice(vs),
+            },
+        },
+    });
 }
 
 func(f *FutureSQL) Work(pf *PreparedFuture) {
@@ -91,29 +130,12 @@ func(f *FutureSQL) Work(pf *PreparedFuture) {
         if should_break {
             break;
         }
-        vs := reflect.New(reflect.SliceOf(reflect.PtrTo(f.Resource.Type))).Interface()
-        query, is_single := f.PrepareQuery();
-        err := meddler.QueryAll(
-            f.Resource.DB,
-            vs,
-            query,
-        );
-        if err != nil {
-            req.SendResponse(&FutureResponse{
-                IsSuccess: false,
-                Failure: []OError{ErrorToOError(err)},
-            });
-            continue;
+        switch k := req.Kind.(type) {
+        default:
+            panic(fmt.Sprintf("FutureSQL got unsupported query kind %T\n", req.Kind));
+        case *FutureRequestKindFindByIds:
+            f.WorkFindByIds(pf,req,k);
         }
-        req.SendResponse(&FutureResponse{
-            IsSuccess: true,
-            Success: map[Future]FutureResponseKind{
-                f: FutureResponseKindRecords{
-                    IsSingle: is_single,
-                    Records: f.Resource.ConvertInterfaceSliceToRecordSlice(vs),
-                },
-            },
-        });
     }
 }
 

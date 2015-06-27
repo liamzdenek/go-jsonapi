@@ -28,12 +28,6 @@ func(pf *PreparedFuture) GetNext() (req *FutureRequest, should_break bool) {
     }
     should_break = !should_break;
     pf.Current = req;
-    /*
-    switch failure := req.(type) {
-    case FutureRequestKindFailure:
-        should_break = true;
-        req.Response <- failure.Response;
-    }*/
     return
 }
 
@@ -152,10 +146,6 @@ func(fl *FutureList) HandleInput(pf *PreparedFuture, req *FutureRequest) {
         //fmt.Printf("Getting response...\n");
         res := req.GetResponse();
         //fmt.Printf("Got Response: %#v\n", res);
-        if !res.IsSuccess {
-            // TODO()
-            panic(res.Failure);
-        }
         OUTER:for _,prepfuture := range fl.Optimized {
             for future,_ := range res.Success {
                 for _, parent := range prepfuture.Parents {
