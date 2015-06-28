@@ -22,7 +22,12 @@ type Request struct {
     PromiseStorage *PromiseStorage
     hasCompleted bool
     Done *Done
-    Responder chan Responder
+    Responder chan *RunResponder
+}
+
+type RunResponder struct {
+    Responder
+    Done chan bool
 }
 
 type Done struct{
@@ -60,7 +65,7 @@ func NewRequest(a *API, httpreq *http.Request, httpres http.ResponseWriter, para
         Params: params,
         IncludeInstructions: NewIncludeInstructionsFromRequest(httpreq),
         PromiseStorage: NewPromiseStorage(),
-        Responder: make(chan Responder),
+        Responder: make(chan *RunResponder),
         Done: NewDone(),
     }
     req.ResponderWorker();
@@ -69,20 +74,28 @@ func NewRequest(a *API, httpreq *http.Request, httpres http.ResponseWriter, para
 
 func(r *Request) ResponderWorker() {
     go func() {
+        r.API.Logger.Debugf("ResponderWorker STARTING\n");
         defer r.Done.Close();
         defer close(r.Responder);
-        select {
-        case <-r.Done.Wait():
-        case re := <-r.Responder:
-            re.Respond(r);
-        }
+        r.API.Logger.Debugf("ResponderWorker READING\n");
+        re := <-r.Responder;
+        r.API.Logger.Debugf("ResponderWorker Got Responder: %#v\n", re);
+        defer close(re.Done)
+        re.Responder.Respond(r);
     }()
 }
 
 func(r *Request) Respond(re Responder) {
+    rr := &RunResponder{
+        Responder: re,
+        Done: make(chan bool),
+    }
     select {
-    case r.Responder <- re:
-    default:
+    case r.Responder <- rr:
+        r.API.Logger.Debugf("Main Respond() func waiting\n");
+        <-rr.Done;
+        r.API.Logger.Debugf("Main Respond() func done waiting\n");
+    case <-r.Done.Wait():
     }
 }
 
@@ -117,10 +130,7 @@ HandlePanic() is responsible for interpreting the object that was paniced, and r
 */
 func(r *Request) HandlePanic(raw interface{}){
     re,_ := r.InternalHandlePanic(raw);
-    select {
-    case r.Responder <- re:
-    default:
-    }
+    r.Respond(re);
 }
 
 func(r *Request) InternalHandlePanic(raw interface{}) (re Responder, is_valid bool) {

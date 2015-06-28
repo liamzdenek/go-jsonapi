@@ -88,10 +88,13 @@ func(a *API) GetResource(name string) *APIMountedResource {
 GetRelationship() will return a single relationship for a given resource string and relationship string. If the resource or relationship does not exist, this function returns a nil pointer.
 */
 func(a *API) GetRelationship(srcR, linkName string) *APIMountedRelationship {
-    if(a.Relationships[srcR] == nil) {
-        return nil;
+    if a.Resources[srcR] == nil {
+        panic("The given resource "+srcR+" does not exist");
     }
-    return a.Relationships[srcR][linkName]
+    if(a.Relationships[srcR] == nil || a.Relationships[srcR][linkName] == nil) {
+        panic("The given relationship "+srcR+"."+linkName+" does not exist");
+    }
+    return a.Relationships[srcR][linkName];
 }
 
 /**
@@ -140,6 +143,9 @@ func(a *API) Wrap(child func(r *Request)) httprouter.Handle {
             if raw := recover(); raw != nil {
                 req.HandlePanic(raw);
             }
+            a.Logger.Debugf("CLLING REQ DONE WAIT\n");
+            <-req.Done.Wait();
+            a.Logger.Debugf("CALLING REQ DEFER\n");
             req.Defer();
         }()
         child(req);
