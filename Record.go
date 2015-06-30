@@ -8,7 +8,7 @@ type Record struct {
     //Links //TODO
     Relationships *ORelationships `json:"relationships,omitempty"`
     Meta OMeta `json:"meta,omitempty"`
-    
+
     // internal fields for tracking
     ShouldInclude bool `json:"-"`
 }

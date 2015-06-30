@@ -65,8 +65,8 @@ func main() {
 
     resource_user := resource.NewSQL(db, "users", &User{}) // database, table name, raw struct to unwrap into
     resource_post := resource.NewSQL(db, "posts", &Post{})
-    /*
     resource_comment := resource.NewSQL(db, "comments", &Comment{})
+    /*
     resource_session := resource.NewSQL(db, "session", &authenticator.SimpleLoginSession{});
     
     resource_login := authenticator.NewSimpleLogin(resource_user,resource_session);
@@ -81,22 +81,20 @@ func main() {
 
     api.MountResource("user", resource_user);
     api.MountResource("post", resource_post);
+    api.MountResource("comment", resource_comment/*, rbac.Require("canComment")*/);
     /*
-    api.MountResource("comment", resource_comment, rbac.Require("canComment"));
     api.MountResource("login", resource_login);
 
-    api.MountRelationship("posts", "user",
-        relationship.NewFromFieldToField("post", "ID", "UserId", NotRequired),
-    );
     */
+    api.MountRelationship("posts", "user", "post",
+        relationship.NewFromFieldToField("ID", "UserId"),
+    );
     api.MountRelationship("author", "post", "user",
         relationship.NewFromFieldToId("UserId"),
     );
-    /*
-    api.MountRelationship("comments", "post",
-        relationship.NewFromFieldToField("comment", "ID", "PostId", Required),
+    api.MountRelationship("comments", "post", "comment",
+        relationship.NewFromFieldToField("ID", "PostId"),
     );
-    */
 
     // that's it! start the API
     fmt.Printf("Listening\n");

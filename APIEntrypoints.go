@@ -31,22 +31,18 @@ func(a *API) EntryFindRelationshipsByResourceId(r *Request) {
 }
 
 func(a *API) EntryFindRelationshipByNameAndResourceId(r *Request) {
-    /*a.CentralFindRouter(r,
+    a.CentralFindRouter(r,
         r.Params.ByName("resource"),
         r.Params.ByName("id"),
         []string{},
         OutputTypeLinkages,
         r.Params.ByName("secondlinkname"),
-    );*/
+    );
 }
 
 func(a *API) CentralFindRouter(r *Request, resourcestr, idstr string, preroute []string, outputtype OutputType, linkname string) {
     resource := a.GetResource(resourcestr);
-    pf := &PreparedFuture{
-        Future: resource.GetFuture(),
-        Relationship: nil,
-    }
-    fl := NewFutureList(r);
+    ef := NewExecutableFuture(r, resource.GetFuture());
 
     var ids []string;
     if len(idstr) > 0 {
@@ -55,9 +51,8 @@ func(a *API) CentralFindRouter(r *Request, resourcestr, idstr string, preroute [
     req := NewFutureRequest(r, &FutureRequestKindFindByIds{
         Ids: ids,
     });
-    fl.PushFuture(pf);
-    fl.PushRequest(pf,req);
 
+    /*
     for _,pre := range preroute {
         r.API.Logger.Debugf("Get rel: %s %s\n", resource.Name, pre);
         relationship := a.GetRelationship(resource.Name, pre);
@@ -69,10 +64,14 @@ func(a *API) CentralFindRouter(r *Request, resourcestr, idstr string, preroute [
         };
         fl.PushFuture(pf);
     }
+    */
 
-    fl.Build(pf, resource, true).PrimaryData = pf.Future;
-    fl.Takeover();
-    defer fl.Defer();
+    output := ef.Build(resource)
+    output.PrimaryData = ef.Future
+    output.PrimaryDataType = outputtype;
+    //output.RelationshipName = linkname
+    defer ef.Defer();
+    ef.Takeover(req);
 
     /*
     ids := []string{};

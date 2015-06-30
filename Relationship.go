@@ -16,6 +16,6 @@ type Relationship interface {
     //PreSave(r *Request, rec *Record, amr *APIMountedRelationship, rids []OResourceIdentifier) error
     //PostSave(r *Request, rec *Record, amr *APIMountedRelationship, rids []OResourceIdentifier) error
     //GetTargetFuture() Future
-    Link(r *Request, src, dst *PreparedFuture, input FutureResponseKind) (output FutureRequestKind)
+    Link(r *Request, src, dst *ExecutableFuture, input FutureResponseKind) (output FutureRequestKind)
 }
 

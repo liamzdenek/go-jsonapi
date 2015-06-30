@@ -82,7 +82,7 @@ func(f *FutureSQL) PrepareQuery(parameters ...SQLExpression) (query string, argu
     return query, q.SqlArguments, false; // TODO
 }
 
-func(f *FutureSQL) WorkFindByIds(pf *PreparedFuture, req *FutureRequest, k *FutureRequestKindFindByIds) {
+func(f *FutureSQL) WorkFindByIds(pf *ExecutableFuture, req *FutureRequest, k *FutureRequestKindFindByIds) {
     parameters := []SQLExpression{};
     forced_single := false;
     if len(k.Ids) > 0 {
@@ -124,12 +124,9 @@ func(f *FutureSQL) WorkFindByIds(pf *PreparedFuture, req *FutureRequest, k *Futu
     });
 }
 
-func(f *FutureSQL) Work(pf *PreparedFuture) {
+func(f *FutureSQL) Work(pf *ExecutableFuture) {
     for {
-        req, should_break := pf.GetNext();
-        if should_break {
-            break;
-        }
+        req := pf.GetRequest();
         switch k := req.Kind.(type) {
         default:
             panic(fmt.Sprintf("FutureSQL got unsupported query kind %T\n", req.Kind));

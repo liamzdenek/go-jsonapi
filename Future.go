@@ -3,7 +3,7 @@ package jsonapi;
 type Future interface{
     ShouldCombine(Future) bool
     Combine(Future) error
-    Work(pf *PreparedFuture)
+    Work(ef *ExecutableFuture)
 }
 
 type FutureRequest struct {
@@ -30,7 +30,6 @@ func(fr *FutureRequest) SendResponse(res *FutureResponse) {
     }
 }
 
-
 func(fr *FutureRequest) GetResponse() (res *FutureResponse){
     select {
     case res = <-fr.Response:
@@ -44,12 +43,20 @@ type FutureResponse struct {
     IsSuccess bool
     Success map[Future]FutureResponseKind
     Failure []OError
+    WaitForComplete chan bool
 }
 
+type FutureResponseModifier interface{
+    Modify(r FutureResponseKind)
+}
 type FutureResponseKind interface{}
 type FutureResponseKindRecords struct{
     IsSingle bool
     Records []*Record
+}
+
+func(frr *FutureResponseKindRecords) Modify(r FutureResponseKind) {
+    
 }
 
 type FutureRequestKind interface{}
@@ -64,5 +71,13 @@ type FutureRequestKindIdentity struct {
 type FutureRequestKindFindByIds struct{
     Ids []string
 }
-type FutureRequestKindFindManyByField struct{}
+
+type Field struct {
+    Field string
+    Value string
+}
+
+type FutureRequestKindFindByFields struct{
+    Fields []Field
+}
 

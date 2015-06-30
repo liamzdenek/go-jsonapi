@@ -6,23 +6,22 @@ import "time"
 var FutureOutputTimeout time.Duration = 10 * time.Second;
 
 type FutureOutput struct {
+    Parents []*ExecutableFuture
     PrimaryData Future
+    PrimaryDataType OutputType
 }
 
+func(fo *FutureOutput) PushParent(ef *ExecutableFuture) { fo.Parents = append(fo.Parents, ef); }
 func(fo *FutureOutput) ShouldCombine(f Future) bool { return false; }
 func(fo *FutureOutput) Combine(f Future) error { panic("This should never be called"); }
 
-func(fo *FutureOutput) Work(pf *PreparedFuture) {
+func(fo *FutureOutput) Work(pf *ExecutableFuture) {
     reply_todo := []*FutureRequest{};
-    should_break := false;
     responses := map[Future]FutureResponseKind{};
-    need := pf.Parents;
+    need := fo.Parents;
     OUTER:for {
         var rawreq *FutureRequest;
-        rawreq, should_break = pf.GetNext();
-        if should_break {
-            return;
-        }
+        rawreq = pf.GetRequest();
         fmt.Printf("GOT RAW REQ: %#v\n", rawreq);
         reply_todo = append(reply_todo, rawreq);
         switch req := rawreq.Kind.(type) {
@@ -44,6 +43,7 @@ func(fo *FutureOutput) Work(pf *PreparedFuture) {
 
     //fmt.Printf("OUTPUT GOT DATA: %#v\n", responses);
     
+    var output_relationship *ORelationship = nil;
     output := NewOutput();
     output_primary := []*Record{};
     output_included := []*Record{};
@@ -60,12 +60,16 @@ func(fo *FutureOutput) Work(pf *PreparedFuture) {
                 output_included = append(output_included, res.Records...);
             }
         default:
-            panic(fmt.Sprintf("Unsupported reskind %#v", reskind));
+            panic(fmt.Sprintf("Future got unsupported reskind %T", reskind));
         }
     }
-    output.Data = &ORecords{
-        IsSingle: is_single,
-        Records: output_primary,
+    if(fo.PrimaryDataType == OutputTypeResources) {
+        output.Data = &ORecords{
+            IsSingle: is_single,
+            Records: output_primary,
+        }
+    } else {
+        output.Data = output_relationship;
     }
     output.Included = output_included;
     panic(output);
