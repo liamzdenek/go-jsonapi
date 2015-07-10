@@ -56,7 +56,7 @@ type FutureResponseKindRecords struct{
 }
 
 func(frr *FutureResponseKindRecords) Modify(r FutureResponseKind) {
-    
+    panic("GOT TO MODIFICATION");
 }
 
 type FutureRequestKind interface{}

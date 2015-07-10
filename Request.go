@@ -86,16 +86,19 @@ func(r *Request) ResponderWorker() {
 }
 
 func(r *Request) Respond(re Responder) {
+    defer func() {
+        recover();
+    }();
     rr := &RunResponder{
         Responder: re,
         Done: make(chan bool),
     }
     select {
+    case <-r.Done.Wait():
     case r.Responder <- rr:
         r.API.Logger.Debugf("Main Respond() func waiting\n");
         <-rr.Done;
         r.API.Logger.Debugf("Main Respond() func done waiting\n");
-    case <-r.Done.Wait():
     }
 }
 
@@ -165,7 +168,7 @@ func(r *Request) InternalHandlePanic(raw interface{}) (re Responder, is_valid bo
         const size = 64 << 10
         buf := make([]byte, size)
         buf = buf[:runtime.Stack(buf, false)]
-        r.API.Logger.Infof("jsonapi: panic %#v\n%s", raw, buf);
+        r.API.Logger.Infof("jsonapi: panic %#v\n%s\n\n=== End of Stack ===\n", raw, buf);
     }
     return re,is_valid;
 

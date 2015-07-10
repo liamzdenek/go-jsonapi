@@ -54,16 +54,26 @@ func(ef *ExecutableFuture) Build(amr *APIMountedResource) *FutureOutput {
 
 func (ef *ExecutableFuture) internalBuild(amr *APIMountedResource, ii *IncludeInstructions, efo *ExecutableFuture, is_primary, is_included bool) {
     fo := efo.Future.(*FutureOutput);
-    if is_primary {
-        rel := &RelationshipIdentity{
-            IsPrimary: true,
+    if is_primary || is_included {
+        rel := &RelationshipIdentity{}
+        if is_primary {
+            rel.IsPrimary = true;
         }
         ef.PushChild(rel, efo);
         fo.PushParent(ef);
-    } else if is_included {
-        panic("TODO");
     }
-
+    rels := ef.Request.API.GetRelationshipsByResource(amr.Name);
+    for _, rel := range rels {
+        should_fetch := ii.ShouldFetch(rel.Name);
+        should_include := ii.ShouldInclude(rel.Name);
+        if should_fetch || should_include {
+            target_resource := ef.Request.API.GetResource(rel.DstResourceName)
+            target_future := target_resource.GetFuture();
+            tef := NewExecutableFuture(ef.Request, target_future);
+            tef.internalBuild(target_resource, ii.GetChild(rel.Name), efo, false, should_include);
+            ef.PushChild(rel, tef);
+        }
+    }
 }
 
 func(ef *ExecutableFuture) Defer() {
@@ -81,6 +91,7 @@ func(ef *ExecutableFuture) Optimize() {
 
 func(ef *ExecutableFuture) Execute() {
     if ef.Input == nil {
+        ef.Request.API.Logger.Debugf("Running: %#v\n", ef.Future);
         ef.Input = make(chan *FutureRequest);
         ef.Go(func() {
             ef.Future.Work(ef);
@@ -100,7 +111,7 @@ func(ef *ExecutableFuture) Takeover(fr *FutureRequest) {
 
 func(ef *ExecutableFuture) HandleRequest(req *FutureRequest, cb func(*FutureResponse)) {
     ef.Go(func() {
-        fmt.Printf("Sending Request: %#v\n", req);
+        fmt.Printf("Sending Request: %#v %#v\n", ef.Input, req);
         ef.Input <- req;
         fmt.Printf("Getting response...\n");
         res := req.GetResponse();
@@ -120,8 +131,9 @@ func(ef *ExecutableFuture) HandleResponse(res *FutureResponse) {
         close(res.WaitForComplete);
     }();
     if !res.IsSuccess {
-        panic("RES WAS NOT SUCCESS");
+        panic(res.Failure);
     }
+    fmt.Printf("HANDLERESPONSE TAKING OVER\n");
     efs := append(ef.ResponsibleFor, ef);
     // for each future that this is responsible for...
     for _, cef := range efs {
@@ -141,8 +153,10 @@ func(ef *ExecutableFuture) HandleResponse(res *FutureResponse) {
                 Response: make(chan *FutureResponse),
                 Kind: reqkind,
             };
+            fmt.Printf("SENDING HANDLEREQUEST TO TEF\n");
             tef.HandleRequest(req, func(tefres *FutureResponse) {
                 defer wg.Done();
+                fmt.Printf("GOT RESPONSE FROM TEF: %#v\n", tefres);
                 if tefres.IsSuccess {
                     if modifier, ok := tefres.Success[tef.Future].(FutureResponseModifier); ok {
                         modifier.Modify(relres);
