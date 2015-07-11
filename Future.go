@@ -62,16 +62,24 @@ func(frr *FutureResponseKindRecords) EarlyModify(r *Request, src *ExecutableFutu
             record.Type = src.Resource.Name;
         }
     }
+    for _, rel := range r.API.GetRelationshipsByResource(src.Resource.Name) {
+        for _, record := range frr.Records {
+            newrel := &ORelationship{
+                IsSingle: rel.Relationship.IsSingle(),
+                RelationshipName: rel.Name,
+                RelatedBase: r.GetBaseURL()+record.Type+"/"+record.Id,
+            }
+            record.PushRelationship(newrel);
+        }
+    }
 }
 
 func(frr *FutureResponseKindRecords) Modify(r *Request, src, dst *ExecutableFuture, rk FutureResponseKind) {
     switch k := rk.(type) {
     case *FutureResponseKindRecords:
         dstrel := &ORelationship{
-            IsSingle: false,//frr.IsSingle,
             Data: GetResourceIdentifiers(frr.Records),
             RelationshipName: dst.Relationship.Name,
-            RelatedBase: dst.Request.GetBaseURL(),
         };
         for _, record := range k.Records {
             record.PushRelationship(dstrel);

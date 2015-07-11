@@ -19,7 +19,7 @@ func NewFromFieldToField(srcField, dstField string) *FromFieldToField {
 }
 
 
-func(rel *FromFieldToField) IsSingle() bool { return true; }
+func(rel *FromFieldToField) IsSingle() bool { return false; }
 func(rel *FromFieldToField) PostMount(a *API) { }
 func(rel *FromFieldToField) Link(r *Request, src, dst *ExecutableFuture, input FutureResponseKind) (FutureRequestKind) {
     switch t := input.(type) {

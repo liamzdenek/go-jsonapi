@@ -60,13 +60,29 @@ func(o *ORelationship) MarshalJSON() ([]byte,error) {
         "self":o.RelatedBase+"/relationships/"+o.RelationshipName,
         "related": o.RelatedBase+"/"+o.RelationshipName,
     };
-    if(o.IsSingle) {
+    if(o.IsSingle && len(o.Data) == 0) {
+        return json.Marshal(struct{
+            Meta OMeta `json:"meta,omitempty"`
+            Links interface{} `json:"links"`
+        }{
+            Meta: o.Meta,
+            Links: links,
+        });
+    } else if(o.IsSingle) {
         return json.Marshal(struct{
             Data OResourceIdentifier `json:"data"`
             Meta OMeta `json:"meta,omitempty"`
             Links interface{} `json:"links"`
         }{
             Data: o.Data[0],
+            Meta: o.Meta,
+            Links: links,
+        });
+    } else if(!o.IsSingle && len(o.Data) == 0) {
+        return json.Marshal(struct{
+            Meta OMeta `json:"meta,omitempty"`
+            Links interface{} `json:"links"`
+        }{
             Meta: o.Meta,
             Links: links,
         });

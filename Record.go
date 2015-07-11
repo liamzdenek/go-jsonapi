@@ -17,6 +17,12 @@ func(r *Record) PushRelationship(rel *ORelationship) {
     if(r.Relationships == nil) {
         r.Relationships = &ORelationships{};
     }
+    for _, currel := range r.Relationships.Relationships {
+        if currel.RelationshipName == rel.RelationshipName {
+            currel.Data = append(currel.Data, rel.Data...);
+            return;
+        }
+    }
     r.Relationships.Relationships = append(r.Relationships.Relationships, rel);
 }
 
