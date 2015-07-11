@@ -13,6 +13,13 @@ type Record struct {
     ShouldInclude bool `json:"-"`
 }
 
+func(r *Record) PushRelationship(rel *ORelationship) {
+    if(r.Relationships == nil) {
+        r.Relationships = &ORelationships{};
+    }
+    r.Relationships.Relationships = append(r.Relationships.Relationships, rel);
+}
+
 func(r *Record) GetResourceIdentifier() OResourceIdentifier {
     return OResourceIdentifier{
         Id: r.Id,
@@ -22,6 +29,13 @@ func(r *Record) GetResourceIdentifier() OResourceIdentifier {
 
 func(r *Record) Denature() interface{} {
     return r.Attributes;
+}
+
+func GetResourceIdentifiers(records []*Record) (out []OResourceIdentifier) {
+    for _, record := range records {
+        out = append(out, record.GetResourceIdentifier());
+    }
+    return
 }
 
 type RecordAttributes interface{}

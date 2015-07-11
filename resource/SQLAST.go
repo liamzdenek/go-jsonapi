@@ -22,11 +22,17 @@ type SQLLogic struct {
 }
 
 func (logic *SQLLogic) Express(q *SQLQuery) {
+    if len(logic.Expressions) > 1 {
+        q.Query += "(";
+    }
     for i,e := range logic.Expressions {
         if i != 0 {
             q.Query += logic.Keyword+" ";
         }
         e.Express(q);
+    }
+    if len(logic.Expressions) > 1 {
+        q.Query += ")";
     }
 }
 

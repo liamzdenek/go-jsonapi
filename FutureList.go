@@ -12,6 +12,8 @@ type ExecutableFuture struct {
 
     //Relationships map[Relationship]*ExecutableFuture
     ResponsibleFor []*ExecutableFuture
+    Resource *APIMountedResource
+    Relationship *APIMountedRelationship
 }
 
 func NewExecutableFuture(r *Request, f Future) *ExecutableFuture {
@@ -62,6 +64,7 @@ func (ef *ExecutableFuture) internalBuild(amr *APIMountedResource, ii *IncludeIn
         ef.PushChild(rel, efo);
         fo.PushParent(ef);
     }
+    ef.Resource = amr;
     rels := ef.Request.API.GetRelationshipsByResource(amr.Name);
     for _, rel := range rels {
         should_fetch := ii.ShouldFetch(rel.Name);
@@ -70,6 +73,7 @@ func (ef *ExecutableFuture) internalBuild(amr *APIMountedResource, ii *IncludeIn
             target_resource := ef.Request.API.GetResource(rel.DstResourceName)
             target_future := target_resource.GetFuture();
             tef := NewExecutableFuture(ef.Request, target_future);
+            tef.Relationship = rel;
             tef.internalBuild(target_resource, ii.GetChild(rel.Name), efo, false, should_include);
             ef.PushChild(rel, tef);
         }
@@ -133,6 +137,11 @@ func(ef *ExecutableFuture) HandleResponse(res *FutureResponse) {
     if !res.IsSuccess {
         panic(res.Failure);
     }
+    for _, field := range res.Success {
+        if frm, ok := field.(FutureResponseModifier); ok {
+            frm.EarlyModify(ef.Request, ef);
+        }
+    }
     fmt.Printf("HANDLERESPONSE TAKING OVER\n");
     efs := append(ef.ResponsibleFor, ef);
     // for each future that this is responsible for...
@@ -159,7 +168,7 @@ func(ef *ExecutableFuture) HandleResponse(res *FutureResponse) {
                 fmt.Printf("GOT RESPONSE FROM TEF: %#v\n", tefres);
                 if tefres.IsSuccess {
                     if modifier, ok := tefres.Success[tef.Future].(FutureResponseModifier); ok {
-                        modifier.Modify(relres);
+                        modifier.Modify(ef.Request, ef, tef, relres);
                     }
                 }
             });

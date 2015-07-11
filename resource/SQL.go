@@ -82,24 +82,10 @@ func(f *FutureSQL) PrepareQuery(parameters ...SQLExpression) (query string, argu
     return query, q.SqlArguments, false; // TODO
 }
 
-func(f *FutureSQL) WorkFindByIds(pf *ExecutableFuture, req *FutureRequest, k *FutureRequestKindFindByIds) {
-    parameters := []SQLExpression{};
-    forced_single := false;
-    if len(k.Ids) > 0 {
-        forced_single = len(k.Ids) == 1;
-        id_field := f.Resource.GetIdFieldName(nil);
-        for _, id := range k.Ids {
-            parameters = append(parameters, &SQLEquals{
-                Field: id_field,
-                Value: id,
-            });
-        }
-        parameters = []SQLExpression{
-            NewSQLOr(parameters...),
-        }
-    }
+func(f *FutureSQL) RunQuery(pf *ExecutableFuture, req *FutureRequest, forced_single bool, parameters []SQLExpression) {
     vs := reflect.New(reflect.SliceOf(reflect.PtrTo(f.Resource.Type))).Interface()
     query, queryargs, is_single := f.PrepareQuery(parameters...);
+    pf.Request.API.Logger.Debugf("RUN QUERY: %#v %#v\n", query, queryargs);
     err := meddler.QueryAll(
         f.Resource.DB,
         vs,
@@ -123,15 +109,54 @@ func(f *FutureSQL) WorkFindByIds(pf *ExecutableFuture, req *FutureRequest, k *Fu
         },
     });
 }
+func(f *FutureSQL) WorkFindByFields(pf *ExecutableFuture, req *FutureRequest, k *FutureRequestKindFindByFields) {
+    parameters := []SQLExpression{};
+    forced_single := false;
+    if len(k.Fields) > 0 {
+        forced_single = len(k.Fields) == 1;
+        for _, field := range k.Fields {
+            //field_key := f.Resource.GetIdFieldName(nil);
+            parameters = append(parameters, &SQLEquals{
+                Field: f.Resource.GetFieldByName(nil, field.Field),
+                Value: field.Value,
+            });
+        }
+        parameters = []SQLExpression{
+            NewSQLOr(parameters...),
+        }
+    }
+    f.RunQuery(pf, req, forced_single, parameters);
+}
+
+func(f *FutureSQL) WorkFindByIds(pf *ExecutableFuture, req *FutureRequest, k *FutureRequestKindFindByIds) {
+    parameters := []SQLExpression{};
+    forced_single := false;
+    if len(k.Ids) > 0 {
+        forced_single = len(k.Ids) == 1;
+        id_field := f.Resource.GetIdFieldName(nil);
+        for _, id := range k.Ids {
+            parameters = append(parameters, &SQLEquals{
+                Field: id_field,
+                Value: id,
+            });
+        }
+        parameters = []SQLExpression{
+            NewSQLOr(parameters...),
+        }
+    }
+    f.RunQuery(pf, req, forced_single, parameters);
+}
 
 func(f *FutureSQL) Work(pf *ExecutableFuture) {
     for {
         req := pf.GetRequest();
         switch k := req.Kind.(type) {
-        default:
-            panic(fmt.Sprintf("FutureSQL got unsupported query kind %T\n", req.Kind));
         case *FutureRequestKindFindByIds:
             f.WorkFindByIds(pf,req,k);
+        case *FutureRequestKindFindByFields:
+            f.WorkFindByFields(pf,req,k);
+        default:
+            panic(fmt.Sprintf("FutureSQL got unsupported query kind %T: %#v\n", req.Kind, req.Kind));
         }
     }
 }
@@ -167,6 +192,22 @@ func(sr *SQL) GetIdFieldName(v interface{}) string {
         id_sql_name = parts[0];
     }
     return id_sql_name;
+}
+
+func(sr *SQL) GetFieldByName(v interface{}, field string) string {
+    if v == nil {
+        v = reflect.New(sr.Type).Interface();
+    }
+    val := reflect.Indirect(reflect.ValueOf(v));
+    typ := val.Type();
+    fields := val.NumField();
+    for i := 0; i < fields; i++ {
+        if typ.Field(i).Name == field {
+            tags := strings.Split(typ.Field(i).Tag.Get("meddler"),",");
+            return tags[0];
+        }
+    }
+    return field;
 }
 
 func(sr *SQL) GetFuture() Future {

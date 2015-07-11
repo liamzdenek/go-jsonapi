@@ -47,7 +47,8 @@ type FutureResponse struct {
 }
 
 type FutureResponseModifier interface{
-    Modify(r FutureResponseKind)
+    Modify(r *Request, src, dst *ExecutableFuture, k FutureResponseKind)
+    EarlyModify(r *Request, src *ExecutableFuture)
 }
 type FutureResponseKind interface{}
 type FutureResponseKindRecords struct{
@@ -55,8 +56,34 @@ type FutureResponseKindRecords struct{
     Records []*Record
 }
 
-func(frr *FutureResponseKindRecords) Modify(r FutureResponseKind) {
-    panic("GOT TO MODIFICATION");
+func(frr *FutureResponseKindRecords) EarlyModify(r *Request, src *ExecutableFuture) {
+    for _, record := range frr.Records {
+        if record.Type == "" {
+            record.Type = src.Resource.Name;
+        }
+    }
+}
+
+func(frr *FutureResponseKindRecords) Modify(r *Request, src, dst *ExecutableFuture, rk FutureResponseKind) {
+    switch k := rk.(type) {
+    case *FutureResponseKindRecords:
+        /*dstrel := &ORelationship{
+            IsSingle: frr.IsSingle,
+            Data: GetResourceIdentifiers(frr.Records),
+        };
+        for _, record := range k.Records {
+            record.PushRelationship(dstrel);
+        }*/
+        for _, record := range frr.Records {
+            identifiers := GetResourceIdentifiers(k.Records);
+            newrel := &ORelationship{
+                IsSingle: k.IsSingle,
+                Data: identifiers,
+            };
+            record.PushRelationship(newrel);
+        }
+    default:
+    }
 }
 
 type FutureRequestKind interface{}
