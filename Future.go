@@ -67,21 +67,27 @@ func(frr *FutureResponseKindRecords) EarlyModify(r *Request, src *ExecutableFutu
 func(frr *FutureResponseKindRecords) Modify(r *Request, src, dst *ExecutableFuture, rk FutureResponseKind) {
     switch k := rk.(type) {
     case *FutureResponseKindRecords:
-        /*dstrel := &ORelationship{
-            IsSingle: frr.IsSingle,
+        dstrel := &ORelationship{
+            IsSingle: false,//frr.IsSingle,
             Data: GetResourceIdentifiers(frr.Records),
+            RelationshipName: dst.Relationship.Name,
+            RelatedBase: dst.Request.GetBaseURL(),
         };
         for _, record := range k.Records {
             record.PushRelationship(dstrel);
-        }*/
+        }
+        /*
         for _, record := range frr.Records {
             identifiers := GetResourceIdentifiers(k.Records);
             newrel := &ORelationship{
                 IsSingle: k.IsSingle,
                 Data: identifiers,
+                RelationshipName: dst.Relationship.Name,
+                RelatedBase: dst.Request.GetBaseURL(),
             };
             record.PushRelationship(newrel);
         }
+        */
     default:
     }
 }

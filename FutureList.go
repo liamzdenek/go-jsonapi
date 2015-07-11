@@ -119,7 +119,14 @@ func(ef *ExecutableFuture) HandleRequest(req *FutureRequest, cb func(*FutureResp
         ef.Input <- req;
         fmt.Printf("Getting response...\n");
         res := req.GetResponse();
-        fmt.Printf("Got Response: %#v\n", res);
+        fmt.Printf("Got Response: %#v\n", res)
+        if res.IsSuccess {
+            for _, field := range res.Success {
+                if frm, ok := field.(FutureResponseModifier); ok {
+                    frm.EarlyModify(ef.Request, ef);
+                }
+            };
+        }
         if cb != nil {
             cb(res);
         }
@@ -136,11 +143,6 @@ func(ef *ExecutableFuture) HandleResponse(res *FutureResponse) {
     }();
     if !res.IsSuccess {
         panic(res.Failure);
-    }
-    for _, field := range res.Success {
-        if frm, ok := field.(FutureResponseModifier); ok {
-            frm.EarlyModify(ef.Request, ef);
-        }
     }
     fmt.Printf("HANDLERESPONSE TAKING OVER\n");
     efs := append(ef.ResponsibleFor, ef);
