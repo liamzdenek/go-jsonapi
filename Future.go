@@ -1,7 +1,7 @@
 package jsonapi;
 
 func init() {
-    var t FutureResponseCanPushBackRelationships = &FutureResponseKindRecords{};
+    var t FutureResponseCanPushBackRelationships;;
     t = &FutureResponseKindByFields{};
     _ = t;
 }
@@ -61,55 +61,6 @@ type FutureResponseKindWithRecords interface{
     GetIsSingle() bool
     GetRecords() []*Record
 }
-type FutureResponseKindRecords struct{
-    IsSingle bool
-    Records []*Record
-}
-
-func(frkr *FutureResponseKindRecords) GetIsSingle() bool {return frkr.IsSingle;}
-func(frkr *FutureResponseKindRecords) GetRecords() []*Record {return frkr.Records;}
-
-func(frr *FutureResponseKindRecords) PushBackRelationships(r *Request, src, dst *ExecutableFuture, rk FutureResponseKind) {
-    r.API.Logger.Debugf("GOT FUTURERESPONSEKIND: %#v\n", rk);;
-    switch k := rk.(type) {
-    case *FutureResponseKindRecords:
-        dstrel := &ORelationship{
-            Data: GetResourceIdentifiers(frr.Records),
-            RelationshipName: dst.Relationship.Name,
-        };
-        for _, record := range k.Records {
-            record.PushRelationship(dstrel);
-        }
-    case *FutureResponseKindByFields:
-        for field, records := range k.Records {
-            identifiers := GetResourceIdentifiers(records);
-            for _, record := range frr.Records {
-                if record.HasFieldValue(field) {
-                    newrel := &ORelationship{
-                        IsSingle: k.IsSingle,
-                        Data: identifiers,
-                        RelationshipName: dst.Relationship.Name,
-                        RelatedBase: dst.Request.GetBaseURL(),
-                    };
-                    record.PushRelationship(newrel);
-                }
-            }
-        }
-        /*
-        for _, record := range frr.Records {
-            identifiers := GetResourceIdentifiers(k.Records);
-            newrel := &ORelationship{
-                IsSingle: k.IsSingle,
-                Data: identifiers,
-                RelationshipName: dst.Relationship.Name,
-                RelatedBase: dst.Request.GetBaseURL(),
-            };
-            record.PushRelationship(newrel);
-        }
-        */
-    default:
-    }
-}
 
 type FutureRequestKind interface{}
 
@@ -148,5 +99,6 @@ func(frkbf *FutureResponseKindByFields) GetRecords() []*Record {
     return rec;
 }
 func(frr *FutureResponseKindByFields) PushBackRelationships(r *Request, src,dst *ExecutableFuture, rk FutureResponseKind) {
+    panic(TODO());
 }
 

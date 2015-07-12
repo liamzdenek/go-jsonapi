@@ -167,12 +167,19 @@ func(f *FutureSQL) WorkFindByIds(pf *ExecutableFuture, req *FutureRequest, k *Fu
         });
         return;
     }
+    records_by_field := map[Field][]*Record{};
+    for _, record := range records {
+        key := Field{Field: f.Resource.GetIdFieldName(nil), Value: record.Id};
+        records_by_field[key] = append(records_by_field[key], record);
+    }
     req.SendResponse(&FutureResponse{
         IsSuccess: true,
         Success: map[Future]FutureResponseKind{
-            f: &FutureResponseKindRecords{
+            f: &FutureResponseKindByFields{
                 IsSingle: forced_single || is_single,
-                Records: records,
+                Records: records_by_field,
+                //Field{Field: f.Resource.GetIdFieldName(nil), Value:k.Ids[0]}: records,
+
             },
         },
     });

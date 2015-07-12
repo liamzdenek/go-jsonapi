@@ -23,9 +23,9 @@ func(rel *FromFieldToId) Link(r *Request, src, dst *ExecutableFuture, input Futu
     switch t := input.(type) {
     default:
         panic(fmt.Sprintf("FromFieldToId.Link does not support input of type %#T", input));
-    case *FutureResponseKindRecords:
+    case FutureResponseKindWithRecords:
         ids := []string{};
-        for _, record := range t.Records {
+        for _, record := range t.GetRecords() {
             v := reflect.ValueOf(GetField(record.Attributes, rel.SrcFieldName));
             k := v.Kind()
             switch k { // TODO: fill this out
