@@ -122,8 +122,23 @@ func(ef *ExecutableFuture) HandleRequest(req *FutureRequest, cb func(*FutureResp
         fmt.Printf("Got Response: %#v\n", res)
         if res.IsSuccess {
             for _, field := range res.Success {
-                if frm, ok := field.(FutureResponseModifier); ok {
-                    frm.EarlyModify(ef.Request, ef);
+                if hasr, ok := field.(FutureResponseKindWithRecords); ok {
+                    records := hasr.GetRecords()
+                    for _, record := range records {
+                        if record.Type == "" {
+                            record.Type = ef.Resource.Name;
+                        }
+                    }
+                    for _, rel := range ef.Request.API.GetRelationshipsByResource(ef.Resource.Name) {
+                        for _, record := range records {
+                            newrel := &ORelationship{
+                                IsSingle: rel.Relationship.IsSingle(),
+                                RelationshipName: rel.Name,
+                                RelatedBase: ef.Request.GetBaseURL()+record.Type+"/"+record.Id,
+                            }
+                            record.PushRelationship(newrel);
+                        }
+                    }
                 }
             };
         }
@@ -169,8 +184,11 @@ func(ef *ExecutableFuture) HandleResponse(res *FutureResponse) {
                 defer wg.Done();
                 fmt.Printf("GOT RESPONSE FROM TEF: %#v\n", tefres);
                 if tefres.IsSuccess {
-                    if modifier, ok := tefres.Success[tef.Future].(FutureResponseModifier); ok {
-                        modifier.Modify(ef.Request, ef, tef, relres);
+                    /*if modifier, ok := relres.(FutureResponseModifier); ok {
+                        modifier.Modify(ef.Request, ef, tef, tefres.Success[tef.Future]);
+                    }*/
+                    if modifier, ok := tefres.Success[tef.Future].(FutureResponseCanPushBackRelationships); ok {
+                        modifier.PushBackRelationships(ef.Request, ef, tef, relres);
                     }
                 }
             });

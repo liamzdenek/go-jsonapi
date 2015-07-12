@@ -52,12 +52,12 @@ func(fo *FutureOutput) Work(pf *ExecutableFuture) {
 
     for future, reskind := range responses {
         switch res := reskind.(type) {
-        case *FutureResponseKindRecords:
+        case FutureResponseKindWithRecords:
             if future == fo.PrimaryData {
-                is_single = res.IsSingle;
-                output_primary = append(output_primary, res.Records...);
+                is_single = res.GetIsSingle();
+                output_primary = append(output_primary, res.GetRecords()...);
             } else {
-                output_included = append(output_included, res.Records...);
+                output_included = append(output_included, res.GetRecords()...);
             }
         default:
             panic(fmt.Sprintf("Future got unsupported reskind %T", reskind));

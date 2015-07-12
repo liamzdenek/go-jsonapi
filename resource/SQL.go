@@ -82,7 +82,7 @@ func(f *FutureSQL) PrepareQuery(parameters ...SQLExpression) (query string, argu
     return query, q.SqlArguments, false; // TODO
 }
 
-func(f *FutureSQL) RunQuery(pf *ExecutableFuture, req *FutureRequest, forced_single bool, parameters []SQLExpression) {
+func(f *FutureSQL) RunQuery(pf *ExecutableFuture, req *FutureRequest, parameters []SQLExpression) ([]*Record, bool, error){
     vs := reflect.New(reflect.SliceOf(reflect.PtrTo(f.Resource.Type))).Interface()
     query, queryargs, is_single := f.PrepareQuery(parameters...);
     pf.Request.API.Logger.Debugf("RUN QUERY: %#v %#v\n", query, queryargs);
@@ -92,24 +92,10 @@ func(f *FutureSQL) RunQuery(pf *ExecutableFuture, req *FutureRequest, forced_sin
         query,
         queryargs...,
     );
-    if err != nil {
-        req.SendResponse(&FutureResponse{
-            IsSuccess: false,
-            Failure: []OError{ErrorToOError(err)},
-        });
-        return;
-    }
-    req.SendResponse(&FutureResponse{
-        IsSuccess: true,
-        Success: map[Future]FutureResponseKind{
-            f: &FutureResponseKindRecords{
-                IsSingle: forced_single || is_single,
-                Records: f.Resource.ConvertInterfaceSliceToRecordSlice(vs),
-            },
-        },
-    });
+    return f.Resource.ConvertInterfaceSliceToRecordSlice(vs), is_single, err;
 }
-func(f *FutureSQL) WorkFindByFields(pf *ExecutableFuture, req *FutureRequest, k *FutureRequestKindFindByFields) {
+
+func(f *FutureSQL) WorkFindByFields(pf *ExecutableFuture, req *FutureRequest, k *FutureRequestKindFindByAnyFields) {
     parameters := []SQLExpression{};
     forced_single := false;
     if len(k.Fields) > 0 {
@@ -125,7 +111,36 @@ func(f *FutureSQL) WorkFindByFields(pf *ExecutableFuture, req *FutureRequest, k 
             NewSQLOr(parameters...),
         }
     }
-    f.RunQuery(pf, req, forced_single, parameters);
+    records, is_single, err := f.RunQuery(pf, req, parameters);
+    if err != nil {
+        req.SendResponse(&FutureResponse{
+            IsSuccess: false,
+            Failure: []OError{ErrorToOError(err)},
+        });
+        return;
+    }
+    field_records := &FutureResponseKindByFields{
+        Records: map[Field][]*Record{},
+    };
+    for _, record := range records {
+        for _, field := range k.Fields {
+            // TODO: probably a better way to do this somehow
+            if(record.HasFieldValue(field)) {
+                field_records.Records[field] = append(field_records.Records[field], record);
+            }
+        }
+    }
+    pf.Request.API.Logger.Debugf("GOT RECORDS: %#v\n", records);
+    pf.Request.API.Logger.Debugf("SENDING BACK FR: %#v\n", field_records);
+    _ = forced_single;
+    _ = is_single;
+    res := &FutureResponse{
+        IsSuccess: true,
+        Success: map[Future]FutureResponseKind{
+            f: field_records,
+        },
+    }
+    req.SendResponse(res);
 }
 
 func(f *FutureSQL) WorkFindByIds(pf *ExecutableFuture, req *FutureRequest, k *FutureRequestKindFindByIds) {
@@ -144,7 +159,23 @@ func(f *FutureSQL) WorkFindByIds(pf *ExecutableFuture, req *FutureRequest, k *Fu
             NewSQLOr(parameters...),
         }
     }
-    f.RunQuery(pf, req, forced_single, parameters);
+    records, is_single, err := f.RunQuery(pf, req, parameters);
+    if err != nil {
+        req.SendResponse(&FutureResponse{
+            IsSuccess: false,
+            Failure: []OError{ErrorToOError(err)},
+        });
+        return;
+    }
+    req.SendResponse(&FutureResponse{
+        IsSuccess: true,
+        Success: map[Future]FutureResponseKind{
+            f: &FutureResponseKindRecords{
+                IsSingle: forced_single || is_single,
+                Records: records,
+            },
+        },
+    });
 }
 
 func(f *FutureSQL) Work(pf *ExecutableFuture) {
@@ -153,7 +184,7 @@ func(f *FutureSQL) Work(pf *ExecutableFuture) {
         switch k := req.Kind.(type) {
         case *FutureRequestKindFindByIds:
             f.WorkFindByIds(pf,req,k);
-        case *FutureRequestKindFindByFields:
+        case *FutureRequestKindFindByAnyFields:
             f.WorkFindByFields(pf,req,k);
         default:
             panic(fmt.Sprintf("FutureSQL got unsupported query kind %T: %#v\n", req.Kind, req.Kind));

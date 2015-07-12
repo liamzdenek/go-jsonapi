@@ -28,7 +28,7 @@ func(rel *FromFieldToField) Link(r *Request, src, dst *ExecutableFuture, input F
     case *FutureResponseKindRecords:
         fields := []Field{};
         for _, record := range t.Records {
-            v := reflect.ValueOf(GetField(rel.SrcFieldName, record.Attributes));
+            v := reflect.ValueOf(GetField(record.Attributes, rel.SrcFieldName));
             k := v.Kind()
             switch k { // TODO: fill this out
             case reflect.String:
@@ -45,7 +45,7 @@ func(rel *FromFieldToField) Link(r *Request, src, dst *ExecutableFuture, input F
                 panic("FromFieldToId does not know how to format the kind "+k.String());
             }
         }
-        return &FutureRequestKindFindByFields{
+        return &FutureRequestKindFindByAnyFields{
             Fields: fields,
         }
     }

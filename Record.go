@@ -1,5 +1,7 @@
 package jsonapi;
 
+import "fmt" // for sprintf
+
 type Record struct {
     // exposed fields
     Type string `json:"type"`
@@ -31,6 +33,15 @@ func(r *Record) GetResourceIdentifier() OResourceIdentifier {
         Id: r.Id,
         Type: r.Type,
     }
+}
+
+func(r *Record) HasFieldValue(field Field) bool {
+    val := GetField(r.Attributes, field.Field);
+    // TODO: probably a better way to do this somehow
+    if val != nil && (val == field.Value || fmt.Sprintf("%s", val) == field.Value || fmt.Sprintf("%d", val) == field.Value ){
+        return true;
+    }
+    return false;
 }
 
 func(r *Record) Denature() interface{} {

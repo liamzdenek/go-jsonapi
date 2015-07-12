@@ -78,17 +78,9 @@ func(o *ORelationship) MarshalJSON() ([]byte,error) {
             Meta: o.Meta,
             Links: links,
         });
-    } else if(!o.IsSingle && len(o.Data) == 0) {
-        return json.Marshal(struct{
-            Meta OMeta `json:"meta,omitempty"`
-            Links interface{} `json:"links"`
-        }{
-            Meta: o.Meta,
-            Links: links,
-        });
     }
     return json.Marshal(struct{
-        Data []OResourceIdentifier `json:"data"`
+        Data []OResourceIdentifier `json:"data,omitempty"`
         Meta OMeta `json:"meta,omitempty"`
         Links interface{} `json:"links"`
     }{

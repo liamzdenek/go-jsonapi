@@ -26,7 +26,7 @@ func(rel *FromFieldToId) Link(r *Request, src, dst *ExecutableFuture, input Futu
     case *FutureResponseKindRecords:
         ids := []string{};
         for _, record := range t.Records {
-            v := reflect.ValueOf(GetField(rel.SrcFieldName, record.Attributes));
+            v := reflect.ValueOf(GetField(record.Attributes, rel.SrcFieldName));
             k := v.Kind()
             switch k { // TODO: fill this out
             case reflect.String:

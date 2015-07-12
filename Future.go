@@ -1,5 +1,11 @@
 package jsonapi;
 
+func init() {
+    var t FutureResponseCanPushBackRelationships = &FutureResponseKindRecords{};
+    t = &FutureResponseKindByFields{};
+    _ = t;
+}
+
 type Future interface{
     ShouldCombine(Future) bool
     Combine(Future) error
@@ -46,35 +52,25 @@ type FutureResponse struct {
     WaitForComplete chan bool
 }
 
-type FutureResponseModifier interface{
-    Modify(r *Request, src, dst *ExecutableFuture, k FutureResponseKind)
-    EarlyModify(r *Request, src *ExecutableFuture)
+type FutureResponseCanPushBackRelationships interface{
+    PushBackRelationships(r *Request, src, dst *ExecutableFuture, k FutureResponseKind)
 }
-type FutureResponseKind interface{}
+type FutureResponseKind interface{
+}
+type FutureResponseKindWithRecords interface{
+    GetIsSingle() bool
+    GetRecords() []*Record
+}
 type FutureResponseKindRecords struct{
     IsSingle bool
     Records []*Record
 }
 
-func(frr *FutureResponseKindRecords) EarlyModify(r *Request, src *ExecutableFuture) {
-    for _, record := range frr.Records {
-        if record.Type == "" {
-            record.Type = src.Resource.Name;
-        }
-    }
-    for _, rel := range r.API.GetRelationshipsByResource(src.Resource.Name) {
-        for _, record := range frr.Records {
-            newrel := &ORelationship{
-                IsSingle: rel.Relationship.IsSingle(),
-                RelationshipName: rel.Name,
-                RelatedBase: r.GetBaseURL()+record.Type+"/"+record.Id,
-            }
-            record.PushRelationship(newrel);
-        }
-    }
-}
+func(frkr *FutureResponseKindRecords) GetIsSingle() bool {return frkr.IsSingle;}
+func(frkr *FutureResponseKindRecords) GetRecords() []*Record {return frkr.Records;}
 
-func(frr *FutureResponseKindRecords) Modify(r *Request, src, dst *ExecutableFuture, rk FutureResponseKind) {
+func(frr *FutureResponseKindRecords) PushBackRelationships(r *Request, src, dst *ExecutableFuture, rk FutureResponseKind) {
+    r.API.Logger.Debugf("GOT FUTURERESPONSEKIND: %#v\n", rk);;
     switch k := rk.(type) {
     case *FutureResponseKindRecords:
         dstrel := &ORelationship{
@@ -83,6 +79,21 @@ func(frr *FutureResponseKindRecords) Modify(r *Request, src, dst *ExecutableFutu
         };
         for _, record := range k.Records {
             record.PushRelationship(dstrel);
+        }
+    case *FutureResponseKindByFields:
+        for field, records := range k.Records {
+            identifiers := GetResourceIdentifiers(records);
+            for _, record := range frr.Records {
+                if record.HasFieldValue(field) {
+                    newrel := &ORelationship{
+                        IsSingle: k.IsSingle,
+                        Data: identifiers,
+                        RelationshipName: dst.Relationship.Name,
+                        RelatedBase: dst.Request.GetBaseURL(),
+                    };
+                    record.PushRelationship(newrel);
+                }
+            }
         }
         /*
         for _, record := range frr.Records {
@@ -118,7 +129,24 @@ type Field struct {
     Value string
 }
 
-type FutureRequestKindFindByFields struct{
+type FutureRequestKindFindByAnyFields struct{
     Fields []Field
+}
+
+type FutureResponseKindByFields struct{
+    IsSingle bool
+    Records map[Field][]*Record
+}
+func(frkbf *FutureResponseKindByFields) GetIsSingle() bool {
+    return false;
+}
+func(frkbf *FutureResponseKindByFields) GetRecords() []*Record {
+    rec := []*Record{};
+    for _, recs := range frkbf.Records {
+        rec = append(rec, recs...);
+    }
+    return rec;
+}
+func(frr *FutureResponseKindByFields) PushBackRelationships(r *Request, src,dst *ExecutableFuture, rk FutureResponseKind) {
 }
 

@@ -56,3 +56,4 @@ func GetFieldByTag(ider interface{}, realtag string) (reflect.Value, reflect.Str
     }
     panic(fmt.Sprintf("Couldn't get field \"%s\" for provided ider: %#v\n", realtag, ider));
 }
+

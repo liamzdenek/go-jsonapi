@@ -29,7 +29,7 @@ func Catch(f func()) (r interface{}) {
     return
 }
 
-func GetField(field string, i interface{}) interface{} {
+func GetField(i interface{}, field string) interface{} {
     for {
         if n,ok := i.(Denaturer); ok {
             i = n.Denature();
@@ -37,7 +37,11 @@ func GetField(field string, i interface{}) interface{} {
             break;
         }
     }
-    return reflect.Indirect(reflect.ValueOf(i)).FieldByName(field).Interface();
+    val := reflect.Indirect(reflect.ValueOf(i)).FieldByName(field);
+    if !val.IsValid() {
+        return nil;
+    }
+    return val.Interface();
 }
 
 func SetField(field string, i interface{}, v interface{}) {
