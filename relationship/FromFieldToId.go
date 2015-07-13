@@ -5,6 +5,7 @@ import (
     "fmt"
     "reflect"
     "strconv"
+    "strings"
 );
 
 type FromFieldToId struct {
@@ -65,11 +66,16 @@ func SimplePushBackRelationships(r *Request, src, dst *ExecutableFuture, srcrk, 
     for _, srcrecord := range srcrkr.GetRecords() {
         dst.Request.API.Logger.Debugf("PUSHING RELATIONSHIPS TO %s.%s\n", srcrecord.Type, srcrecord.Id);
         for field, records := range dstrkr.Records {
-            newfield, ok := fieldmap[field.Field];
-            if !ok {
-                panic(fmt.Sprintf("Fieldmap did not contain a value for: %s\n %#v", field.Field, fieldmap));
+            if strings.ToLower(field.Field) == "id" {
+                _, structfield := GetIdField(srcrecord.Attributes);
+                field.Field = structfield.Name;
+            } else {
+                newfield, ok := fieldmap[field.Field];
+                if !ok {
+                    panic(fmt.Sprintf("Fieldmap did not contain a value for: %s\n %#v", field.Field, fieldmap));
+                }
+                field.Field = newfield;
             }
-            field.Field = newfield;
             dst.Request.API.Logger.Debugf("GOT FIELD: %#v\n", field);
             if srcrecord.HasFieldValue(field) {
                 identifiers := GetResourceIdentifiers(records);

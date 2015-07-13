@@ -37,13 +37,13 @@ type User struct{
 }
 
 type Post struct {
-    ID int `meddler:"id,pk" jsonapi:"id"`
+    ID int `meddler:"id,pk" jsonapi:"id" json:"-"`
     UserId int `meddler:"user_id" json:"-"`
     Text string `meddler:"text" json:"text"`
 }
 
 type Comment struct {
-    ID int `meddler:"id,pk" jsonapi:"id"`
+    ID int `meddler:"id,pk" jsonapi:"id" json:"-"`
     UserId int `meddler:"user_id" json:"-"`
     PostId int `meddler:"post_id" json:"-"`
     Text string `meddler:"text"`
@@ -94,6 +94,9 @@ func main() {
     );
     api.MountRelationship("comments", "post", "comment",
         relationship.NewFromFieldToField("ID", "PostId"),
+    );
+    api.MountRelationship("author", "comment", "user",
+        relationship.NewFromFieldToId("UserId"),
     );
 
     // that's it! start the API
