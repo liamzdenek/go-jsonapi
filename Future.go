@@ -1,11 +1,5 @@
 package jsonapi;
 
-func init() {
-    var t FutureResponseCanPushBackRelationships;;
-    t = &FutureResponseKindByFields{};
-    _ = t;
-}
-
 type Future interface{
     ShouldCombine(Future) bool
     Combine(Future) error
@@ -52,9 +46,6 @@ type FutureResponse struct {
     WaitForComplete chan bool
 }
 
-type FutureResponseCanPushBackRelationships interface{
-    PushBackRelationships(r *Request, src, dst *ExecutableFuture, k FutureResponseKind)
-}
 type FutureResponseKind interface{
 }
 type FutureResponseKindWithRecords interface{
@@ -98,7 +89,3 @@ func(frkbf *FutureResponseKindByFields) GetRecords() []*Record {
     }
     return rec;
 }
-func(frr *FutureResponseKindByFields) PushBackRelationships(r *Request, src,dst *ExecutableFuture, rk FutureResponseKind) {
-    panic(TODO());
-}
-

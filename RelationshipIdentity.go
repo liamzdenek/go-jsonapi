@@ -12,3 +12,4 @@ func(ri *RelationshipIdentity) Link(r *Request, src, dst *ExecutableFuture, inpu
         Future: src.Future,
     };
 }
+func(ri *RelationshipIdentity) PushBackRelationships(r *Request, src, dst *ExecutableFuture, input,output FutureResponseKind) {}

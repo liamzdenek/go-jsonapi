@@ -183,14 +183,11 @@ func(ef *ExecutableFuture) HandleResponse(res *FutureResponse) {
             tef.HandleRequest(req, func(tefres *FutureResponse) {
                 defer wg.Done();
                 fmt.Printf("GOT RESPONSE FROM TEF: %#v\n", tefres);
-                if tefres.IsSuccess {
-                    /*if modifier, ok := relres.(FutureResponseModifier); ok {
-                        modifier.Modify(ef.Request, ef, tef, tefres.Success[tef.Future]);
-                    }*/
-                    if modifier, ok := tefres.Success[tef.Future].(FutureResponseCanPushBackRelationships); ok {
-                        modifier.PushBackRelationships(ef.Request, ef, tef, relres);
-                    }
+                if !tefres.IsSuccess {
+                    return;
                 }
+
+                rel.PushBackRelationships(ef.Request, ef, tef, relres, tefres.Success[tef.Future]);
             });
         }
     }

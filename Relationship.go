@@ -17,5 +17,6 @@ type Relationship interface {
     //PostSave(r *Request, rec *Record, amr *APIMountedRelationship, rids []OResourceIdentifier) error
     //GetTargetFuture() Future
     Link(r *Request, src, dst *ExecutableFuture, input FutureResponseKind) (output FutureRequestKind)
+    PushBackRelationships(r *Request, src, dst *ExecutableFuture, srcrk, dstrk FutureResponseKind)
 }
 

@@ -50,3 +50,8 @@ func(rel *FromFieldToField) Link(r *Request, src, dst *ExecutableFuture, input F
         }
     }
 }
+func(rel *FromFieldToField) PushBackRelationships(r *Request, src, dst *ExecutableFuture, srcrk,dstrk FutureResponseKind) {
+    SimplePushBackRelationships(r,src,dst,srcrk,dstrk,map[string]string{
+        rel.DstFieldName: rel.SrcFieldName,
+    });
+}
