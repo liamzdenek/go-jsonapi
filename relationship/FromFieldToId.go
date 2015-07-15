@@ -52,13 +52,13 @@ func(rel *FromFieldToId) PushBackRelationships(r *Request, src, dst *ExecutableF
 func SimplePushBackRelationships(r *Request, src, dst *ExecutableFuture, srcrk, dstrk FutureResponseKind, fieldmap map[string]string) {
     srcrkr, ok := srcrk.(FutureResponseKindWithRecords);
     if !ok {
-        panic("A");
+        //panic("A");
         return;
     }
     dst.Request.API.Logger.Debugf("KINDBY FIELDS: %#v\n", dstrk);
     dstrkr, ok := dstrk.(*FutureResponseKindByFields);
     if !ok {
-        panic("B");
+        //panic("B");
         return;
     }
     

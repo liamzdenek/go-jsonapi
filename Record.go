@@ -25,6 +25,7 @@ func(r *Record) PushRelationship(rel *ORelationship) {
             return;
         }
     }
+    rel.RelationshipWasFetched = true;
     r.Relationships.Relationships = append(r.Relationships.Relationships, rel);
 }
 

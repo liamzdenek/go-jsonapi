@@ -50,6 +50,7 @@ type ORelationship struct {
     IsSingle bool `json:"-"`
     //Links OLinks `json:"links,omitempty"`
     Data []OResourceIdentifier `json:"data"`
+    RelationshipWasFetched bool
     Meta OMeta `json:"meta,omitempty"`
     RelatedBase string `json:"-"`
     RelationshipName string `json:"-"`
@@ -75,6 +76,16 @@ func(o *ORelationship) MarshalJSON() ([]byte,error) {
             Links interface{} `json:"links"`
         }{
             Data: o.Data[0],
+            Meta: o.Meta,
+            Links: links,
+        });
+    } else if(o.RelationshipWasFetched) {
+        return json.Marshal(struct{
+            Data []OResourceIdentifier `json:"data"`
+            Meta OMeta `json:"meta,omitempty"`
+            Links interface{} `json:"links"`
+        }{
+            Data: o.Data,
             Meta: o.Meta,
             Links: links,
         });
