@@ -56,10 +56,11 @@ func(a *API) CentralFindRouter(r *Request, resourcestr, idstr string, preroute [
 
     for _,pre := range preroute {
         r.API.Logger.Debugf("Get rel: %s %s\n", resource.Name, pre);
+        relationship := a.GetRelationship(resource.Name, pre);
+        resource = a.GetResource(relationship.DstResourceName);
         nef := NewExecutableFuture(r,resource.GetFuture());
-        nef.Relationship = a.GetRelationship(resource.Name, pre);
-        resource = a.GetResource(nef.Relationship.DstResourceName);
         nef.Resource = resource
+        nef.Relationship = relationship
         ef.PushChild(nef.Relationship, nef);
         ef = nef;
     }

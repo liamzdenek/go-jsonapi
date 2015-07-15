@@ -82,7 +82,7 @@ func(f *FutureSQL) PrepareQuery(parameters ...SQLExpression) (query string, argu
     return query, q.SqlArguments, false; // TODO
 }
 
-func(f *FutureSQL) RunQuery(pf *ExecutableFuture, req *FutureRequest, parameters []SQLExpression) ([]*Record, bool, error){
+func(f *FutureSQL) RunQuery(pf *ExecutableFuture, req *FutureRequest, parameters []SQLExpression) ([]*Record, bool, *OError){
     vs := reflect.New(reflect.SliceOf(reflect.PtrTo(f.Resource.Type))).Interface()
     query, queryargs, is_single := f.PrepareQuery(parameters...);
     pf.Request.API.Logger.Debugf("RUN QUERY: %#v %#v\n", query, queryargs);
@@ -92,7 +92,14 @@ func(f *FutureSQL) RunQuery(pf *ExecutableFuture, req *FutureRequest, parameters
         query,
         queryargs...,
     );
-    return f.Resource.ConvertInterfaceSliceToRecordSlice(vs), is_single, err;
+    var oerr *OError;
+    if err != nil {
+        oerr = &OError{
+            Title: err.Error(),
+            Detail: fmt.Sprintf("%s -- %#v\n", query, queryargs),
+        };
+    }
+    return f.Resource.ConvertInterfaceSliceToRecordSlice(vs), is_single, oerr;
 }
 
 func(f *FutureSQL) WorkFindByFields(pf *ExecutableFuture, req *FutureRequest, k *FutureRequestKindFindByAnyFields) {
@@ -115,7 +122,7 @@ func(f *FutureSQL) WorkFindByFields(pf *ExecutableFuture, req *FutureRequest, k 
     if err != nil {
         req.SendResponse(&FutureResponse{
             IsSuccess: false,
-            Failure: []OError{ErrorToOError(err)},
+            Failure: []OError{*err},
         });
         return;
     }
@@ -163,7 +170,7 @@ func(f *FutureSQL) WorkFindByIds(pf *ExecutableFuture, req *FutureRequest, k *Fu
     if err != nil {
         req.SendResponse(&FutureResponse{
             IsSuccess: false,
-            Failure: []OError{ErrorToOError(err)},
+            Failure: []OError{*err},
         });
         return;
     }
