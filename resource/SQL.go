@@ -83,11 +83,19 @@ func(f *FutureSQL) PrepareQuery(parameters ...SQLExpression) (query string, argu
 }
 
 func(f *FutureSQL) RunQuery(pf *ExecutableFuture, req *FutureRequest, parameters []SQLExpression) ([]*Record, bool, *OError){
+    lp, psql := f.Resource.GetPromise(pf.Request);
+    defer lp.Release();
+
+    tx, err := psql.GetSQLTransaction(f.Resource.DB)
+    if err != nil {
+        oe := ErrorToOError(err)
+        return []*Record{}, false, &oe;
+    }
     vs := reflect.New(reflect.SliceOf(reflect.PtrTo(f.Resource.Type))).Interface()
     query, queryargs, is_single := f.PrepareQuery(parameters...);
     pf.Request.API.Logger.Debugf("RUN QUERY: %#v %#v\n", query, queryargs);
-    err := meddler.QueryAll(
-        f.Resource.DB,
+    err = meddler.QueryAll(
+        tx,
         vs,
         query,
         queryargs...,

@@ -22,7 +22,7 @@ func(fo *FutureOutput) Work(pf *ExecutableFuture) {
     OUTER:for {
         var rawreq *FutureRequest;
         rawreq = pf.GetRequest();
-        fmt.Printf("GOT RAW REQ: %#v\n", rawreq);
+        fmt.Printf("FUTUREOUTPUT GOT RES: %#v\n", rawreq.Kind);
         reply_todo = append(reply_todo, rawreq);
         switch req := rawreq.Kind.(type) {
         case *FutureRequestKindIdentity:
@@ -48,14 +48,22 @@ func(fo *FutureOutput) Work(pf *ExecutableFuture) {
     output_primary := []*Record{};
     output_included := []*Record{};
     is_single := false;
-    //var output_relationship *ORelationship = nil;
 
     for future, reskind := range responses {
         switch res := reskind.(type) {
         case FutureResponseKindWithRecords:
             if future == fo.PrimaryData {
-                is_single = res.GetIsSingle();
-                output_primary = append(output_primary, res.GetRecords()...);
+                if fo.PrimaryDataType == OutputTypeResources {
+                    is_single = res.GetIsSingle();
+                    output_primary = append(output_primary, res.GetRecords()...);
+                } else {
+                    if output_relationship == nil {
+                        output_relationship = &ORelationship{
+                            IsSingle: res.GetIsSingle(),
+                        }
+                    }
+                    output_relationship.Data = append(output_relationship.Data, GetResourceIdentifiers(res.GetRecords())...);
+                }
             } else {
                 output_included = append(output_included, res.GetRecords()...);
             }

@@ -53,6 +53,10 @@ func(a *API) CentralFindRouter(r *Request, resourcestr, idstr string, preroute [
     req := NewFutureRequest(r, &FutureRequestKindFindByIds{
         Ids: ids,
     });
+    
+    if len(linkname) > 0 {
+        preroute = append([]string{linkname}, preroute...);
+    }
 
     for _,pre := range preroute {
         r.API.Logger.Debugf("Get rel: %s %s\n", resource.Name, pre);
@@ -68,7 +72,6 @@ func(a *API) CentralFindRouter(r *Request, resourcestr, idstr string, preroute [
     output := ef.Build(resource)
     output.PrimaryData = ef.Future
     output.PrimaryDataType = outputtype;
-    //output.RelationshipName = linkname
     defer first_ef.Defer();
     first_ef.Takeover(req);
 }
