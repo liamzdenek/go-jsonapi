@@ -8,7 +8,7 @@ func(a *API) EntryFindDefault(r *Request) {
         r.Params.ByName("resource"),
         "",
         []string{},
-        OutputTypeResources, "",
+        OutputTypeResources,
     );
 }
 
@@ -17,7 +17,7 @@ func(a *API) EntryFindRecordByResourceAndId(r *Request) {
         r.Params.ByName("resource"),
         r.Params.ByName("id"),
         []string{},
-        OutputTypeResources, "",
+        OutputTypeResources,
     );
 }
 
@@ -26,7 +26,7 @@ func(a *API) EntryFindRelationshipsByResourceId(r *Request) {
         r.Params.ByName("resource"),
         r.Params.ByName("id"),
         []string{r.Params.ByName("linkname")},
-        OutputTypeResources, "",
+        OutputTypeResources,
     );
 }
 
@@ -34,13 +34,12 @@ func(a *API) EntryFindRelationshipByNameAndResourceId(r *Request) {
     a.CentralFindRouter(r,
         r.Params.ByName("resource"),
         r.Params.ByName("id"),
-        []string{},
+        []string{r.Params.ByName("secondlinkname")},
         OutputTypeLinkages,
-        r.Params.ByName("secondlinkname"),
     );
 }
 
-func(a *API) CentralFindRouter(r *Request, resourcestr, idstr string, preroute []string, outputtype OutputType, linkname string) {
+func(a *API) CentralFindRouter(r *Request, resourcestr, idstr string, preroute []string, outputtype OutputType) {
     resource := a.GetResource(resourcestr);
     ef := NewExecutableFuture(r, resource.GetFuture());
     ef.Resource = resource;
@@ -53,10 +52,6 @@ func(a *API) CentralFindRouter(r *Request, resourcestr, idstr string, preroute [
     req := NewFutureRequest(r, &FutureRequestKindFindByIds{
         Ids: ids,
     });
-    
-    if len(linkname) > 0 {
-        preroute = append([]string{linkname}, preroute...);
-    }
 
     for _,pre := range preroute {
         r.API.Logger.Debugf("Get rel: %s %s\n", resource.Name, pre);
