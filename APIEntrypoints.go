@@ -70,28 +70,6 @@ func(a *API) CentralFindRouter(r *Request, resourcestr, idstr string, preroute [
     //output.RelationshipName = linkname
     defer first_ef.Defer();
     first_ef.Takeover(req);
-
-    /*
-    ids := []string{};
-    if len(idstr) != 0 {
-        ids = strings.Split(idstr,",");
-    }
-    var work TaskResultRecords = NewTaskFindByIds(
-        resourcestr,
-        ids,
-        ii,
-        "",
-        NewPaginator(r),
-    );
-    for _,pre := range preroute {
-        r.Push(work);
-        work = NewTaskSingleLinkResolver(work, pre);
-    }
-    attacher := NewTaskAttachIncluded(work, ii, outputtype, linkname);
-    replyer := NewTaskReplyer(attacher);
-    r.Push(work, attacher, replyer);
-    r.API.Logger.Infof("Main Waiting\n");
-    replyer.Wait();*/
 }
 
 func(a *API) EntryDelete(r *Request) {
