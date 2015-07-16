@@ -27,7 +27,7 @@ func NewAPI(baseuri string) *API {
         Logger: NewLoggerDefault(nil),
         BaseURI: baseuri,
         DefaultResourceWrapper: func(amr *APIMountedResource) {
-            amr.Resource = NewResourceTypeSetter(amr.Resource, amr.Name, true);
+            amr.Resource = amr.Resource;
         },
     }
     a.InitRouter();

@@ -95,3 +95,17 @@ func GetRelationshipDifferences(src, dst []OResourceIdentifier) (add, remove []O
     }
     return
 }
+
+func ConvertInterfaceSliceToRecordSlice(src interface{}) []*Record {
+    res := []*Record{};
+
+    ary := reflect.Indirect(reflect.ValueOf(src));
+    for i := 0; i < ary.Len(); i++ {
+        attr := ary.Index(i).Interface();
+        res = append(res,&Record{
+            Id: GetId(attr),
+            Attributes: attr,
+        });
+    }
+    return res;
+}

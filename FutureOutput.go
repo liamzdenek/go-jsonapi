@@ -58,9 +58,7 @@ func(fo *FutureOutput) Work(pf *ExecutableFuture) {
                     output_primary = append(output_primary, res.GetRecords()...);
                 } else {
                     if output_relationship == nil {
-                        output_relationship = &ORelationship{
-                            IsSingle: res.GetIsSingle(),
-                        }
+                        output_relationship = &ORelationship{}
                     }
                     output_relationship.Data = append(output_relationship.Data, GetResourceIdentifiers(res.GetRecords())...);
                 }
@@ -77,7 +75,7 @@ func(fo *FutureOutput) Work(pf *ExecutableFuture) {
             Records: output_primary,
         }
     } else {
-        output.Data = output_relationship;
+        output.Data = output_relationship.Data;
     }
     output.Included = output_included;
     panic(output);
