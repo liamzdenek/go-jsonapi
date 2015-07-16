@@ -72,10 +72,17 @@ func(a *API) CentralFindRouter(r *Request, resourcestr, idstr string, preroute [
 }
 
 func(a *API) EntryDelete(r *Request) {
-    /*deleter := NewTaskDelete(r.Params.ByName("resource"), r.Params.ByName("id"));
-    r.Push(deleter);
-    deleter.Wait();
-    */
+    idstr := r.Params.ByName("id");
+    var ids []string;
+    if len(idstr) > 0 {
+        ids = strings.Split(idstr, ",");
+    }
+
+    resource := a.GetResource(r.Params.ByName("resource"));
+    ef := NewExecutableFuture(r, resource.GetFuture());
+    ef.Takeover(NewFutureRequest(r, &FutureRequestKindDeleteByIds{
+        Ids: ids,
+    }));
 }
 
 func(a *API) EntryCreate(r *Request) {
