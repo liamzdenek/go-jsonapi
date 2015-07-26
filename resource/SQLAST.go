@@ -88,6 +88,10 @@ type SQLEquals struct {
     Value interface{}
 }
 
+func NewSQLEquals(field string, value interface{}) *SQLEquals {
+    return &SQLEquals{Field: field, Value: value};
+}
+
 func(equals *SQLEquals) Express(q *SQLQuery) {
     q.Query += equals.Field+"=? ";
     q.SqlArguments = append(q.SqlArguments, equals.Value);

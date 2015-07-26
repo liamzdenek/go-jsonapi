@@ -54,7 +54,7 @@ func main() {
     //base_oauth := "/auth/";
     base_api := "/api/";
 
-    db, err := sql.Open("mysql", "root@/tasky");
+    db, err := sql.Open("mysql", "tasky:tasky@/tasky");
     if err != nil {
         panic(err);
     }
