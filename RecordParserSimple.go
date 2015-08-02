@@ -1,5 +1,5 @@
-package jsonapi;
+package jsonapi
 
 type RecordParserSimple struct {
-    Data *Record `json:"data"`
+	Data *Record `json:"data"`
 }

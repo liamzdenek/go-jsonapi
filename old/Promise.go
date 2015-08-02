@@ -1,6 +1,6 @@
-package jsonapi;
+package jsonapi
 
 type Promise interface {
-    Success(r *Request)
-    Failure(r *Request)
+	Success(r *Request)
+	Failure(r *Request)
 }

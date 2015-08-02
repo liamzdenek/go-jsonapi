@@ -1,11 +1,11 @@
-package jsonapi;
+package jsonapi
 
-type RecordCreatedStatus uint;
+type RecordCreatedStatus uint
 
 const (
-    StatusCreated = 1 << iota
-    StatusFailed
-    StatusHasUserProvidedId
-    StatusUserProvidedIdConflict
-    StatusUnsupported
-);
+	StatusCreated = 1 << iota
+	StatusFailed
+	StatusHasUserProvidedId
+	StatusUserProvidedIdConflict
+	StatusUnsupported
+)

@@ -1,17 +1,17 @@
-package jsonapi;
+package jsonapi
 
 type AuthenticatorMany struct {
-    Authenticators []Authenticator
+	Authenticators []Authenticator
 }
 
 func NewAuthenticatorMany(authenticators ...Authenticator) *AuthenticatorMany {
-    return &AuthenticatorMany{
-        Authenticators: authenticators,
-    }
+	return &AuthenticatorMany{
+		Authenticators: authenticators,
+	}
 }
 
-func(am *AuthenticatorMany) Authenticate(r *Request, permission, id string) {
-    for _, authenticator := range am.Authenticators {
-        authenticator.Authenticate(r,permission,id);
-    }
+func (am *AuthenticatorMany) Authenticate(r *Request, permission, id string) {
+	for _, authenticator := range am.Authenticators {
+		authenticator.Authenticate(r, permission, id)
+	}
 }

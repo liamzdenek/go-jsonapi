@@ -1,5 +1,5 @@
-package jsonapi;
+package jsonapi
 
-type Responder interface{
-    Respond(req *Request) error
+type Responder interface {
+	Respond(req *Request) error
 }

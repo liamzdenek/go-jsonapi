@@ -1,6 +1,6 @@
-package jsonapi;
+package jsonapi
 
 type TaskResultOutput interface {
-    Task
-    GetResult() *Output
+	Task
+	GetResult() *Output
 }

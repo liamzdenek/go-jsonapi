@@ -1,9 +1,8 @@
-package jsonapi;
+package jsonapi
 
-type OutputType int;
+type OutputType int
 
 const (
-    OutputTypeResources OutputType = iota;
-    OutputTypeLinkages
-);
-
+	OutputTypeResources OutputType = iota
+	OutputTypeLinkages
+)

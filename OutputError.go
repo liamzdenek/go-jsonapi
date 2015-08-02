@@ -1,23 +1,23 @@
-package jsonapi;
+package jsonapi
 
 type OError struct {
-    Id string `json:"id,omitempty"`
-    Href string `json:"href,omitempty"`
-    Status string `json:"status,omitempty"`
-    Code string `json:"code,omitempty"`
-    Title string `json:"title,omitempty"`
-    Detail string `json:"detail,omitempty"`
-    Source *OErrorSource `json:"source,omitempty"`
-    Meta interface{} `json:"meta,omitempty"`
+	Id     string        `json:"id,omitempty"`
+	Href   string        `json:"href,omitempty"`
+	Status string        `json:"status,omitempty"`
+	Code   string        `json:"code,omitempty"`
+	Title  string        `json:"title,omitempty"`
+	Detail string        `json:"detail,omitempty"`
+	Source *OErrorSource `json:"source,omitempty"`
+	Meta   interface{}   `json:"meta,omitempty"`
 }
 
 func ErrorToOError(err error) OError {
-    return OError {
-        Title: err.Error(),
-    }
+	return OError{
+		Title: err.Error(),
+	}
 }
 
 type OErrorSource struct {
-    Pointer string `json:"pointer,omitempty"`
-    Parameter string `json:"parameter,omitempty"`
+	Pointer   string `json:"pointer,omitempty"`
+	Parameter string `json:"parameter,omitempty"`
 }

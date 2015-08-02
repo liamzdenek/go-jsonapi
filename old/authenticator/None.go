@@ -1,18 +1,20 @@
-package authenticator;
+package authenticator
 
-import (. "..");
+import (
+	. ".."
+)
 
 type None struct{}
 
 func init() {
-    var a Authenticator = &None{}
-    _ = a;
+	var a Authenticator = &None{}
+	_ = a
 }
 
 func NewNone() *None {
-    return &None{};
+	return &None{}
 }
 
 func (n *None) Authenticate(r *Request, permission, id string) {
-    r.API.Logger.Infof("Authenticator request for: %s on ID: %s\n", permission, id);
+	r.API.Logger.Infof("Authenticator request for: %s on ID: %s\n", permission, id)
 }
