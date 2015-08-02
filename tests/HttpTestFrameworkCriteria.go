@@ -2,8 +2,6 @@ package jsonapitest
 
 import (
 	"fmt"
-	"net/http"
-	"net/http/httptest"
 	"net/url"
 )
 
@@ -15,15 +13,13 @@ func SetURL(url string) *CrURL {
 	return &CrURL{Url: url}
 }
 
-func (crurl *CrURL) Setup(server *httptest.Server, req *http.Request) {
+func (crurl *CrURL) Setup(session *TestSession) {
 	var err error
-	req.URL, err = url.Parse(server.URL + crurl.Url)
+	session.Request.URL, err = url.Parse(session.Server.URL + crurl.Url)
 	Check(err)
 }
 
-func (url *CrURL) Check(req *http.Request, res *http.Response) {
-
-}
+func (url *CrURL) Check(session *TestSession) {}
 
 func (url *CrURL) Describe() string { return fmt.Sprintf("URL = %s", url.Url) }
 
@@ -35,12 +31,11 @@ func SetStatusCode(code int) *CrStatusCode {
 	return &CrStatusCode{Code: code}
 }
 
-func (crstatus *CrStatusCode) Setup(server *httptest.Server, request *http.Request) {
-}
+func (crstatus *CrStatusCode) Setup(session *TestSession) {}
 
-func (crstatus *CrStatusCode) Check(request *http.Request, response *http.Response) {
-	if response.StatusCode != crstatus.Code {
-		panic(fmt.Sprintf("Expected code %d, got %d", crstatus.Code, response.StatusCode))
+func (crstatus *CrStatusCode) Check(session *TestSession) {
+	if session.Response.StatusCode != crstatus.Code {
+		panic(fmt.Sprintf("Expected code %d, got %d", crstatus.Code, session.Response.StatusCode))
 	}
 }
 

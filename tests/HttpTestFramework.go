@@ -17,10 +17,17 @@ type Test struct {
 	Criteria []Criterion
 }
 
+type TestSession struct {
+	Test     *Test
+	Server   *httptest.Server
+	Request  *http.Request
+	Response *http.Response
+}
+
 type Criterion interface {
 	Describe() string
-	Setup(*httptest.Server, *http.Request)
-	Check(*http.Request, *http.Response)
+	Setup(*TestSession)
+	Check(*TestSession)
 }
 
 func NewTestSuite(T *testing.T) *TestSuite {
@@ -40,27 +47,31 @@ func (ts *TestSuite) PushNewTest(cr ...Criterion) {
 
 func (ts *TestSuite) Run(server *httptest.Server) {
 	for _, test := range ts.Tests {
-		req := &http.Request{}
-		res := &http.Response{}
+		session := &TestSession{
+			Server:  server,
+			Test:    &test,
+			Request: &http.Request{},
+		}
 		work := func() {
-			var err error
 			for _, cr := range test.Criteria {
-				cr.Setup(server, req)
+				cr.Setup(session)
 			}
 
 			cl := http.Client{}
-			res, err = cl.Do(req)
+			res, err := cl.Do(session.Request)
 			Check(err)
 
+			session.Response = res
+
 			for _, cr := range test.Criteria {
-				cr.Check(req, res)
+				cr.Check(session)
 			}
 		}
 		err := Catch(work)
 		if err != nil {
-			rawReq, terr := httputil.DumpRequestOut(req, true)
+			rawReq, terr := httputil.DumpRequestOut(session.Request, true)
 			Check(terr)
-			rawRes, terr := httputil.DumpResponse(res, true)
+			rawRes, terr := httputil.DumpResponse(session.Response, true)
 			Check(terr)
 			ts.T.Errorf("Error running test: %#v\n\nTEST DESCRIPTION:\n\n%s\nREQUEST:\n\n%s\nRESPONSE:\n\n%s\n", err, test.Describe(), string(rawReq), string(rawRes))
 		}
