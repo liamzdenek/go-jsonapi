@@ -10,7 +10,7 @@ import (
 )
 
 type User struct {
-	Id   string
+	Id   string `jsonapi:"id"`
 	Name string
 }
 
