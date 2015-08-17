@@ -48,8 +48,16 @@ func GetIdField(ider interface{}) (reflect.Value, reflect.StructField) {
 }
 
 func GetFieldByTag(ider interface{}, realtag string) (reflect.Value, reflect.StructField) {
-	val := reflect.Indirect(reflect.ValueOf(ider))
-	typ := val.Type()
+	var val reflect.Value
+	var typ reflect.Type
+	for {
+		val = reflect.Indirect(reflect.ValueOf(ider))
+		typ = val.Type()
+		ider = val.Interface()
+		if val.Kind() != reflect.Ptr {
+			break
+		}
+	}
 	fields := val.NumField()
 	for i := 0; i < fields; i++ {
 		tags := strings.Split(typ.Field(i).Tag.Get("jsonapi"), ",")

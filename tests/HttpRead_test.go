@@ -3,7 +3,6 @@ package jsonapitest
 import (
 	".."
 	"../resource"
-	"database/sql"
 	_ "github.com/go-sql-driver/mysql"
 	"net/http/httptest"
 	"testing"
@@ -17,13 +16,9 @@ type User struct {
 func WithTestServer(f func(*httptest.Server)) {
 	api := jsonapi.NewAPI("/")
 
-	db, err := sql.Open("mysql", "tasky:tasky@/tasky")
+	resource_user := resource.NewRAM(&User{})
 
-	if err != nil {
-		panic(err)
-	}
-
-	resource_user := resource.NewSQL(db, "users", &User{})
+	resource_user.Push("1", &User{Name: "Joe Guy"})
 
 	api.MountResource("user", resource_user)
 
